@@ -1,0 +1,59 @@
+public/huixing.html
+  s_61d2adb6b08e37::t_62e0fd0a800057 1074
+  s_61d2adb6b08e37::t_d1abf897929b3c 265
+  s_e35698d4aac18e::t_4fdec5750ae58f 376-416
+  s_e35698d4aac18e::t_1a80acec81438a 426
+  s_61d2adb6b08e37::t_af964a82a28e3a 314
+  s_61d2adb6b08e37::t_85d08bf2a4c3cf 673
+  s_61d2adb6b08e37::t_b4b119ced0ed90 470-479
+  s_61d2adb6b08e37::t_1c1cbd42ab7d74 725,729,731-734,738,762-763,768,781-782,807-808,820,852-861
+  s_61d2adb6b08e37::t_6f7ad1211871bc 730
+  s_61d2adb6b08e37::t_bafb0844fbf5f3 794-798
+  s_e35698d4aac18e::t_151557583023a5 1307,1311-1316
+  s_e35698d4aac18e::t_c2d1b9ac31f8fb 713-717
+  s_61d2adb6b08e37::t_7ed0ab306d2126 840
+  s_61d2adb6b08e37::t_c77a64c0cdd3a8 987
+  s_61d2adb6b08e37::t_806fbb937190be 655
+  s_e35698d4aac18e::t_0f63fd8768f6f5 1207
+  s_e35698d4aac18e::t_d9d4c4debad23a 1193,1204,1208-1210
+  s_e35698d4aac18e::t_6868cffdf39b20 199-211
+  s_e35698d4aac18e::t_da9bb2f671a9af 772,774-775,779-780,783,785-788,790-792,799,803-804,810,814
+  s_61d2adb6b08e37::t_4d6ae8ab213a6b 1205-1206
+  s_61d2adb6b08e37::t_294c5018024b38 1115-1119
+  s_e35698d4aac18e::t_da28b79d4059e0 773,778,784,789,793,800
+  s_e35698d4aac18e::t_9f8e3c6216c3ad 273-289
+  s_61d2adb6b08e37::t_d0f8fb477e1766 648-649
+  s_e35698d4aac18e::t_80973ff5469252 1068-1072,1075-1076,1080,1093
+  s_61d2adb6b08e37::t_b3b1fd1404fe4d 1083-1092
+routes/skyeye.js
+  s_61d2adb6b08e37::t_0b163795dcf3e2 84,91-92,100-101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "0ed6a60e583c9ad1a63e0ba45f2ce226b94e898b",
+  "prompts": {},
+  "humans": {
+    "h_b87a5939e91b97": {
+      "author": "夏礼华 <xlh4909@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_61d2adb6b08e37": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_14b8f2736ffe8d462I0X3Z60FH",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    },
+    "s_e35698d4aac18e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_14b7d38f9fferu9W0YxdbxOxOo",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
