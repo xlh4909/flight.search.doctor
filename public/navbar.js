@@ -7,6 +7,7 @@
         '/':                    { group: '产品站',   link: '/' },
         '/gateway.html':        { group: '网关站',   link: '/gateway.html' },
         '/b15-standard.html':   { group: '网关站',   link: '/b15-standard.html' },
+        '/snapshot.html':       { group: '网关站',   link: '/snapshot.html' },
         '/huixing.html':        { group: '产品站',   link: '/huixing.html' },
         '/b15.html':            { group: '产品站',   link: '/b15.html' },
         '/proxy-log.html':      { group: '日志追踪', link: '/proxy-log.html' },
@@ -20,7 +21,8 @@
             name: '网关站',
             links: [
                 { href: '/gateway.html',      text: '下沉版本排查' },
-                { href: '/b15-standard.html', text: 'Book1.5标准版' }
+                { href: '/b15-standard.html', text: 'Book1.5标准版' },
+                { href: '/snapshot.html',     text: '快照查询' }
             ]
         },
         {

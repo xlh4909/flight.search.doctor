@@ -86,11 +86,23 @@ const GATEWAY_URLS = {
     lane: 'http://search.lane.fly.17usoft.com'
 };
 
+const SNAPSHOT_SITES = ['wechatcore', 'app'];
+
+const SNAPSHOT_URLS = {
+    prod: 'http://search.fly.17usoft.com',
+    qa: 'http://search.qa.fly.17usoft.com',
+    uat: 'http://search.uat.fly.17usoft.com',
+    t: 'http://search.t.fly.17usoft.com',
+    t2: 'http://search2.t.fly.17usoft.com',
+    lane: 'http://search.lane.fly.17usoft.com'
+};
+
 module.exports = {
     ENV_CONFIGS, DEFAULT_ENV, API_TIMEOUT,
     SKYEYE_LOG_URL, SKYEYE_APP_ID, SKYEYE_TOKEN,
     PROXY_LOG_APP_IDS, PROXY_LOG_TOKENS,
     CITY_LABRADOR_URL,
     GATEWAY_SITES, GATEWAY_PLATS, GATEWAY_URLS,
+    SNAPSHOT_SITES, SNAPSHOT_URLS,
     getEnvConfig, getEnvFromRequest, getHuixingUrl
 };

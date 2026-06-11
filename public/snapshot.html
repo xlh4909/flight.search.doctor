@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快照查询</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #00695c, #004d40); color: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .env-select { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 12px; outline: none; }
+        .env-select:hover { background: rgba(255,255,255,0.25); }
+        .env-select option { background: #fff; color: #333; }
+        .nav-bar { display: flex; gap: 2px; align-items: stretch; }
+        .nav-group { position: relative; }
+        .nav-group-btn { color: rgba(255,255,255,0.75); background: none; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .nav-group-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-group.has-active .nav-group-btn { color: #ffeb3b; }
+        .nav-dropdown { display: none; position: absolute; top: 100%; right: 0; background: #004d40; border-radius: 6px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; padding: 4px 0; margin-top: 2px; }
+        .nav-group:hover .nav-dropdown { display: block; }
+        .nav-dropdown a { display: block; color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+        .nav-dropdown a:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-dropdown a.active { color: #ffeb3b; background: rgba(255,255,255,0.1); }
+        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
+        .input-section { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .input-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #00695c; }
+        .input-section input[type="text"] { width: 100%; border: 1px solid #ddd; border-radius: 6px; padding: 10px 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 12px; outline: none; transition: border-color 0.2s; }
+        .input-section input[type="text"]:focus { border-color: #00695c; box-shadow: 0 0 0 2px rgba(0,105,92,0.15); }
+        .params-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+        .input-group { display: flex; flex-direction: column; gap: 4px; }
+        .input-group label { font-size: 12px; font-weight: 600; color: #00695c; margin-bottom: 0; }
+        .input-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none; min-width: 180px; }
+        .input-group select:focus { border-color: #00695c; box-shadow: 0 0 0 2px rgba(0,105,92,0.15); }
+        .tag-site-row { display: flex; gap: 12px; align-items: flex-end; }
+        .tag-site-row .tag-field { flex: 1; min-width: 0; }
+        .tag-site-row .site-field { flex-shrink: 0; }
+        .btn-row { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+        .btn { padding: 10px 28px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #00695c; color: white; }
+        .btn-primary:hover { background: #004d40; }
+        .btn-primary:disabled { background: #80cbc4; cursor: not-allowed; }
+        .btn-secondary { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .loading { display: none; align-items: center; gap: 8px; color: #00695c; font-size: 13px; }
+        .loading.active { display: flex; }
+        .spinner { width: 18px; height: 18px; border: 2px solid #e0e0e0; border-top-color: #00695c; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .results-section { display: none; }
+        .results-section.active { display: block; }
+        .query-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: white; border-radius: 8px; padding: 14px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 12px; user-select: none; }
+        .query-header:hover { background: #e0f2f1; }
+        .query-header .header-title { font-size: 15px; font-weight: 600; color: #00695c; }
+        .query-header .header-arrow { font-size: 12px; color: #999; transition: transform 0.2s; }
+        .query-header.collapsed .header-arrow { transform: rotate(-90deg); }
+        .query-body.collapsed { display: none; }
+
+        /* ── Gen time card — clean, no raw data ── */
+        .gen-time-card { background: linear-gradient(135deg, #e0f2f1, #b2dfdb); border: 1px solid #80cbc4; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; }
+        .gen-time-card .gt-icon { font-size: 28px; flex-shrink: 0; }
+        .gen-time-card .gt-body { flex: 1; }
+        .gen-time-card .gt-label { font-size: 13px; color: #004d40; font-weight: 500; }
+        .gen-time-card .gt-value { font-size: 22px; font-weight: 700; color: #00695c; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; margin-top: 2px; }
+
+        /* ── Tree toolbar ── */
+        .tree-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; background: white; border-radius: 8px; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .tree-toolbar .search-box { flex: 1; min-width: 200px; position: relative; }
+        .tree-toolbar .search-box input { width: 100%; padding: 8px 36px 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none; }
+        .tree-toolbar .search-box input:focus { border-color: #00695c; box-shadow: 0 0 0 2px rgba(0,105,92,0.15); }
+        .tree-toolbar .search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: #999; padding: 2px 6px; border-radius: 50%; display: none; }
+        .tree-toolbar .search-clear:hover { color: #333; background: #eee; }
+        .tree-toolbar .search-clear.visible { display: block; }
+        .tree-toolbar .toolbar-btn { padding: 8px 16px; border: 1px solid #ddd; border-radius: 6px; background: white; font-size: 13px; cursor: pointer; color: #555; white-space: nowrap; transition: all 0.2s; font-weight: 500; }
+        .tree-toolbar .toolbar-btn:hover { background: #f5f5f5; border-color: #00695c; color: #00695c; }
+        .tree-toolbar .toolbar-btn.is-expanded { background: #e0f2f1; border-color: #00695c; color: #00695c; }
+
+        /* ── Property-structure tree view ── */
+        .tree-view { background: white; border-radius: 8px; padding: 4px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.08); max-height: 70vh; overflow: auto; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 13px; line-height: 1.6; }
+
+        .prop-node { }
+        .prop-row { display: flex; align-items: baseline; padding: 2px 12px; cursor: default; transition: background 0.1s; min-height: 26px; border-left: 3px solid transparent; }
+        .prop-row:hover { background: #e0f2f1; }
+        .prop-row.is-branch { cursor: pointer; }
+        .prop-row.is-leaf { cursor: pointer; }
+
+        /* Depth-based left border colors */
+        .prop-row.depth-0 { border-left-color: #00695c; }
+        .prop-row.depth-1 { border-left-color: #00897b; }
+        .prop-row.depth-2 { border-left-color: #26a69a; }
+        .prop-row.depth-3 { border-left-color: #4db6ac; }
+        .prop-row.depth-4 { border-left-color: #80cbc4; }
+        .prop-row.depth-5 { border-left-color: #b2dfdb; }
+        .prop-row.depth-6 { border-left-color: #e0f2f1; }
+
+        .prop-row .indent { flex-shrink: 0; }
+        .prop-row .toggle { width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; color: #888; flex-shrink: 0; cursor: pointer; user-select: none; transition: transform 0.15s; }
+        .prop-row .toggle.open { transform: rotate(90deg); }
+        .prop-row .toggle.blank { visibility: hidden; }
+        .prop-row .p-key { color: #881280; font-weight: 600; white-space: nowrap; }
+        .prop-row .p-colon { color: #999; margin: 0 4px; }
+        .prop-row .p-brace-open { color: #555; font-weight: 600; }
+        .prop-row .p-brace-close { color: #555; font-weight: 600; }
+        .prop-row .p-count { color: #999; font-size: 11px; margin-left: 6px; font-weight: 400; }
+        .prop-row .p-cn { color: #00695c; font-size: 11px; margin-left: 8px; font-weight: 400; font-style: italic; }
+        .prop-row .p-enum { color: #e65100; font-size: 11px; margin-left: 6px; font-weight: 500; background: #fff3e0; padding: 0 4px; border-radius: 3px; }
+
+        /* Leaf values */
+        .prop-row .p-val-str { color: #c62828; }
+        .prop-row .p-val-num { color: #1565c0; font-weight: 500; }
+        .prop-row .p-val-bool { color: #2e7d32; font-weight: 600; }
+        .prop-row .p-val-null { color: #999; font-style: italic; }
+
+        /* Copy hint on hover */
+        .prop-row.is-leaf:hover .p-copy-hint { opacity: 1; }
+        .prop-row .p-copy-hint { opacity: 0; font-size: 10px; color: #00695c; margin-left: 8px; font-weight: 500; transition: opacity 0.15s; }
+
+        /* Search highlight */
+        .prop-row.search-match { background: #fff9c4 !important; border-left-color: #f9a825 !important; }
+        .prop-row.search-dim { opacity: 0.25; }
+
+        /* Children container */
+        .prop-children { display: none; }
+        .prop-children.open { display: block; }
+
+        /* Close brace row */
+        .prop-close-row { padding: 2px 12px; min-height: 20px; }
+        .prop-close-row .p-brace-close { color: #555; font-weight: 600; }
+
+        /* ── Toast notification ── */
+        .copy-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: #333; color: white; padding: 10px 24px; border-radius: 8px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.3s; z-index: 9999; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .raw-toggle-bar { background: white; border-radius: 8px; padding: 14px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-top: 12px; display: flex; gap: 10px; align-items: center; }
+        .raw-toggle { padding: 6px 14px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 12px; color: #555; transition: all 0.2s; }
+        .raw-toggle:hover { background: #e8e8e8; }
+        .raw-toggle.copy-btn { background: #00695c; color: white; border-color: #00695c; }
+        .raw-toggle.copy-btn:hover { background: #004d40; }
+        .raw-data { display: none; margin-top: 10px; max-height: 400px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 6px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+        .raw-data.active { display: block; }
+
+        .error-box { background: #ffebee; border: 1px solid #ef9a9a; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; color: #c62828; font-size: 14px; }
+        .warn-box { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; color: #e65100; font-size: 13px; }
+
+        .history-bar { background: white; border-radius: 8px; padding: 12px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 13px; }
+        .history-bar.active { display: flex; }
+        .history-bar .history-label { color: #999; font-weight: 600; white-space: nowrap; }
+        .history-bar .history-text { color: #333; cursor: pointer; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; }
+        .history-bar .history-text:hover { color: #00695c; }
+        .history-bar .history-time { color: #999; font-size: 11px; white-space: nowrap; }
+        .history-bar .history-restore { padding: 4px 12px; background: #00695c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+        .history-bar .history-restore:hover { background: #004d40; }
+
+        .empty-result { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>快照查询</h1>
+            <p>粘贴快照 Tag，查看快照生成时间与详细信息（属性结构视图）</p>
+        </div>
+        <div id="nav-placeholder"></div>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <div class="tag-site-row">
+                <div class="tag-field">
+                    <label for="tagInput">快照 Tag</label>
+                    <input type="text" id="tagInput" placeholder="粘贴快照 Tag...">
+                </div>
+                <div class="site-field">
+                    <div class="input-group">
+                        <label>渠道 (site)</label>
+                        <select id="siteSelect">
+                            <option value="wechatcore" selected>wechatcore (微信)</option>
+                            <option value="app">app (APP/其他渠道)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">查询</button>
+                <button class="btn btn-secondary" onclick="clearAll()">清空</button>
+                <div class="loading" id="loading"><div class="spinner"></div><span id="loadingText">正在查询快照...</span></div>
+            </div>
+        </div>
+
+        <div class="history-bar" id="historyBar">
+            <span class="history-label">上次查询</span>
+            <span class="history-text" id="historyText" onclick="restoreHistory()"></span>
+            <span class="history-time" id="historyTime"></span>
+            <button class="history-restore" onclick="restoreHistory()">恢复</button>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="query-header" id="queryHeader" onclick="toggleQueryResults()">
+                <span class="header-title" id="headerTitle">查询结果</span>
+                <span class="header-arrow">▼</span>
+            </div>
+            <div class="query-body" id="queryBody">
+                <div id="genTimeArea"></div>
+                <div id="errorArea"></div>
+                <div id="treeArea"></div>
+                <div class="raw-toggle-bar" id="rawBar" style="display:none;">
+                    <button class="raw-toggle" onclick="toggleRaw()">查看原始数据</button>
+                    <button class="raw-toggle copy-btn" onclick="copyRaw()">复制原始数据</button>
+                </div>
+                <div class="raw-data" id="rawData"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast for copy feedback -->
+    <div class="copy-toast" id="copyToast"></div>
+
+    <script src="/navbar.js"></script>
+    <script>
+        var _rawDetail = null;
+        var _genTimeData = null;
+        var _currentTag = '';
+        var _currentSite = 'wechatcore';
+        var _treeExpanded = false; // track global toggle state
+
+        // ── Key Chinese labels ──
+        var KEY_LABELS = {
+            'TripType': '行程类型', 'SubTripType': '行程子类型',
+            'batchId': '资源标识', 'batchCount': '组合资源个数',
+            'channel': '渠道', 'source': '场景',
+            'flight': '航班+舱位信息', 'train': '火车信息',
+            'cityTraffics': '市内交通', 'code': '返回码',
+            'Code': '返回码', 'Channel': '渠道', 'Source': '场景',
+            'BatchId': '资源标识', 'BatchCount': '组合资源个数'
+        };
+
+        var TRIP_TYPE_LABELS = { 0:'未知', 1:'单程', 2:'往返', 3:'联程', 4:'多程' };
+        var SUB_TRIP_TYPE_LABELS = { 0:'单程', 1:'假往返', 2:'假联程', 3:'真往返', 4:'真联程', 5:'往返空空', 6:'空铁', 7:'多程-单程', 8:'多程-真联程', 9:'多程-真缺口程' };
+        var SOURCE_LABELS = { 0:'单程book1.5', 1:'假联程', 101:'真联程官网', 102:'真联程政策', 5:'假联程book1.5', 11:'真往返', 12:'假往返', 115:'空铁1.5' };
+
+        function getEnumLabel(key, value) {
+            if (key === 'TripType' && TRIP_TYPE_LABELS.hasOwnProperty(value)) return TRIP_TYPE_LABELS[value];
+            if (key === 'SubTripType' && SUB_TRIP_TYPE_LABELS.hasOwnProperty(value)) return SUB_TRIP_TYPE_LABELS[value];
+            if ((key === 'source' || key === 'Source') && SOURCE_LABELS.hasOwnProperty(value)) return SOURCE_LABELS[value];
+            return null;
+        }
+
+        function getCnLabel(key) { return KEY_LABELS[key] || ''; }
+
+        // ═══════════════════════════════════════
+        //  SEARCH
+        // ═══════════════════════════════════════
+
+        function doSearch() {
+            var tagInput = document.getElementById('tagInput');
+            var tag = tagInput.value.trim();
+            if (!tag) { alert('请输入快照 Tag'); return; }
+
+            _currentTag = tag;
+            _currentSite = document.getElementById('siteSelect').value;
+            saveHistory(tag, _currentSite);
+
+            var btn = document.getElementById('searchBtn');
+            var loading = document.getElementById('loading');
+            var loadingText = document.getElementById('loadingText');
+            btn.disabled = true;
+            loading.classList.add('active');
+
+            document.getElementById('resultsSection').classList.add('active');
+            document.getElementById('queryHeader').classList.remove('collapsed');
+            document.getElementById('queryBody').classList.remove('collapsed');
+            document.getElementById('headerTitle').textContent = '查询结果';
+            document.getElementById('genTimeArea').innerHTML = '';
+            document.getElementById('errorArea').innerHTML = '';
+            document.getElementById('treeArea').innerHTML = '';
+            document.getElementById('rawBar').style.display = 'none';
+            document.getElementById('rawData').classList.remove('active');
+            document.getElementById('rawData').textContent = '';
+            _rawDetail = null;
+            _genTimeData = null;
+
+            // Step 1: fetch generation time
+            loadingText.textContent = '正在获取快照生成时间...';
+            fetch('/api/snapshot/generateTime?' + envQs(), {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tag: tag, site: _currentSite })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(genData) {
+                _genTimeData = genData;
+                renderGenTime(genData);
+
+                // Step 2: fetch snapshot detail
+                loadingText.textContent = '正在获取快照详情...';
+                return fetch('/api/snapshot/detail?' + envQs(), {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tag: tag, site: _currentSite })
+                });
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(detailData) {
+                btn.disabled = false;
+                loading.classList.remove('active');
+                _rawDetail = detailData;
+                renderTree(detailData);
+                document.getElementById('rawData').textContent = JSON.stringify(detailData, null, 2);
+                document.getElementById('rawBar').style.display = 'flex';
+            })
+            .catch(function(err) {
+                btn.disabled = false;
+                loading.classList.remove('active');
+                if (!_genTimeData) {
+                    document.getElementById('errorArea').innerHTML = '<div class="error-box">请求失败: ' + escHtml(err.message) + '</div>';
+                } else {
+                    document.getElementById('errorArea').innerHTML = '<div class="warn-box">生成时间已获取，但快照详情请求失败: ' + escHtml(err.message) + '</div>';
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════
+        //  GEN TIME — clean, no raw data
+        // ═══════════════════════════════════════
+
+        function renderGenTime(data) {
+            var area = document.getElementById('genTimeArea');
+            if (!data || !data.success) {
+                area.innerHTML = '<div class="warn-box">生成时间获取失败: ' + escHtml((data && data.error) || '未知错误') + '</div>';
+                return;
+            }
+            var timeStr = '';
+            var dd = data.data || data;
+            if (dd.GenerateTime) timeStr = dd.GenerateTime;
+            else if (dd.generateTime) timeStr = dd.generateTime;
+            else if (dd.time) timeStr = dd.time;
+            else if (dd.genTime) timeStr = dd.genTime;
+            else if (dd.timestamp) {
+                var d = new Date(typeof dd.timestamp === 'number' ? dd.timestamp * (dd.timestamp < 1e12 ? 1000 : 1) : dd.timestamp);
+                timeStr = d.toLocaleString();
+            } else if (typeof dd === 'string') {
+                timeStr = dd;
+            }
+
+            var html = '<div class="gen-time-card">';
+            html += '<div class="gt-icon">🕐</div>';
+            html += '<div class="gt-body">';
+            html += '<div class="gt-label">快照生成时间</div>';
+            if (timeStr) {
+                html += '<div class="gt-value">' + escHtml(timeStr) + '</div>';
+            } else {
+                html += '<div class="gt-value" style="color:#999;font-size:14px;">未找到时间字段</div>';
+            }
+            html += '</div></div>';
+            area.innerHTML = html;
+        }
+
+        // ═══════════════════════════════════════
+        //  PROPERTY-STRUCTURE TREE VIEW
+        // ═══════════════════════════════════════
+
+        function renderTree(data) {
+            var area = document.getElementById('treeArea');
+            if (!data) { area.innerHTML = '<div class="empty-result">无数据</div>'; return; }
+
+            var rootData = data.data || data;
+            _treeExpanded = false;
+
+            var html = '';
+            html += '<div class="tree-toolbar">';
+            html += '<button class="toolbar-btn" id="toggleAllBtn" onclick="toggleAll()"><span id="toggleAllIcon">▶</span> 展开全部</button>';
+            html += '<div class="search-box">';
+            html += '<input type="text" id="treeSearch" placeholder="搜索属性名 / 值..." oninput="onTreeSearch()">';
+            html += '<button class="search-clear" id="treeSearchClear" onclick="clearTreeSearch()">✕</button>';
+            html += '</div>';
+            html += '<span style="font-size:12px;color:#999;" id="searchCount"></span>';
+            html += '</div>';
+            html += '<div class="tree-view" id="treeRoot"></div>';
+            area.innerHTML = html;
+
+            var treeEl = document.getElementById('treeRoot');
+            treeEl.innerHTML = buildPropNode(rootData, '', 0);
+
+            // Event delegation
+            treeEl.addEventListener('click', function(e) {
+                var row = e.target.closest('.prop-row');
+                if (!row) return;
+                var node = row.closest('.prop-node');
+                if (!node) return;
+
+                // If branch node — toggle expand/collapse
+                if (row.classList.contains('is-branch')) {
+                    var children = node.querySelector(':scope > .prop-children');
+                    var toggle = row.querySelector('.toggle');
+                    var closeRow = node.querySelector(':scope > .prop-close-row');
+                    if (!children) return;
+                    if (children.classList.contains('open')) {
+                        children.classList.remove('open');
+                        if (toggle) { toggle.classList.remove('open'); }
+                        if (closeRow) closeRow.style.display = 'none';
+                    } else {
+                        children.classList.add('open');
+                        if (toggle) { toggle.classList.add('open'); }
+                        if (closeRow) closeRow.style.display = '';
+                    }
+                }
+
+                // If leaf node — copy key + value
+                if (row.classList.contains('is-leaf')) {
+                    var key = row.getAttribute('data-key') || '';
+                    var val = row.getAttribute('data-val') || '';
+                    var copyText = key + ': ' + val;
+                    copyToClipboard(copyText);
+                }
+            });
+        }
+
+        function buildPropNode(data, keyPath, depth) {
+            if (data === null || data === undefined) {
+                return buildPropLeaf(keyPath, 'null', depth, 'null');
+            }
+            if (Array.isArray(data)) {
+                return buildPropArray(data, keyPath, depth);
+            }
+            if (typeof data === 'object') {
+                return buildPropObject(data, keyPath, depth);
+            }
+            // primitive
+            return buildPropLeaf(keyPath, data, depth, typeof data);
+        }
+
+        function buildPropObject(obj, keyPath, depth) {
+            var keys = Object.keys(obj);
+            if (keys.length === 0) {
+                return buildPropLeaf(keyPath, '{}', depth, 'empty');
+            }
+            var depthClass = 'depth-' + Math.min(depth, 6);
+            var indent = depth * 20;
+            var displayName = keyPath ? keyPath.split('.').pop() : '';
+
+            var html = '<div class="prop-node">';
+
+            // Header row: key { count
+            html += '<div class="prop-row is-branch ' + depthClass + '" data-key="' + escAttr(keyPath) + '" data-val="">';
+            html += '<span class="indent" style="width:' + indent + 'px;"></span>';
+            html += '<span class="toggle">▶</span>';
+            if (displayName) {
+                html += '<span class="p-key">' + escHtml(displayName) + '</span><span class="p-colon">:</span>';
+            }
+            html += '<span class="p-brace-open">{</span><span class="p-count">' + keys.length + ' 项</span>';
+            var cnLabel = getCnLabel(displayName);
+            if (cnLabel) html += '<span class="p-cn">' + escHtml(cnLabel) + '</span>';
+            html += '</div>';
+
+            // Children
+            html += '<div class="prop-children">';
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                var childPath = keyPath ? (keyPath + '.' + key) : key;
+                var val = obj[key];
+                if (typeof val === 'object' && val !== null) {
+                    html += buildPropNode(val, childPath, depth + 1);
+                } else {
+                    html += buildPropLeaf(childPath, val, depth + 1, typeof val);
+                }
+            }
+            html += '</div>';
+
+            // Close brace
+            html += '<div class="prop-close-row" style="display:none;">';
+            html += '<span class="indent" style="width:' + indent + 'px;"></span>';
+            html += '<span class="toggle blank">▶</span>';
+            html += '<span class="p-brace-close">}</span>';
+            html += '</div>';
+
+            html += '</div>';
+            return html;
+        }
+
+        function buildPropArray(arr, keyPath, depth) {
+            if (arr.length === 0) {
+                return buildPropLeaf(keyPath, '[]', depth, 'empty');
+            }
+            var depthClass = 'depth-' + Math.min(depth, 6);
+            var indent = depth * 20;
+            var displayName = keyPath ? keyPath.split('.').pop() : '';
+
+            var html = '<div class="prop-node">';
+
+            html += '<div class="prop-row is-branch ' + depthClass + '" data-key="' + escAttr(keyPath) + '" data-val="">';
+            html += '<span class="indent" style="width:' + indent + 'px;"></span>';
+            html += '<span class="toggle">▶</span>';
+            if (displayName) {
+                html += '<span class="p-key">' + escHtml(displayName) + '</span><span class="p-colon">:</span>';
+            }
+            html += '<span class="p-brace-open">[</span><span class="p-count">' + arr.length + ' 项</span>';
+            var cnLabel = getCnLabel(displayName);
+            if (cnLabel) html += '<span class="p-cn">' + escHtml(cnLabel) + '</span>';
+            html += '</div>';
+
+            html += '<div class="prop-children">';
+            for (var i = 0; i < arr.length; i++) {
+                var itemPath = keyPath + '[' + i + ']';
+                var item = arr[i];
+                if (typeof item === 'object' && item !== null) {
+                    html += buildPropNode(item, itemPath, depth + 1);
+                } else {
+                    html += buildPropLeaf(itemPath, item, depth + 1, typeof item);
+                }
+            }
+            html += '</div>';
+
+            html += '<div class="prop-close-row" style="display:none;">';
+            html += '<span class="indent" style="width:' + indent + 'px;"></span>';
+            html += '<span class="toggle blank">▶</span>';
+            html += '<span class="p-brace-close">]</span>';
+            html += '</div>';
+
+            html += '</div>';
+            return html;
+        }
+
+        function buildPropLeaf(keyPath, value, depth, type) {
+            var depthClass = 'depth-' + Math.min(depth, 6);
+            var indent = depth * 20;
+            var displayName = keyPath ? keyPath.split('.').pop() : '';
+            // For array index like [0], show as-is
+            if (keyPath && /\[\d+\]$/.test(displayName)) {
+                // keep displayName as-is (e.g. cityTraffics[0])
+            }
+
+            var valHtml = '';
+            var valStr = '';
+            if (value === null || value === undefined) {
+                valHtml = '<span class="p-val-null">null</span>';
+                valStr = 'null';
+            } else if (type === 'boolean') {
+                valHtml = '<span class="p-val-bool">' + value + '</span>';
+                valStr = String(value);
+            } else if (type === 'number') {
+                valHtml = '<span class="p-val-num">' + value + '</span>';
+                valStr = String(value);
+            } else if (type === 'string') {
+                var display = String(value).length > 200 ? escHtml(String(value).substring(0, 200)) + '...' : escHtml(String(value));
+                valHtml = '<span class="p-val-str">"' + display + '"</span>';
+                valStr = String(value);
+            } else {
+                valHtml = '<span>' + escHtml(String(value)) + '</span>';
+                valStr = String(value);
+            }
+
+            // Check for enum label
+            var enumLabel = '';
+            if (type === 'number') {
+                enumLabel = getEnumLabel(displayName, value) || '';
+            }
+            var cnLabel = getCnLabel(displayName);
+
+            var html = '<div class="prop-node">';
+            html += '<div class="prop-row is-leaf ' + depthClass + '" data-key="' + escAttr(keyPath) + '" data-val="' + escAttr(valStr) + '">';
+            html += '<span class="indent" style="width:' + indent + 'px;"></span>';
+            html += '<span class="toggle blank">▶</span>';
+            html += '<span class="p-key">' + escHtml(displayName) + '</span><span class="p-colon">:</span>';
+            html += valHtml;
+            if (cnLabel) html += '<span class="p-cn">' + escHtml(cnLabel) + '</span>';
+            if (enumLabel) html += '<span class="p-enum">' + escHtml(enumLabel) + '</span>';
+            html += '<span class="p-copy-hint">📋 点击复制</span>';
+            html += '</div></div>';
+            return html;
+        }
+
+        // ═══════════════════════════════════════
+        //  TOGGLE ALL (single button)
+        // ═══════════════════════════════════════
+
+        function toggleAll() {
+            var tree = document.getElementById('treeRoot');
+            if (!tree) return;
+            _treeExpanded = !_treeExpanded;
+            var allChildren = tree.querySelectorAll('.prop-children');
+            var allToggles = tree.querySelectorAll('.prop-row.is-branch .toggle');
+            var allCloseRows = tree.querySelectorAll('.prop-close-row');
+
+            for (var i = 0; i < allChildren.length; i++) {
+                if (_treeExpanded) allChildren[i].classList.add('open');
+                else allChildren[i].classList.remove('open');
+            }
+            for (var j = 0; j < allToggles.length; j++) {
+                if (_treeExpanded) allToggles[j].classList.add('open');
+                else allToggles[j].classList.remove('open');
+            }
+            for (var k = 0; k < allCloseRows.length; k++) {
+                allCloseRows[k].style.display = _treeExpanded ? '' : 'none';
+            }
+
+            var btn = document.getElementById('toggleAllBtn');
+            var icon = document.getElementById('toggleAllIcon');
+            if (_treeExpanded) {
+                btn.classList.add('is-expanded');
+                icon.textContent = '▼';
+                btn.innerHTML = '<span id="toggleAllIcon">▼</span> 折叠全部';
+            } else {
+                btn.classList.remove('is-expanded');
+                icon.textContent = '▶';
+                btn.innerHTML = '<span id="toggleAllIcon">▶</span> 展开全部';
+            }
+        }
+
+        // ═══════════════════════════════════════
+        //  TREE SEARCH + SCROLL
+        // ═══════════════════════════════════════
+
+        function onTreeSearch() {
+            var input = document.getElementById('treeSearch');
+            var clearBtn = document.getElementById('treeSearchClear');
+            var searchCount = document.getElementById('searchCount');
+            var query = input.value.trim().toLowerCase();
+
+            if (query) { clearBtn.classList.add('visible'); }
+            else { clearBtn.classList.remove('visible'); }
+
+            var tree = document.getElementById('treeRoot');
+            if (!tree) return;
+
+            var allRows = tree.querySelectorAll('.prop-row');
+            var matchCount = 0;
+
+            // Clear previous
+            for (var i = 0; i < allRows.length; i++) {
+                allRows[i].classList.remove('search-match', 'search-dim');
+            }
+
+            if (!query) { searchCount.textContent = ''; return; }
+
+            var matchingRows = [];
+            for (var j = 0; j < allRows.length; j++) {
+                var row = allRows[j];
+                var key = (row.getAttribute('data-key') || '').toLowerCase();
+                var val = (row.getAttribute('data-val') || '').toLowerCase();
+                if (key.indexOf(query) !== -1 || val.indexOf(query) !== -1) {
+                    matchingRows.push(row);
+                    row.classList.add('search-match');
+                    matchCount++;
+                } else {
+                    row.classList.add('search-dim');
+                }
+            }
+
+            searchCount.textContent = matchCount > 0 ? '匹配 ' + matchCount + ' 项' : '无匹配';
+
+            // Auto-expand parents of matching rows
+            if (matchCount > 0) {
+                expandMatchingParents(tree, matchingRows);
+                // Scroll to first match
+                var firstMatch = matchingRows[0];
+                if (firstMatch) {
+                    firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        function expandMatchingParents(tree, matchingRows) {
+            for (var i = 0; i < matchingRows.length; i++) {
+                var row = matchingRows[i];
+                var parent = row.closest('.prop-children');
+                while (parent) {
+                    if (!parent.classList.contains('open')) {
+                        parent.classList.add('open');
+                        var node = parent.closest('.prop-node');
+                        if (node) {
+                            var toggle = node.querySelector(':scope > .prop-row .toggle');
+                            if (toggle) toggle.classList.add('open');
+                            var closeRow = node.querySelector(':scope > .prop-close-row');
+                            if (closeRow) closeRow.style.display = '';
+                        }
+                    }
+                    var parentNode = parent.closest('.prop-node');
+                    if (parentNode) {
+                        parent = parentNode.parentElement;
+                        if (parent && !parent.classList.contains('prop-children')) parent = null;
+                    } else {
+                        parent = null;
+                    }
+                }
+            }
+        }
+
+        function clearTreeSearch() {
+            var input = document.getElementById('treeSearch');
+            var clearBtn = document.getElementById('treeSearchClear');
+            var searchCount = document.getElementById('searchCount');
+            input.value = '';
+            clearBtn.classList.remove('visible');
+            searchCount.textContent = '';
+            var tree = document.getElementById('treeRoot');
+            if (!tree) return;
+            var allRows = tree.querySelectorAll('.prop-row');
+            for (var i = 0; i < allRows.length; i++) {
+                allRows[i].classList.remove('search-match', 'search-dim');
+            }
+        }
+
+        // ═══════════════════════════════════════
+        //  TOAST
+        // ═══════════════════════════════════════
+
+        var _toastTimer = null;
+        function showToast(msg) {
+            var toast = document.getElementById('copyToast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            if (_toastTimer) clearTimeout(_toastTimer);
+            _toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
+        }
+
+        // ═══════════════════════════════════════
+        //  CLIPBOARD (with fallback for non-HTTPS)
+        // ═══════════════════════════════════════
+
+        function copyToClipboard(text, successMsg) {
+            var msg = successMsg || ('已复制: ' + text.substring(0, 80) + (text.length > 80 ? '...' : ''));
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(function() { showToast(msg); }).catch(function() { fallbackCopy(text, msg); });
+            } else {
+                fallbackCopy(text, msg);
+            }
+        }
+        function fallbackCopy(text, msg) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); showToast(msg); }
+            catch(e) { showToast('复制失败，请手动复制'); }
+            document.body.removeChild(ta);
+        }
+
+        // ═══════════════════════════════════════
+        //  RAW DATA
+        // ═══════════════════════════════════════
+
+        function toggleRaw() { document.getElementById('rawData').classList.toggle('active'); }
+        function copyRaw() {
+            var el = document.getElementById('rawData');
+            if (!el || !el.textContent.trim()) return;
+            copyToClipboard(el.textContent, '已复制原始数据');
+        }
+        function toggleQueryResults() {
+            document.getElementById('queryHeader').classList.toggle('collapsed');
+            document.getElementById('queryBody').classList.toggle('collapsed');
+        }
+
+        // ═══════════════════════════════════════
+        //  HELPERS
+        // ═══════════════════════════════════════
+
+        function escHtml(s) { if (typeof s !== 'string') s = String(s); return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        function escAttr(s) { if (typeof s !== 'string') s = String(s); return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        function clearAll() {
+            document.getElementById('tagInput').value = '';
+            document.getElementById('siteSelect').value = 'wechatcore';
+            document.getElementById('resultsSection').classList.remove('active');
+            document.getElementById('genTimeArea').innerHTML = '';
+            document.getElementById('errorArea').innerHTML = '';
+            document.getElementById('treeArea').innerHTML = '';
+            document.getElementById('rawBar').style.display = 'none';
+            document.getElementById('rawData').classList.remove('active');
+            document.getElementById('rawData').textContent = '';
+            _rawDetail = null; _genTimeData = null; _currentTag = '';
+        }
+
+        // ═══════════════════════════════════════
+        //  HISTORY
+        // ═══════════════════════════════════════
+
+        function saveHistory(tag, site) {
+            if (!tag) return;
+            try {
+                var entry = { tag: tag, site: site || '', time: new Date().toLocaleString() };
+                localStorage.setItem('doctor_history_snapshot', JSON.stringify(entry));
+                loadHistory();
+            } catch(e) {}
+        }
+        function loadHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_snapshot');
+                if (!stored) { document.getElementById('historyBar').classList.remove('active'); return; }
+                var entry = JSON.parse(stored);
+                var bar = document.getElementById('historyBar');
+                bar.classList.add('active');
+                document.getElementById('historyText').textContent = entry.tag.substring(0, 80);
+                document.getElementById('historyText').title = entry.tag;
+                document.getElementById('historyTime').textContent = entry.time;
+            } catch(e) { document.getElementById('historyBar').classList.remove('active'); }
+        }
+        function restoreHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_snapshot');
+                if (!stored) return;
+                var entry = JSON.parse(stored);
+                document.getElementById('tagInput').value = entry.tag;
+                if (entry.site) document.getElementById('siteSelect').value = entry.site;
+            } catch(e) {}
+        }
+
+        // ═══════════════════════════════════════
+        //  INIT
+        // ═══════════════════════════════════════
+
+        window.addEventListener('load', function() { loadHistory(); });
+        document.addEventListener('DOMContentLoaded', function() {
+            var tagInput = document.getElementById('tagInput');
+            if (tagInput) {
+                tagInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
