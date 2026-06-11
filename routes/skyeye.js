@@ -81,13 +81,15 @@ function formatSkyeyeError(prefix, err) {
 
     app.post('/api/skyeye/log', async (req, res) => {
         try {
-            const { traceId } = req.body;
+            const { traceId, beginTime: customBegin, endTime: customEnd } = req.body;
             if (!traceId) {
                 return res.status(400).json({ success: false, error: 'traceId is required' });
             }
 
             const now = new Date();
             const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+            const beginTime = customBegin || formatTime(twoHoursAgo);
+            const endTime = customEnd || formatTime(now);
 
             const skyeyeBody = {
                 appIds: [SKYEYE_APP_ID],
@@ -95,8 +97,8 @@ function formatSkyeyeError(prefix, err) {
                 category: 'TransitLineV2Adapter',
                 subCategory: 'FindApiAsync',
                 contextId: traceId,
-                beginTime: formatTime(twoHoursAgo),
-                endTime: formatTime(now),
+                beginTime: beginTime,
+                endTime: endTime,
                 tokens: [SKYEYE_TOKEN],
                 pageSize: 500
             };
