@@ -1,0 +1,22 @@
+public/b15-standard.html
+  s_964551c8d938ee::t_325f9f80068d48 1185-1187
+  s_964551c8d938ee::t_bf3df0eb17630e 254
+  s_964551c8d938ee::t_770d0bfc5f051b 81
+  s_964551c8d938ee::t_971230f4da8e44 86-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "6281361206ab7a0006fc5686a2bbda96c7c1fb42",
+  "prompts": {},
+  "sessions": {
+    "s_964551c8d938ee": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_14a35297dffeIxswj9scTlXYp1",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
