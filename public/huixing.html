@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>慧行方案查询</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #0d904f, #065f37); color: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .env-select { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 12px; outline: none; }
+        .env-select:hover { background: rgba(255,255,255,0.25); }
+        .env-select option { background: #fff; color: #333; }
+        .env-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 8px; vertical-align: middle; }
+        .env-badge.prod { background: #e8f5e9; color: #2e7d32; }
+        .env-badge.qa { background: #fff3e0; color: #e65100; }
+        .env-badge.uat { background: #e3f2fd; color: #1565c0; }
+        .env-badge.t { background: #fce4ec; color: #c62828; }
+        .env-badge.t2 { background: #f3e5f5; color: #6a1b9a; }
+        .env-badge.lane { background: #e0f2f1; color: #00695c; }
+        .nav-bar { display: flex; gap: 2px; align-items: stretch; }
+        .nav-group { position: relative; }
+        .nav-group-btn { color: rgba(255,255,255,0.75); background: none; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .nav-group-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-group.has-active .nav-group-btn { color: #ffeb3b; }
+        .nav-dropdown { display: none; position: absolute; top: 100%; right: 0; background: #065f37; border-radius: 6px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; padding: 4px 0; margin-top: 2px; }
+        .nav-group:hover .nav-dropdown { display: block; }
+        .nav-dropdown a { display: block; color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+        .nav-dropdown a:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-dropdown a.active { color: #ffeb3b; background: rgba(255,255,255,0.1); }
+        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
+        .input-section { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .input-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #0d904f; }
+        textarea { width: 100%; height: 200px; border: 1px solid #ddd; border-radius: 6px; padding: 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 12px; resize: vertical; outline: none; transition: border-color 0.2s; }
+        textarea:focus { border-color: #0d904f; box-shadow: 0 0 0 2px rgba(13,144,79,0.15); }
+        .btn-row { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+        .btn { padding: 10px 28px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #0d904f; color: white; }
+        .btn-primary:hover { background: #0a7a43; }
+        .btn-primary:disabled { background: #a0d4b8; cursor: not-allowed; }
+        .btn-secondary { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .loading { display: none; align-items: center; gap: 8px; color: #0d904f; font-size: 13px; }
+        .loading.active { display: flex; }
+        .spinner { width: 18px; height: 18px; border: 2px solid #e0e0e0; border-top-color: #0d904f; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .results-section { display: none; }
+        .results-section.active { display: block; }
+        .query-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: white; border-radius: 8px; padding: 14px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 12px; user-select: none; }
+        .query-header:hover { background: #f0faf5; }
+        .query-header .header-title { font-size: 15px; font-weight: 600; color: #0d904f; }
+        .query-header .header-arrow { font-size: 12px; color: #999; transition: transform 0.2s; }
+        .query-header.collapsed .header-arrow { transform: rotate(-90deg); }
+        .query-body.collapsed { display: none; }
+        .comparison-summary { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .comparison-summary h2 { font-size: 16px; margin-bottom: 12px; color: #0d904f; }
+        .summary-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+        .stat-item { background: #f8f9fa; border-radius: 6px; padding: 12px 20px; text-align: center; }
+        .stat-value { font-size: 28px; font-weight: 700; color: #0d904f; }
+        .stat-label { font-size: 12px; color: #666; margin-top: 2px; }
+        .tab-bar { display: flex; gap: 0; margin-bottom: 20px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .tab-btn { flex: 1; padding: 14px 20px; border: none; background: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: #666; border-bottom: 3px solid transparent; }
+        .tab-btn:hover { background: #f8f9fa; }
+        .tab-btn.active { color: #0d904f; border-bottom-color: #0d904f; background: #f0faf5; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .scheme-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 14px; margin-bottom: 12px; transition: border-color 0.2s; }
+        .scheme-card:hover { border-color: #0d904f; }
+        .scheme-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .scheme-type { font-weight: 600; font-size: 14px; color: #333; }
+        .segment-info { font-size: 12px; color: #555; margin-top: 6px; line-height: 1.6; }
+        .segment-info .flight-no { font-weight: 600; color: #333; }
+        .segment-info .port { color: #0d904f; font-weight: 500; }
+        .segment-info .time { color: #666; }
+        .segment-info .arrow { margin: 0 4px; color: #999; }
+        .empty-result { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+        .tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; }
+        .rs-section { margin-top: 6px; font-size: 12px; color: #555; }
+        .rs-tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin: 2px 4px 2px 0; background: #e8f0fe; color: #0d904f; }
+        .rs-diff { font-size: 11px; color: #e65100; margin-top: 2px; padding-left: 12px; }
+        .scheme-key { font-size: 11px; color: #999; font-family: monospace; margin-top: 4px; }
+        .raw-toggle { margin-top: 12px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .raw-toggle:hover { background: #e8e8e8; }
+        .raw-data { display: none; margin-top: 10px; max-height: 400px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 6px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+        .raw-data.active { display: block; }
+        .filter-bar { background: white; border-radius: 8px; padding: 14px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: none; gap: 16px; align-items: center; flex-wrap: wrap; }
+        .filter-bar.active { display: flex; }
+        .filter-bar label { font-size: 13px; font-weight: 600; color: #555; white-space: nowrap; }
+        .filter-bar select { border: 1px solid #ddd; border-radius: 4px; padding: 6px 10px; font-size: 13px; outline: none; min-width: 120px; cursor: pointer; }
+        .filter-bar select:focus { border-color: #0d904f; }
+        .filter-count { font-size: 12px; color: #999; }
+        .tag-deduct { background: #fff3e0; color: #e65100; display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin-right: 4px; font-weight: 600; }
+        .deduct-detail { font-size: 12px; color: #e65100; margin-top: 2px; }
+        .deduct-remark { font-size: 11px; color: #999; }
+        .skyeye-resp-section { border: 1px solid #b2dfdb; border-radius: 6px; padding: 14px; margin-bottom: 12px; background: #f0faf5; }
+        .skyeye-resp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .skyeye-resp-header h4 { font-size: 14px; color: #0d904f; margin: 0; }
+        .skyeye-req-card { border: 1px solid #bbdefb; border-radius: 6px; padding: 12px; margin-bottom: 12px; background: #f5f9ff; }
+        .skyeye-req-card h4 { font-size: 13px; color: #1565c0; margin: 0 0 6px 0; }
+        .skyeye-req-url { font-size: 12px; color: #0d904f; font-weight: 600; word-break: break-all; margin-bottom: 4px; }
+        .skyeye-req-api { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; margin-left: 6px; }
+        .skyeye-req-api.hx { background: #e8f5e9; color: #2e7d32; }
+        .skyeye-req-api.v7 { background: #e3f2fd; color: #1565c0; }
+        .skyeye-fill-btn { padding: 4px 12px; background: #ff9800; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: 600; cursor: pointer; margin-top: 6px; transition: background 0.2s; }
+        .skyeye-fill-btn:hover { background: #f57c00; }
+        .compare-section { border: 2px solid #0d904f; border-radius: 8px; padding: 16px; margin-bottom: 16px; background: #fff; }
+        .compare-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .compare-header h3 { font-size: 15px; color: #0d904f; margin: 0; }
+        .compare-summary { margin-bottom: 14px; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; }
+        .compare-summary table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .compare-summary th { background: #f5f5f5; padding: 8px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #e0e0e0; }
+        .compare-summary td { padding: 6px 12px; border-bottom: 1px solid #f0f0f0; }
+        .compare-summary tr:last-child td { border-bottom: none; }
+        .compare-summary .total-row td { font-weight: 700; background: #fafafa; border-top: 2px solid #e0e0e0; }
+        .compare-summary .num { font-variant-numeric: tabular-nums; }
+        .compare-legend { display: flex; gap: 20px; margin-bottom: 12px; font-size: 12px; flex-wrap: wrap; padding: 8px 12px; background: #fafafa; border-radius: 6px; border: 1px solid #eee; }
+        .compare-legend .legend-item { display: flex; align-items: center; gap: 6px; }
+        .compare-legend .legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+        .compare-legend .legend-dot.match { background: #4caf50; }
+        .compare-legend .legend-dot.log-only { background: #ff9800; }
+        .compare-legend .legend-dot.new { background: #2196f3; }
+        .compare-cat-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f0faf5; border: 1px solid #b2dfdb; border-radius: 6px; cursor: pointer; margin-bottom: 8px; user-select: none; }
+        .compare-cat-header:hover { background: #e0f5ec; }
+        .compare-cat-header .cat-title { font-size: 14px; font-weight: 700; color: #0d904f; display: flex; align-items: center; gap: 8px; }
+        .compare-cat-header .cat-arrow { font-size: 12px; color: #999; transition: transform 0.2s; }
+        .compare-cat-header.collapsed .cat-arrow { transform: rotate(-90deg); }
+        .compare-cat-body { margin-bottom: 12px; }
+        .compare-cat-body.collapsed { display: none; }
+        .scheme-card.compare-match { border-left: 4px solid #4caf50; }
+        .scheme-card.compare-log-only { border-left: 4px solid #ff9800; }
+        .scheme-card.compare-new { border-left: 4px solid #2196f3; }
+        .compare-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; margin-left: 6px; letter-spacing: 0.5px; }
+        .compare-badge.match { background: #e8f5e9; color: #2e7d32; }
+        .compare-badge.log-only { background: #fff3e0; color: #e65100; }
+        .compare-badge.new { background: #e3f2fd; color: #1565c0; }
+        .mode-tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid #e0e0e0; }
+        .mode-tab { padding: 10px 24px; border: none; background: none; font-size: 14px; font-weight: 600; cursor: pointer; color: #666; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+        .mode-tab:hover { color: #0d904f; }
+        .mode-tab.active { color: #0d904f; border-bottom-color: #0d904f; }
+        .mode-content { display: none; }
+        .mode-content.active { display: block; }
+        .skyeye-section { background: white; border-radius: 8px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .skyeye-section h3 { font-size: 14px; color: #0d904f; margin-bottom: 10px; }
+        .skyeye-row { display: flex; gap: 10px; align-items: center; }
+        .skyeye-row input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 13px; outline: none; }
+        .skyeye-row input:focus { border-color: #0d904f; }
+        .skyeye-btn { padding: 8px 20px; background: #0d904f; color: white; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .skyeye-btn:hover { background: #0a7a43; }
+        .skyeye-btn:disabled { background: #a0d4b8; cursor: not-allowed; }
+        .skyeye-result { margin-top: 12px; }
+        .skyeye-entry { border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+        .skyeye-entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .skyeye-entry-time { font-size: 12px; color: #999; }
+        .skyeye-entry-priority { font-size: 11px; padding: 2px 8px; border-radius: 3px; }
+        .skyeye-entry-priority.info { background: #e3f2fd; color: #1565c0; }
+        .skyeye-entry-priority.warn { background: #fff3e0; color: #e65100; }
+        .skyeye-entry-priority.error { background: #fce8e6; color: #c62828; }
+        .skyeye-entry-msg { font-size: 13px; color: #333; line-height: 1.6; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow: auto; }
+        .skyeye-entry-raw { display: none; margin-top: 8px; max-height: 300px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+        .skyeye-entry-raw.active { display: block; }
+        .skyeye-raw-toggle { margin-top: 4px; padding: 3px 10px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 3px; cursor: pointer; font-size: 11px; }
+        .skyeye-raw-toggle:hover { background: #e8e8e8; }
+        .skyeye-empty { text-align: center; padding: 20px; color: #999; font-size: 14px; }
+        .skyeye-count { font-size: 12px; color: #666; margin-top: 8px; }
+        .apm-fab { position: fixed; bottom: 72px; right: 24px; background: #333; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-size: 12px; cursor: pointer; z-index: 999; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: background 0.2s; }
+        .apm-fab:hover { background: #555; }
+        .apm-fab.visible { display: block; }
+        .apm-fab .label { margin-right: 6px; }
+        .apm-fab .id { font-family: monospace; font-size: 11px; color: #ffeb3b; max-width: 200px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+        .scroll-top-fab { position: fixed; bottom: 24px; right: 24px; background: #0d904f; color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; z-index: 998; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: opacity 0.2s, background 0.2s; }
+        .scroll-top-fab:hover { background: #0a7a40; }
+        .scroll-top-fab.visible { display: flex; }
+        .history-bar { background: white; border-radius: 8px; padding: 12px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 13px; }
+        .history-bar.active { display: flex; }
+        .history-bar .history-label { color: #999; font-weight: 600; white-space: nowrap; }
+        .history-bar .history-text { color: #333; cursor: pointer; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; }
+        .history-bar .history-text:hover { color: #0d904f; }
+        .history-bar .history-time { color: #999; font-size: 11px; white-space: nowrap; }
+        .history-bar .history-restore { padding: 4px 12px; background: #0d904f; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+        .history-bar .history-restore:hover { background: #0a7a43; }
+        .skyeye-module-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f0faf5; border: 1px solid #b2dfdb; border-radius: 6px; cursor: pointer; margin-bottom: 10px; user-select: none; transition: background 0.2s; }
+        .skyeye-module-header:hover { background: #e0f5ec; }
+        .skyeye-module-header .header-title { font-size: 14px; font-weight: 700; color: #0d904f; display: flex; align-items: center; gap: 8px; }
+        .skyeye-module-header .header-arrow { font-size: 12px; color: #999; transition: transform 0.2s; }
+        .skyeye-module-header.collapsed .header-arrow { transform: rotate(-90deg); }
+        .skyeye-module-body { margin-bottom: 16px; }
+        .skyeye-module-body.collapsed { display: none; }
+        .skyeye-hit-badge { display: inline-block; padding: 2px 10px; border-radius: 3px; font-size: 12px; font-weight: 600; margin-left: 6px; }
+        .skyeye-hit-badge.cache { background: #e8f5e9; color: #2e7d32; }
+        .skyeye-hit-badge.realtime { background: #e3f2fd; color: #1565c0; }
+        .skyeye-compare-btn { padding: 6px 16px; background: #1565c0; color: white; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
+        .skyeye-compare-btn:hover { background: #0d47a1; }
+        .skyeye-compare-btn:disabled { background: #90caf9; cursor: not-allowed; }
+        .skyeye-compare-section { margin-top: 12px; border: 1px solid #bbdefb; border-radius: 6px; padding: 12px; background: #f5f9ff; }
+        .skyeye-compare-section h4 { font-size: 13px; color: #1565c0; margin-bottom: 8px; }
+        .skyeye-fill-btn { padding: 4px 12px; background: #ff9800; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: 600; cursor: pointer; margin-left: 6px; transition: background 0.2s; }
+        .skyeye-fill-btn:hover { background: #f57c00; }
+        .scheme-card.match { border-color: #4caf50; border-width: 2px; }
+        .scheme-card.log-only { border-color: #ff9800; border-width: 2px; }
+        .scheme-card.new { border-color: #2196f3; border-width: 2px; }
+        .skyeye-req-summary { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px 12px; margin-bottom: 8px; font-size: 12px; color: #555; }
+        .skyeye-req-summary .req-url { color: #0d904f; font-weight: 600; word-break: break-all; }
+        .skyeye-req-summary .req-params { margin-top: 4px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>慧行方案查询</h1>
+            <p>直接输入慧行请求参数，查询并展示方案列表 — 空空 / 通程 / 空铁 / 云上公交</p>
+        </div>
+        <div id="nav-placeholder"></div>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <div class="mode-tabs">
+                <button class="mode-tab active" onclick="switchMode('api')">接口查询</button>
+                <button class="mode-tab" onclick="switchMode('paste')">粘贴解析</button>
+            </div>
+            <div class="mode-content active" id="modeApi">
+                <label>慧行请求参数 JSON</label>
+                <textarea id="requestJson" placeholder='粘贴慧行请求参数 JSON，如: {"depCityCode":"SHA","arrCityCode":"BHY","depDate":20260613,"psgType":1,"cabinClass":1,"channel":174}'></textarea>
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">查询</button>
+                    <button class="btn btn-secondary" onclick="formatJson()">美化</button>
+                    <button class="btn btn-secondary" onclick="clearAll()">清空</button>
+                    <select id="hxApiSelect" style="padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;outline:none;">
+                        <option value="hx">HX接口</option>
+                        <option value="v7">V7接口</option>
+                    </select>
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <span>正在查询慧行方案...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mode-content" id="modePaste">
+                <label>慧行接口返回值 JSON</label>
+                <textarea id="pasteJson" placeholder='粘贴慧行接口返回值 JSON（完整响应体）' style="height:260px"></textarea>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="doParse()">解析</button>
+                    <button class="btn btn-secondary" onclick="formatPasteJson()">美化</button>
+                    <button class="btn btn-secondary" onclick="clearPaste()">清空</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-bar" id="historyBar">
+            <span class="history-label">上次查询</span>
+            <span class="history-text" id="historyText" onclick="restoreHistory()"></span>
+            <span class="history-time" id="historyTime"></span>
+            <button class="history-restore" onclick="restoreHistory()">恢复</button>
+        </div>
+
+        <div id="skyeyeCompareBar" style="display:none; margin-bottom:16px;"></div>
+
+        <div class="skyeye-section">
+            <h3>天网日志查询（通过 traceId）</h3>
+            <div class="skyeye-row">
+                <input type="text" id="skyeyeTraceId" placeholder="输入 traceId，如 apm-traceid 值">
+                <button class="skyeye-btn" id="skyeyeBtn" onclick="doSkyeyeQuery()">查询日志</button>
+            </div>
+            <div class="skyeye-result" id="skyeyeResult"></div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="query-header" id="queryHeader" onclick="toggleQueryResults()">
+                <span class="header-title">查询结果</span>
+                <span class="header-arrow">▼</span>
+            </div>
+            <div class="query-body" id="queryBody">
+            <div class="comparison-summary" id="summarySection">
+                <h2>方案摘要</h2>
+                <div class="summary-stats" id="summaryStats"></div>
+            </div>
+            <div class="filter-bar" id="filterBar">
+                <label>第一程航班号</label>
+                <select id="filterSeg1" onchange="onSeg1Change();applyFilter()"><option value="">全部</option></select>
+                <label>第二程航班号</label>
+                <select id="filterSeg2" onchange="applyFilter()"><option value="">全部</option></select>
+                <span class="filter-count" id="filterCount"></span>
+            </div>
+            <div class="tab-bar" id="tabBar"></div>
+            <div id="tabContents"></div>
+            <div class="comparison-summary" style="margin-top:20px">
+                <button class="raw-toggle" onclick="toggleRaw()">查看原始数据</button>
+                <div class="raw-data" id="rawData"></div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/logic.js"></script>
+    <script src="/navbar.js"></script>
+    <script>
+        var CATEGORIES = ['空空', '通程', '空铁', '云上公交'];
+        var _allHx = null;
+        var _apmTraceId = '';
+        var _currentCategory = CATEGORIES[0];
+
+        // ── Mode switching ──
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.mode-content').forEach(function(c) { c.classList.remove('active'); });
+            if (mode === 'api') {
+                document.getElementById('modeApi').classList.add('active');
+                document.querySelectorAll('.mode-tab')[0].classList.add('active');
+            } else {
+                document.getElementById('modePaste').classList.add('active');
+                document.querySelectorAll('.mode-tab')[1].classList.add('active');
+            }
+        }
+
+        // ── API search ──
+        function doSearch() {
+            var jsonStr = document.getElementById('requestJson').value.trim();
+            if (!jsonStr) { alert('请输入慧行请求参数 JSON'); return; }
+            var hxApi = document.getElementById('hxApiSelect').value;
+            var loading = document.getElementById('loading');
+            var btn = document.getElementById('searchBtn');
+            loading.classList.add('active');
+            btn.disabled = true;
+            fetch('/api/huixing/search?hxApi=' + encodeURIComponent(hxApi) + '&' + envQs(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: jsonStr
+            }).then(function(r) { return r.json(); }).then(function(data) {
+                loading.classList.remove('active');
+                btn.disabled = false;
+                saveHistory(jsonStr);
+                renderHuixingResults(data);
+            }).catch(function(err) {
+                loading.classList.remove('active');
+                btn.disabled = false;
+                alert('查询失败: ' + err.message);
+            });
+        }
+
+        // ── Paste parse ──
+        function doParse() {
+            var jsonStr = document.getElementById('pasteJson').value.trim();
+            if (!jsonStr) { alert('请粘贴慧行接口返回值 JSON'); return; }
+            var data;
+            try { data = JSON.parse(jsonStr); } catch(e) { alert('JSON 格式错误: ' + e.message); return; }
+            renderHuixingResults(data);
+        }
+
+        // ── Skyeye log query ──
+        function doSkyeyeQuery() {
+            var traceId = document.getElementById('skyeyeTraceId').value.trim();
+            if (!traceId) { alert('请输入 traceId'); return; }
+            var btn = document.getElementById('skyeyeBtn');
+            btn.disabled = true;
+            fetch('/api/skyeye/log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ traceId: traceId })
+            }).then(function(r) { return r.json(); }).then(function(data) {
+                btn.disabled = false;
+                renderSkyeyeResults(data);
+            }).catch(function(err) {
+                btn.disabled = false;
+                alert('查询失败: ' + err.message);
+            });
+        }
+
+        // ── JSON formatting ──
+        function formatJson() {
+            var el = document.getElementById('requestJson');
+            try { el.value = JSON.stringify(JSON.parse(el.value), null, 2); } catch(e) { alert('JSON 格式错误: ' + e.message); }
+        }
+        function formatPasteJson() {
+            var el = document.getElementById('pasteJson');
+            try { el.value = JSON.stringify(JSON.parse(el.value), null, 2); } catch(e) { alert('JSON 格式错误: ' + e.message); }
+        }
+
+        // ── Clear ──
+        function clearAll() {
+            document.getElementById('requestJson').value = '';
+            document.getElementById('resultsSection').classList.remove('active');
+            _allHx = null;
+            updateSkyeyeCompareBar();
+        }
+        function clearPaste() {
+            document.getElementById('pasteJson').value = '';
+            document.getElementById('resultsSection').classList.remove('active');
+            _allHx = null;
+            updateSkyeyeCompareBar();
+        }
+
+        // ── Query results toggle ──
+        function toggleQueryResults() {
+            document.getElementById('queryHeader').classList.toggle('collapsed');
+            document.getElementById('queryBody').classList.toggle('collapsed');
+        }
+
+        // ── Raw data toggle ──
+        function toggleRaw() {
+            document.getElementById('rawData').classList.toggle('active');
+        }
+        function toggleSchemeRaw(rawId) {
+            var el = document.getElementById(rawId);
+            if (el) el.classList.toggle('active');
+        }
+        function copySchemeRaw(rawId) {
+            var el = document.getElementById(rawId);
+            if (!el) return;
+            navigator.clipboard.writeText(el.textContent).then(function() {
+                var btn = document.getElementById('copyBtn-' + rawId);
+                if (btn) { btn.textContent = '已复制!'; setTimeout(function() { btn.textContent = '复制原始数据'; }, 1500); }
+            });
+        }
+
+        // ── Filter ──
+        function applyFilter() {
+            if (!_allHx) return;
+            var seg1Val = document.getElementById('filterSeg1').value;
+            var seg2Val = document.getElementById('filterSeg2').value;
+            var count = 0;
+            CATEGORIES.forEach(function(cat) {
+                var schemes = _allHx[cat] || [];
+                var filtered = schemes.filter(function(s) {
+                    if (seg1Val && s.seg1No !== seg1Val) return false;
+                    if (seg2Val && s.seg2No !== seg2Val) return false;
+                    return true;
+                });
+                count += filtered.length;
+                var container = document.getElementById('hx-content-' + cat);
+                if (container) {
+                    container.innerHTML = filtered.length > 0
+                        ? filtered.map(function(s, idx) { return buildSchemeCardHtml(s, idx, cat, 'hxraw-' + cat + '-' + idx); }).join('')
+                        : '<div class="empty-result">无匹配方案</div>';
+                    // Fill raw data for each card
+                    filtered.forEach(function(s, idx) {
+                        var rawEl = document.getElementById('hxraw-' + cat + '-' + idx);
+                        if (rawEl && s._rawLines) rawEl.textContent = JSON.stringify(s._rawLines, null, 2);
+                    });
+                }
+            });
+            document.getElementById('filterCount').textContent = '匹配 ' + count + ' 个方案';
+        }
+
+        function onSeg1Change() {
+            if (!_allHx) return;
+            var seg1Val = document.getElementById('filterSeg1').value;
+            var seg2Select = document.getElementById('filterSeg2');
+            var currentSeg2 = seg2Select.value;
+            var seg2Nos = new Set();
+            CATEGORIES.forEach(function(cat) {
+                (_allHx[cat] || []).forEach(function(s) {
+                    if (!seg1Val || s.seg1No === seg1Val) seg2Nos.add(s.seg2No);
+                });
+            });
+            var html = '<option value="">全部</option>';
+            Array.from(seg2Nos).sort().forEach(function(no) {
+                html += '<option value="' + no + '"' + (no === currentSeg2 ? ' selected' : '') + '>' + no + '</option>';
+            });
+            seg2Select.innerHTML = html;
+        }
+
+        // ── Segment & route services rendering ──
+        function renderSegmentHtml(s) {
+            var isTrainFlight = s.connectPairType === 3;
+            var first = isTrainFlight ? {
+                no: s.seg2No, depPort: s.seg2DepPort, arrPort: s.seg2ArrPort,
+                depTime: s.seg2DepTime, type: s.seg2Type, date: s.seg2Date
+            } : {
+                no: s.seg1No, depPort: s.seg1DepPort, arrPort: s.seg1ArrPort,
+                depTime: s.seg1DepTime, type: s.seg1Type, date: s.seg1Date
+            };
+            var second = isTrainFlight ? {
+                no: s.seg1No, depPort: s.seg1DepPort, arrPort: s.seg1ArrPort,
+                depTime: s.seg1DepTime, type: s.seg1Type, date: s.seg1Date
+            } : {
+                no: s.seg2No, depPort: s.seg2DepPort, arrPort: s.seg2ArrPort,
+                depTime: s.seg2DepTime, type: s.seg2Type, date: s.seg2Date
+            };
+            return '<div class="segment-info"><span class="flight-no">' + first.no + '</span> <span class="port">' + first.depPort + '</span><span class="arrow">→</span><span class="port">' + first.arrPort + '</span> <span class="time">' + first.depTime + '</span> <span style="color:#999">[' + first.type + '] ' + first.date + '</span></div>' +
+                '<div class="segment-info" style="text-align:center;color:#999;">↓ 中转 ↓</div>' +
+                '<div class="segment-info"><span class="flight-no">' + second.no + '</span> <span class="port">' + second.depPort + '</span><span class="arrow">→</span><span class="port">' + second.arrPort + '</span> <span class="time">' + second.depTime + '</span> <span style="color:#999">[' + second.type + '] ' + second.date + '</span></div>';
+        }
+
+        function renderRouteServices(s) {
+            var labels = s.routeServices || [];
+            if (labels.length === 0) return '<div class="rs-section" style="color:#999">无中转服务</div>';
+            var html = '<div class="rs-section">中转服务: ';
+            labels.forEach(function(l) { html += '<span class="rs-tag">' + l + '</span>'; });
+            html += '</div>';
+            return html;
+        }
+
+        // ── APM trace ID ──
+        function showApmFab(traceId) {
+            _apmTraceId = traceId || '';
+            var fab = document.getElementById('apmFab');
+            if (!fab) return;
+            if (_apmTraceId) {
+                fab.classList.add('visible');
+                document.getElementById('apmFabId').textContent = _apmTraceId;
+                document.getElementById('apmFabId').title = _apmTraceId;
+            } else {
+                fab.classList.remove('visible');
+            }
+        }
+        function copyApmTraceId() {
+            if (!_apmTraceId) return;
+            navigator.clipboard.writeText(_apmTraceId).then(function() {
+                var fab = document.getElementById('apmFab');
+                fab.textContent = '已复制!';
+                setTimeout(function() {
+                    fab.innerHTML = '<span class="label">apmTraceId</span><span class="id" id="apmFabId">' + _apmTraceId + '</span>';
+                    document.getElementById('apmFabId').title = _apmTraceId;
+                }, 1500);
+            });
+        }
+
+        // ── History ──
+        function saveHistory(jsonStr) {
+            if (!jsonStr) return;
+            try {
+                var entry = { input: jsonStr, time: new Date().toLocaleString() };
+                localStorage.setItem('doctor_history_huixing', JSON.stringify(entry));
+                loadHistory();
+            } catch(e) {}
+        }
+        function loadHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_huixing');
+                if (!stored) { document.getElementById('historyBar').classList.remove('active'); return; }
+                var entry = JSON.parse(stored);
+                var bar = document.getElementById('historyBar');
+                bar.classList.add('active');
+                var obj;
+                try { obj = JSON.parse(entry.input); } catch(e) { obj = null; }
+                var summary = '';
+                if (obj) {
+                    if (obj.depCityCode) summary += obj.depCityCode + '→';
+                    if (obj.arrCityCode) summary += obj.arrCityCode;
+                    if (obj.depDate) summary += ' ' + obj.depDate;
+                }
+                if (!summary) summary = entry.input.substring(0, 80);
+                document.getElementById('historyText').textContent = summary;
+                document.getElementById('historyText').title = entry.input;
+                document.getElementById('historyTime').textContent = entry.time;
+            } catch(e) { document.getElementById('historyBar').classList.remove('active'); }
+        }
+        function restoreHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_huixing');
+                if (!stored) return;
+                var entry = JSON.parse(stored);
+                document.getElementById('requestJson').value = entry.input;
+                switchMode('api');
+            } catch(e) {}
+        }
+
+        // ── Skyeye compare bar ──
+        var _compareActive = false;
+        function updateSkyeyeCompareBar() {
+            var bar = document.getElementById('skyeyeCompareBar');
+            if (!bar) return;
+
+            var hasSkyeye = _skyeyeCategorized !== null;
+            var hasQuery = _allHx !== null;
+
+            if (!hasSkyeye || !hasQuery) {
+                bar.style.display = 'none';
+                _compareActive = false;
+                var qh = document.getElementById('queryHeader');
+                var qb = document.getElementById('queryBody');
+                if (qh) qh.classList.remove('collapsed');
+                if (qb) qb.classList.remove('collapsed');
+                var sr = document.getElementById('skyeyeResult');
+                if (sr) sr.style.display = '';
+                return;
+            }
+
+            // Show compare trigger button
+            if (!_compareActive) {
+                var seTotal = CATEGORIES.reduce(function(sum, cat) { return sum + (_skyeyeCategorized[cat] || []).length; }, 0);
+                var qTotal = CATEGORIES.reduce(function(sum, cat) { return sum + (_allHx[cat] || []).length; }, 0);
+                bar.style.display = 'block';
+                bar.innerHTML = '<div style="background:#fff;border-radius:8px;padding:14px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);display:flex;align-items:center;gap:16px;">' +
+                    '<span style="font-size:14px;font-weight:600;color:#0d904f;">天网日志(' + seTotal + '个方案) 与 实时查询(' + qTotal + '个方案) 均有结果</span>' +
+                    '<button onclick="doCompare()" style="padding:8px 20px;background:#0d904f;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">开始对比</button>' +
+                    '</div>';
+                var qh = document.getElementById('queryHeader');
+                var qb = document.getElementById('queryBody');
+                if (qh) qh.classList.remove('collapsed');
+                if (qb) qb.classList.remove('collapsed');
+                var sr = document.getElementById('skyeyeResult');
+                if (sr) sr.style.display = '';
+                return;
+            }
+
+            // ── Merge both result sets ──
+            // Build key sets for each category
+            var merged = {}; // cat -> [{ scheme, type: 'match'|'log-only'|'new' }]
+            var counts = {}; // cat -> { match, logOnly, new }
+            var totalMatch = 0, totalLogOnly = 0, totalNew = 0;
+
+            CATEGORIES.forEach(function(cat) {
+                var skyeyeSchemes = _skyeyeCategorized[cat] || [];
+                var querySchemes = _allHx[cat] || [];
+                var skyeyeKeys = {};
+                var queryKeys = {};
+                skyeyeSchemes.forEach(function(s) { skyeyeKeys[s.key] = s; });
+                querySchemes.forEach(function(s) { queryKeys[s.key] = s; });
+
+                var list = [];
+                var match = 0, logOnly = 0, newCnt = 0;
+
+                // Log schemes: match or log-only
+                skyeyeSchemes.forEach(function(s) {
+                    if (queryKeys[s.key]) {
+                        list.push({ scheme: s, type: 'match' });
+                        match++;
+                    } else {
+                        list.push({ scheme: s, type: 'log-only' });
+                        logOnly++;
+                    }
+                });
+                // Query-only schemes: new
+                querySchemes.forEach(function(s) {
+                    if (!skyeyeKeys[s.key]) {
+                        list.push({ scheme: s, type: 'new' });
+                        newCnt++;
+                    }
+                });
+
+                merged[cat] = list;
+                counts[cat] = { match: match, logOnly: logOnly, new: newCnt };
+                totalMatch += match;
+                totalLogOnly += logOnly;
+                totalNew += newCnt;
+            });
+
+            bar.style.display = 'block';
+            var seTotal = CATEGORIES.reduce(function(sum, cat) { return sum + (_skyeyeCategorized[cat] || []).length; }, 0);
+            var qTotal = CATEGORIES.reduce(function(sum, cat) { return sum + (_allHx[cat] || []).length; }, 0);
+
+            // ── Summary table ──
+            var summaryHtml = '<div class="compare-summary">';
+            summaryHtml += '<table>';
+            summaryHtml += '<tr><th>分类</th><th class="num">一致</th><th class="num">日志独有</th><th class="num">查询新增</th><th class="num">合计</th></tr>';
+            CATEGORIES.forEach(function(cat) {
+                var c = counts[cat];
+                var total = c.match + c.logOnly + c.new;
+                summaryHtml += '<tr>';
+                summaryHtml += '<td style="font-weight:600;">' + cat + '</td>';
+                summaryHtml += '<td class="num" style="color:#2e7d32;">' + c.match + '</td>';
+                summaryHtml += '<td class="num" style="color:#e65100;">' + c.logOnly + '</td>';
+                summaryHtml += '<td class="num" style="color:#1565c0;">' + c.new + '</td>';
+                summaryHtml += '<td class="num">' + total + '</td>';
+                summaryHtml += '</tr>';
+            });
+            summaryHtml += '<tr class="total-row">';
+            summaryHtml += '<td>总计</td>';
+            summaryHtml += '<td class="num" style="color:#2e7d32;">' + totalMatch + '</td>';
+            summaryHtml += '<td class="num" style="color:#e65100;">' + totalLogOnly + '</td>';
+            summaryHtml += '<td class="num" style="color:#1565c0;">' + totalNew + '</td>';
+            summaryHtml += '<td class="num">' + (totalMatch + totalLogOnly + totalNew) + '</td>';
+            summaryHtml += '</tr>';
+            summaryHtml += '</table></div>';
+
+            // ── Legend ──
+            var legendHtml = '<div class="compare-legend">';
+            legendHtml += '<div class="legend-item"><div class="legend-dot match"></div><span>一致 (' + totalMatch + ')</span></div>';
+            legendHtml += '<div class="legend-item"><div class="legend-dot log-only"></div><span>日志独有 (' + totalLogOnly + ')</span></div>';
+            legendHtml += '<div class="legend-item"><div class="legend-dot new"></div><span>查询新增 (' + totalNew + ')</span></div>';
+            legendHtml += '</div>';
+
+            // ── Build unified compare view ──
+            var html = '<div class="compare-section">';
+            html += '<div class="compare-header"><h3>对比视图：天网日志 vs 实时查询</h3><button onclick="closeCompare()" style="padding:6px 16px;background:#f5f5f5;border:1px solid #ddd;border-radius:4px;font-size:12px;cursor:pointer;">关闭对比</button></div>';
+            html += summaryHtml;
+            html += legendHtml;
+
+            // Render merged schemes per category
+            CATEGORIES.forEach(function(cat) {
+                var items = merged[cat];
+                if (items.length === 0) return;
+                var c = counts[cat];
+                var catId = 'compare-cat-' + cat;
+                html += '<div class="compare-cat-header" onclick="toggleCompareCat(\'' + catId + '\')">';
+                html += '<span class="cat-title">' + cat;
+                if (c.match > 0) html += ' <span class="compare-badge match">一致 ' + c.match + '</span>';
+                if (c.logOnly > 0) html += ' <span class="compare-badge log-only">日志 ' + c.logOnly + '</span>';
+                if (c.new > 0) html += ' <span class="compare-badge new">新增 ' + c.new + '</span>';
+                html += '</span>';
+                html += '<span class="cat-arrow" id="' + catId + '-arrow">▼</span>';
+                html += '</div>';
+                html += '<div class="compare-cat-body" id="' + catId + '-body">';
+                html += '<div id="' + catId + '-content"></div>';
+                html += '</div>';
+            });
+
+            html += '</div>';
+            bar.innerHTML = html;
+
+            // Render scheme cards into each category
+            CATEGORIES.forEach(function(cat) {
+                var items = merged[cat];
+                if (items.length === 0) return;
+                var catId = 'compare-cat-' + cat;
+                var contentEl = document.getElementById(catId + '-content');
+                if (!contentEl) return;
+
+                var shtml = '';
+                items.forEach(function(item, idx) {
+                    var rawId = 'compare-' + cat + '-' + item.type + '-' + idx;
+                    var badgeLabel = item.type === 'match' ? '一致' : (item.type === 'log-only' ? '日志独有' : '查询新增');
+                    var cardClass = 'compare-' + item.type;
+                    // Build card with badge injected
+                    shtml += '<div class="scheme-card ' + cardClass + '">';
+                    shtml += '<div class="scheme-title"><span class="scheme-type">';
+                    shtml += '<span class="compare-badge ' + item.type + '">' + badgeLabel + '</span> ';
+                    shtml += buildSchemeTitleInner(item.scheme, idx);
+                    shtml += '</span></div>';
+                    shtml += buildSchemeCardBody(item.scheme, cat, rawId);
+                    shtml += '</div>';
+                });
+                contentEl.innerHTML = shtml;
+
+                // Fill raw data
+                items.forEach(function(item, idx) {
+                    var rawId = 'compare-' + cat + '-' + item.type + '-' + idx;
+                    var rawEl = document.getElementById(rawId);
+                    if (rawEl && item.scheme._rawLines) rawEl.textContent = JSON.stringify(item.scheme._rawLines, null, 2);
+                });
+            });
+
+            // Collapse original sections
+            var qh = document.getElementById('queryHeader');
+            var qb = document.getElementById('queryBody');
+            if (qh) qh.classList.add('collapsed');
+            if (qb) qb.classList.add('collapsed');
+            var sr = document.getElementById('skyeyeResult');
+            if (sr) sr.style.display = 'none';
+        }
+
+        function doCompare() {
+            _compareActive = true;
+            updateSkyeyeCompareBar();
+        }
+
+        function closeCompare() {
+            _compareActive = false;
+            updateSkyeyeCompareBar();
+        }
+
+        function toggleCompareCat(catId) {
+            var body = document.getElementById(catId + '-body');
+            var header = body ? body.previousElementSibling : null;
+            if (!body) return;
+            body.classList.toggle('collapsed');
+            if (header && header.classList.contains('compare-cat-header')) {
+                header.classList.toggle('collapsed');
+            }
+        }
+
+        // ── Main rendering ──
+        function renderHuixingResults(data) {
+            var categorized = extractHuixingSchemes(data);
+            _allHx = categorized;
+            document.getElementById('resultsSection').classList.add('active');
+            // Show APM trace ID if present
+            var apmId = (data.apmTraceIds && data.apmTraceIds.huixing) || data.apmTraceId || '';
+            showApmFab(apmId);
+            renderHuixingSummary(categorized);
+            renderHuixingTabs(categorized);
+            populateFilterDropdowns(categorized);
+            document.getElementById('rawData').textContent = JSON.stringify(data, null, 2);
+            updateSkyeyeCompareBar();
+        }
+
+        function renderHuixingSummary(categorized) {
+            var stats = document.getElementById('summaryStats');
+            var html = '';
+            CATEGORIES.forEach(function(cat) {
+                var count = (categorized[cat] || []).length;
+                html += '<div class="stat-item"><div class="stat-value">' + count + '</div><div class="stat-label">' + cat + '方案</div></div>';
+            });
+            var total = CATEGORIES.reduce(function(sum, cat) { return sum + (categorized[cat] || []).length; }, 0);
+            html += '<div class="stat-item"><div class="stat-value">' + total + '</div><div class="stat-label">总计</div></div>';
+            stats.innerHTML = html;
+        }
+
+        function renderHuixingTabs(categorized) {
+            var tabBar = document.getElementById('tabBar');
+            var tabContents = document.getElementById('tabContents');
+            var tabHtml = '';
+            var contentHtml = '';
+            CATEGORIES.forEach(function(cat, idx) {
+                var schemes = categorized[cat] || [];
+                tabHtml += '<button class="tab-btn' + (idx === 0 ? ' active' : '') + '" onclick="switchHuixingTab(event, \'' + cat + '\')">' + cat + ' (' + schemes.length + ')</button>';
+                contentHtml += '<div class="tab-content' + (idx === 0 ? ' active' : '') + '" id="hx-tab-' + cat + '">';
+                contentHtml += '<div id="hx-content-' + cat + '"></div>';
+                contentHtml += '</div>';
+            });
+            tabBar.innerHTML = tabHtml;
+            tabContents.innerHTML = contentHtml;
+            _currentCategory = CATEGORIES[0];
+            CATEGORIES.forEach(function(cat) {
+                renderHuixingTabContent(categorized[cat] || [], cat);
+            });
+        }
+
+        function switchHuixingTab(evt, cat) {
+            _currentCategory = cat;
+            document.querySelectorAll('#tabBar .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('#tabContents .tab-content').forEach(function(c) { c.classList.remove('active'); });
+            evt.target.classList.add('active');
+            document.getElementById('hx-tab-' + cat).classList.add('active');
+        }
+
+        function renderHuixingTabContent(schemes, category) {
+            var container = document.getElementById('hx-content-' + category);
+            if (!schemes || schemes.length === 0) {
+                container.innerHTML = '<div class="empty-result">无' + category + '方案</div>';
+                return;
+            }
+            var html = '';
+            schemes.forEach(function(s, idx) {
+                var rawId = 'hxraw-' + category + '-' + idx;
+                html += buildSchemeCardHtml(s, idx, category, rawId);
+            });
+            container.innerHTML = html;
+            // Fill raw data
+            schemes.forEach(function(s, idx) {
+                var rawId = 'hxraw-' + category + '-' + idx;
+                var rawEl = document.getElementById(rawId);
+                if (rawEl && s._rawLines) rawEl.textContent = JSON.stringify(s._rawLines, null, 2);
+            });
+        }
+
+        function populateFilterDropdowns(categorized) {
+            var seg1Nos = new Set();
+            var seg2Nos = new Set();
+            CATEGORIES.forEach(function(cat) {
+                (categorized[cat] || []).forEach(function(s) {
+                    if (s.seg1No) seg1Nos.add(s.seg1No);
+                    if (s.seg2No) seg2Nos.add(s.seg2No);
+                });
+            });
+            var seg1Select = document.getElementById('filterSeg1');
+            var seg2Select = document.getElementById('filterSeg2');
+            var filterBar = document.getElementById('filterBar');
+            if (seg1Nos.size > 0 || seg2Nos.size > 0) {
+                filterBar.classList.add('active');
+            } else {
+                filterBar.classList.remove('active');
+                return;
+            }
+            var html1 = '<option value="">全部</option>';
+            Array.from(seg1Nos).sort().forEach(function(no) { html1 += '<option value="' + no + '">' + no + '</option>'; });
+            seg1Select.innerHTML = html1;
+            var html2 = '<option value="">全部</option>';
+            Array.from(seg2Nos).sort().forEach(function(no) { html2 += '<option value="' + no + '">' + no + '</option>'; });
+            seg2Select.innerHTML = html2;
+            document.getElementById('filterCount').textContent = '';
+        }
+
+        // ── Skyeye log parsing helpers ──
+        function parseSkyeyeResponseMsg(msg) {
+            // Format: isBackUp:False,isHitCache:True,Result:{...json...}
+            var resultIdx = msg.indexOf('Result:');
+            if (resultIdx < 0) return null;
+            var jsonPart = msg.substring(resultIdx + 7);
+            try { return JSON.parse(jsonPart); } catch(e) { return null; }
+        }
+
+        function parseSkyeyeRequestMsg(msg) {
+            // Format: http://....ws:{json params}:2500  or  http://....ws:{json params}
+            var httpIdx = msg.indexOf('http://');
+            if (httpIdx < 0) return null;
+            var rest = msg.substring(httpIdx);
+            var wsIdx = rest.indexOf('.ws');
+            if (wsIdx < 0) return null;
+            var url = rest.substring(0, wsIdx + 3);
+            var apiType = 'hx';
+            if (url.indexOf('V7.ws') >= 0) apiType = 'v7';
+            else if (url.indexOf('HX.ws') >= 0) apiType = 'hx';
+            var afterUrl = rest.substring(wsIdx + 4); // after ".ws"
+            if (afterUrl.charAt(0) === ':') afterUrl = afterUrl.substring(1);
+            // Strip trailing :NNNN (timeout)
+            var lastColon = afterUrl.lastIndexOf(':');
+            if (lastColon > 0 && /^\d+$/.test(afterUrl.substring(lastColon + 1))) {
+                afterUrl = afterUrl.substring(0, lastColon);
+            }
+            var params = null;
+            try { params = JSON.parse(afterUrl); } catch(e) {}
+            return { url: url, apiType: apiType, params: params };
+        }
+
+        function extractIsHitCache(msg) {
+            var idx = msg.indexOf('isHitCache:');
+            if (idx < 0) return null;
+            var rest = msg.substring(idx + 11);
+            if (rest.indexOf('True') === 0) return true;
+            if (rest.indexOf('False') === 0) return false;
+            return null;
+        }
+
+        // ── Skyeye parsed results state ──
+        var _skyeyeCategorized = null;
+        var _skyeyeFillRequests = {};
+
+        // ── Skyeye results rendering ──
+        function renderSkyeyeResults(data) {
+            var container = document.getElementById('skyeyeResult');
+            if (!data || !data.success) {
+                container.innerHTML = '<div class="skyeye-empty">' + escapeHtml((data && data.error) || '查询失败') + '</div>';
+                _skyeyeCategorized = null;
+                updateSkyeyeCompareBar();
+                return;
+            }
+            var logs = (data.data && data.data.result && data.data.result.list) || [];
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="skyeye-empty">无日志记录</div>';
+                _skyeyeCategorized = null;
+                updateSkyeyeCompareBar();
+                return;
+            }
+
+            // Sort logs by logTime ascending
+            logs.sort(function(a, b) { return (a.logTime || '').localeCompare(b.logTime || ''); });
+
+            var html = '<div class="skyeye-count">共 ' + logs.length + ' 条日志</div>';
+            var priorityMap = { 0: 'FATAL', 1: 'ERROR', 2: 'WARN', 3: 'INFO' };
+            var parsedResponses = [];
+            _skyeyeFillRequests = {};
+
+            logs.forEach(function(log, i) {
+                var pVal = log.priority;
+                var pLabel = priorityMap[pVal] || String(pVal || 'INFO');
+                var pClass = pVal <= 1 ? 'error' : (pVal === 2 ? 'warn' : 'info');
+                var rawId = 'skyeye-log-' + i;
+                var msg = (log.msg || '').replace(/^\+08:00/, '');
+                var logTime = log.logTime || log.time || log.timestamp || '';
+
+                // Parse response log
+                var respData = parseSkyeyeResponseMsg(msg);
+                if (respData) {
+                    var isHitCache = extractIsHitCache(msg);
+                    var cacheLabel = isHitCache === true ? '缓存' : (isHitCache === false ? '实时' : '');
+                    var cacheBadgeHtml = cacheLabel ? '<span class="skyeye-hit-badge ' + (isHitCache ? 'cache' : 'realtime') + '">' + cacheLabel + '</span>' : '';
+                    var hxWrapped = { success: true, data: respData };
+                    var categorized = extractHuixingSchemes(hxWrapped);
+                    parsedResponses.push({ logIndex: i, categorized: categorized, logTime: logTime, cacheLabel: cacheLabel, cacheBadgeHtml: cacheBadgeHtml, log: log });
+
+                    // Render scheme summary
+                    var totalCount = CATEGORIES.reduce(function(sum, cat) { return sum + (categorized[cat] || []).length; }, 0);
+                    var entryPfx = 'skyeye-entry-' + i;
+
+                    html += '<div class="skyeye-entry">';
+                    html += '<div class="skyeye-module-header" onclick="toggleSkyeyeModule(\'' + entryPfx + '\')">';
+                    html += '<span class="header-title">' + escapeHtml(logTime) + ' <span class="skyeye-entry-priority ' + pClass + '" style="font-size:11px;padding:1px 6px;border-radius:3px;">' + escapeHtml(pLabel) + '</span> ' + cacheBadgeHtml + ' <span style="font-size:12px;color:#999;">慧行接口响应 — 共 ' + totalCount + ' 个方案</span></span>';
+                    html += '<span class="header-arrow">▼</span>';
+                    html += '</div>';
+                    html += '<div class="skyeye-module-body" id="' + entryPfx + '-body">';
+
+                    html += '<div class="skyeye-resp-section">';
+                    // Render categorized tabs inline
+                    var pfx = 'skyeye-resp-' + i;
+                    html += '<div style="margin-bottom:8px;">';
+                    CATEGORIES.forEach(function(cat, idx) {
+                        var count = (categorized[cat] || []).length;
+                        html += '<span style="display:inline-block;padding:3px 10px;margin-right:4px;border-radius:4px;font-size:12px;font-weight:600;' + (idx === 0 ? 'background:#0d904f;color:white;' : 'background:#f0f0f0;color:#555;') + '">' + cat + ' (' + count + ')</span>';
+                    });
+                    html += '</div>';
+
+                    CATEGORIES.forEach(function(cat) {
+                        var schemes = categorized[cat] || [];
+                        if (schemes.length === 0) return;
+                        schemes.forEach(function(s, sIdx) {
+                            var cardRawId = pfx + '-' + cat + '-' + sIdx;
+                            html += buildSchemeCardHtml(s, sIdx, cat, cardRawId);
+                        });
+                    });
+                    html += '</div>';
+
+                    html += '<button class="skyeye-raw-toggle" onclick="toggleSkyeyeRaw(\'' + rawId + '\')">查看原始日志</button>';
+                    html += '<div class="skyeye-entry-raw" id="' + rawId + '">' + escapeHtml(JSON.stringify(log, null, 2)) + '</div>';
+                    html += '</div>'; // close skyeye-module-body
+                    html += '</div>'; // close skyeye-entry
+                    return;
+                }
+
+                // Parse request log
+                var reqInfo = parseSkyeyeRequestMsg(msg);
+                if (reqInfo) {
+                    var reqPfx = 'skyeye-req-' + i;
+                    html += '<div class="skyeye-entry">';
+                    html += '<div class="skyeye-module-header" onclick="toggleSkyeyeModule(\'' + reqPfx + '\')">';
+                    html += '<span class="header-title">' + escapeHtml(logTime) + ' <span class="skyeye-entry-priority ' + pClass + '" style="font-size:11px;padding:1px 6px;border-radius:3px;">' + escapeHtml(pLabel) + '</span> <span style="font-size:12px;color:#999;">请求日志</span> <span class="skyeye-req-api ' + reqInfo.apiType + '">' + (reqInfo.apiType === 'v7' ? 'V7接口' : 'HX接口') + '</span></span>';
+                    html += '<span class="header-arrow">▼</span>';
+                    html += '</div>';
+                    html += '<div class="skyeye-module-body" id="' + reqPfx + '-body">';
+                    html += '<div class="skyeye-req-card">';
+                    html += '<div class="skyeye-req-url">' + escapeHtml(reqInfo.url) + '</div>';
+                    if (reqInfo.params) {
+                        _skyeyeFillRequests[i] = { params: reqInfo.params, apiType: reqInfo.apiType };
+                        html += '<button class="skyeye-fill-btn" onclick="fillSkyeyeRequest(' + i + ')">填充到查询参数</button>';
+                    }
+                    html += '</div>';
+                    html += '<button class="skyeye-raw-toggle" onclick="toggleSkyeyeRaw(\'' + rawId + '\')">查看原始日志</button>';
+                    html += '<div class="skyeye-entry-raw" id="' + rawId + '">' + escapeHtml(JSON.stringify(log, null, 2)) + '</div>';
+                    html += '</div>'; // close skyeye-module-body
+                    html += '</div>'; // close skyeye-entry
+                    return;
+                }
+
+                // Fallback: unknown log format
+                html += '<div class="skyeye-entry">';
+                html += '<div class="skyeye-entry-header">';
+                html += '<span class="skyeye-entry-time">' + escapeHtml(logTime) + '</span>';
+                html += '<span class="skyeye-entry-priority ' + pClass + '">' + escapeHtml(pLabel) + '</span>';
+                html += '</div>';
+                html += '<div class="skyeye-entry-msg">' + escapeHtml(msg) + '</div>';
+                html += '<button class="skyeye-raw-toggle" onclick="toggleSkyeyeRaw(\'' + rawId + '\')">查看原始数据</button>';
+                html += '<div class="skyeye-entry-raw" id="' + rawId + '">' + escapeHtml(JSON.stringify(log, null, 2)) + '</div>';
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+
+            // Fill raw data for scheme cards
+            if (parsedResponses.length > 0) {
+                parsedResponses.forEach(function(pr) {
+                    var pfx = 'skyeye-resp-' + pr.logIndex;
+                    CATEGORIES.forEach(function(cat) {
+                        var schemes = pr.categorized[cat] || [];
+                        schemes.forEach(function(s, sIdx) {
+                            var cardRawId = pfx + '-' + cat + '-' + sIdx;
+                            var rawEl = document.getElementById(cardRawId);
+                            if (rawEl && s._rawLines) rawEl.textContent = JSON.stringify(s._rawLines, null, 2);
+                        });
+                    });
+                });
+                // Store first parsed response for compare
+                _skyeyeCategorized = parsedResponses[0].categorized;
+            } else {
+                _skyeyeCategorized = null;
+            }
+            updateSkyeyeCompareBar();
+        }
+
+        function fillSkyeyeRequest(idx) {
+            var entry = _skyeyeFillRequests[idx];
+            if (!entry || !entry.params) { alert('参数数据不存在'); return; }
+            try {
+                document.getElementById('requestJson').value = JSON.stringify(entry.params, null, 2);
+                document.getElementById('hxApiSelect').value = entry.apiType;
+                switchMode('api');
+                document.getElementById('requestJson').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch(e) {
+                alert('填充参数失败: ' + e.message);
+            }
+        }
+
+        function toggleSkyeyeModule(pfx) {
+            var body = document.getElementById(pfx + '-body');
+            var headers = document.querySelectorAll('.skyeye-module-header');
+            if (!body) return;
+            body.classList.toggle('collapsed');
+            // Find the header that precedes this body
+            headers.forEach(function(h) {
+                if (h.getAttribute('onclick') && h.getAttribute('onclick').indexOf(pfx) >= 0) {
+                    h.classList.toggle('collapsed');
+                }
+            });
+        }
+
+        // ── Existing functions (preserved from original) ──
+
+        function switchSkyeyeTab(pfx, cat, btn) {
+            var bar = document.getElementById('skyeye-tabbar-' + pfx);
+            bar.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            CATEGORIES.forEach(function(c) {
+                var el = document.getElementById('skyeye-tab-' + pfx + '-' + c);
+                if (el) el.classList.remove('active');
+            });
+            document.getElementById('skyeye-tab-' + pfx + '-' + cat).classList.add('active');
+        }
+
+        function buildSchemeTitleInner(s, idx) {
+            var sourceLabel = getSourceTypeLabel(s.sourceType || '');
+            var cabinLabel = s.cabinType || '';
+            var hasDeduct = s.portDeducts && s.portDeducts.length > 0;
+            var html = '方案 ' + (idx+1) + ' — ' + sourceLabel + ' (' + s.sourceType + ') ' + cabinLabel;
+            if (hasDeduct) html += ' <span class="tag-deduct">机场补贴</span>';
+            return html;
+        }
+
+        function buildSchemeCardBody(s, cat, rawId) {
+            var cabinLabel = s.cabinType || '';
+            var hasDeduct = s.portDeducts && s.portDeducts.length > 0;
+            var html = '';
+            html += '<div class="segment-info" style="margin-bottom:4px;">来源: ' + s.routeSource + ' | 舱等: ' + cabinLabel + '</div>';
+            var rawLine0 = (s._rawLines && s._rawLines[0]) || null;
+            if (rawLine0 && rawLine0.sourceExchangeTypes !== undefined && rawLine0.sourceExchangeTypes !== null) {
+                var setTypes = decodeSourceExchangeTypes(rawLine0.sourceExchangeTypes);
+                if (setTypes.length > 0) {
+                    html += '<div class="segment-info" style="margin-bottom:4px;">适用资源: ';
+                    setTypes.forEach(function(t) { html += '<span class="rs-tag" style="background:#f3e5f5;color:#7b1fa2;">' + t.label + '</span>'; });
+                    html += '</div>';
+                }
+            }
+            if (hasDeduct) {
+                s.portDeducts.forEach(function(d) {
+                    var deductMsg = d.deductMsg || '机场补贴';
+                    var remark = d.deductRemark || '';
+                    var seg0Deduct = 0, seg1Deduct = 0;
+                    (d.deducts || []).forEach(function(dd) {
+                        if (dd.segmentIndex === 0) seg0Deduct = dd.deduction || 0;
+                        if (dd.segmentIndex === 1) seg1Deduct = dd.deduction || 0;
+                    });
+                    html += '<div class="deduct-detail">' + deductMsg + ': 第1程 -¥' + seg0Deduct + '  第2程 -¥' + seg1Deduct;
+                    if (remark) html += ' <span class="deduct-remark">(' + remark + ')</span>';
+                    html += '</div>';
+                });
+            }
+            html += renderSegmentHtml(s);
+            html += '<div class="scheme-key">ID: ' + (s.id || '') + '</div>';
+            html += renderRouteServices(s);
+            if (s.routeServicesDiff && s.routeServicesDiff.length > 0) {
+                s.routeServicesDiff.forEach(function(d) {
+                    html += '<div class="rs-diff">⚠️ [' + d.cabinType + '] 服务差异: 仅此舱等有 ' + d.onlyInThis.join(', ') + ' / 缺少 ' + d.missingFromThis.join(', ') + '</div>';
+                });
+            }
+            html += '<div style="display:flex;gap:6px;margin-top:8px;">';
+            html += '<button class="raw-toggle" onclick="toggleSchemeRaw(\'' + rawId + '\')">查看原始数据</button>';
+            html += '<button class="raw-toggle" id="copyBtn-' + rawId + '" onclick="copySchemeRaw(\'' + rawId + '\')">复制原始数据</button>';
+            html += '</div>';
+            html += '<div class="raw-data" id="' + rawId + '"></div>';
+            return html;
+        }
+
+        function buildSchemeCardHtml(s, idx, cat, rawId) {
+            var html = '<div class="scheme-card"><div class="scheme-title"><span class="scheme-type">';
+            html += buildSchemeTitleInner(s, idx);
+            html += '</span></div>';
+            html += buildSchemeCardBody(s, cat, rawId);
+            html += '</div>';
+            return html;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\//g, '&#47;');
+        }
+
+        function copySkyeyeDebug(elId) {
+            var el = document.getElementById(elId);
+            if (!el) return;
+            navigator.clipboard.writeText(el.textContent).then(function() { alert('已复制到剪贴板'); });
+        }
+
+        function copySkyeyeMsg(btn) {
+            var container = btn.parentElement;
+            var msgDiv = container.querySelector('div[style*="pre-wrap"]');
+            if (!msgDiv) return;
+            navigator.clipboard.writeText(msgDiv.textContent).then(function() {
+                btn.textContent = '已复制!';
+                setTimeout(function() { btn.textContent = '复制'; }, 1500);
+            });
+        }
+
+        function toggleSkyeyeRaw(rawId) {
+            var el = document.getElementById(rawId);
+            if (el) el.classList.toggle('active');
+        }
+
+        // ── Scroll-to-top FAB ──
+        window.addEventListener('scroll', function() {
+            var fab = document.getElementById('scrollTopFab');
+            if (window.scrollY > 300) fab.classList.add('visible');
+            else fab.classList.remove('visible');
+        });
+
+        // ── Init ──
+        window.addEventListener('load', function() {
+            loadHistory();
+            updateSkyeyeCompareBar();
+        });
+    </script>
+    <button class="scroll-top-fab" id="scrollTopFab" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
+<button class="apm-fab" id="apmFab" onclick="copyApmTraceId()" title="点击复制 apmTraceId"><span class="label">apmTraceId</span><span class="id" id="apmFabId"></span></button>
+</body>
+</html>

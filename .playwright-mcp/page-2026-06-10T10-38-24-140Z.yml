@@ -1,0 +1,43 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - heading "慧行方案查询" [level=1] [ref=e4]
+      - paragraph [ref=e5]: 直接输入慧行请求参数，查询并展示方案列表 — 空空 / 通程 / 空铁 / 云上公交
+    - navigation [ref=e6]:
+      - combobox "切换环境" [ref=e7] [cursor=pointer]:
+        - option "线上"
+        - option "QA"
+        - option "UAT"
+        - option "T环境" [selected]
+        - option "T2环境"
+        - option "Lane环境"
+      - button "网关站 ▾" [ref=e9] [cursor=pointer]
+      - button "产品站 ▾" [ref=e11] [cursor=pointer]
+      - button "联程最小价 ▾" [ref=e13] [cursor=pointer]
+      - button "联程最低价 ▾" [ref=e15] [cursor=pointer]
+      - button "日志追踪 ▾" [ref=e17] [cursor=pointer]
+  - generic [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - button "接口查询" [ref=e21] [cursor=pointer]
+        - button "粘贴解析" [ref=e22] [cursor=pointer]
+      - generic [ref=e23]:
+        - generic [ref=e24]: 慧行请求参数 JSON
+        - 'textbox "粘贴慧行请求参数 JSON，如: {\"depCityCode\":\"SHA\",\"arrCityCode\":\"BHY\",\"depDate\":20260613,\"psgType\":1,\"cabinClass\":1,\"channel\":174}" [ref=e25]': "{ \"depCityCode\": \"TAO\", \"arrCityCode\": \"KHG\", \"depPorts\": \"TAO\", \"arrPorts\": \"KHG\", \"psgType\": 1, \"depDate\": 20260615, \"cabinClass\": 1, \"channel\": 174, \"traceId\": \"642acf2fd46e4366f50fe797cefed395\", \"memberInfo\": { \"riskType\": \"\", \"userTags\": [ \"no_match_location\", \"user_group_testab\", \"user_tag_365days_gnjppay\", \"user_tag_365days_gnjpyused\", \"user_tag_HOnewusers\", \"user_tag_MF_first\", \"user_tag_MU_GNZDY\", \"user_tag_Y8newuesers\", \"user_tag_all_90days_usemore1\", \"user_tag_all_usemore3\", \"user_tag_cz0othermore1\", \"user_tag_cznewuser\", \"user_tag_gn_365_used2\", \"user_tag_gn_jd_morethan3\", \"user_tag_qw_180use0\", \"user_tag_ryshoucheng\", \"user_tag_user_tag_mu_365_used1\", \"user_tag_zh_more2\", \"user_tag_zh_szren\", \"user_tag_zh_zbyl\", \"ut_30day_wf\", \"ut_365d_gxwf\", \"ut_3u_DTmember\", \"ut_9D_use0\", \"ut_9h_6mnewuser\", \"ut_A6_QYDT2\", \"ut_A6_nocity_KHNLHW\", \"ut_A6_nocity_KMG\", \"ut_A6_nocity_NKG\", \"ut_A6_nocity_WUXCSX\", \"ut_A6_nocity_WUXCTU\", \"ut_ALL_payed30\", \"ut_CA_ordernum\", \"ut_CA_payed2\", \"ut_DZ_orderpay0\", \"ut_DZ_use0\", \"ut_FCshow\", \"ut_FCshow_less7\", \"ut_FFCXWXD_M\", \"ut_G5_orderuse0\", \"ut_GJ_pushbackdiscount\", \"ut_GX_QYDT13\", \"ut_GX_QYDT14\", \"ut_GX_city_CNNWEF\", \"ut_GX_use0\", \"ut_HO_use0\", \"ut_HU_orderuse0\", \"ut_QW_orderuse0\", \"ut_QYDT_all\", \"ut_ZH_newuser\", \"ut_ZH_use0\", \"ut_age_30_45\", \"ut_airway\", \"ut_all_1yearsolduser\", \"ut_all_pay2\", \"ut_all_pushbackdiscount\", \"ut_all_use0\", \"ut_all_usemore3\", \"ut_aq_newusers\", \"ut_cz_newuser\", \"ut_cz_usemore2andretunless1\", \"ut_cz_usemore4\", \"ut_cz_usemore5\", \"ut_cz_whitelistmember\", \"ut_djljunshow\", \"ut_dz_newuser\", \"ut_flighttogetherusertypecn\", \"ut_gj_wenzhou\", \"ut_gn_pay2\", \"ut_gn_petrolstationproject\", \"ut_gn_refuelbrandproject\", \"ut_gn_refuelproject\", \"ut_gwbase\", \"ut_gx_gnnewuser\", \"ut_gx_luotou\", \"ut_gx_newusers\", \"ut_hj_new\", \"ut_hu_newuser\", \"ut_member_notshanghai\", \"ut_membergrade_unshow\", \"ut_nanCA_orderuse3\", \"ut_newMFunhn\", \"ut_noselect\", \"ut_nouse_GS\", \"ut_payed2\", \"ut_payed3\", \"ut_payed5_ky1\", \"ut_qw_newuser\", \"ut_risk_airlineotahg\", \"ut_risk_xcqnfzandairway\", \"ut_targeted_hiddenresouces2\", \"ut_targeted_hiddenresouces34\", \"ut_use1_unhn\", \"ut_used1\", \"ut_used1_safe\", \"ut_used3\", \"ut_usedmember\", \"ut_whitelist_zhkq3\", \"ut_whitelistmember\", \"ut_y23_sc_use\", \"ut_user_old\" ], \"openId\": \"o498X0fDO2-NEHWTUOuXDwnKCfVs\", \"unionId\": \"ohmdTt6xKLABjKGuCPkw7T63UhAk\", \"memberId\": \"406956443\" }, \"directFlight\": { \"directFlightPrice\": 1522, \"directLowestTripTime\": 465, \"directLowestFlightNo\": \"GS7540\", \"directFlightNums\": 1 }, \"marketingTransitPoint\": null, \"channelScene\": null, \"refId\": \"2000368728\" }"
+        - generic [ref=e26]:
+          - button "查询" [ref=e27] [cursor=pointer]
+          - button "美化" [ref=e28] [cursor=pointer]
+          - button "清空" [ref=e29] [cursor=pointer]
+          - combobox [ref=e30] [cursor=pointer]:
+            - option "HX接口" [selected]
+            - option "V7接口"
+    - generic [ref=e31]:
+      - generic [ref=e32]: 上次查询
+      - generic [ref=e33] [cursor=pointer]: TAO→KHG 20260615
+      - generic [ref=e34]: 2026/6/10 18:05:57
+      - button "恢复" [active] [ref=e35] [cursor=pointer]
+    - generic [ref=e36]:
+      - heading "天网日志查询（通过 traceId）" [level=3] [ref=e37]
+      - generic [ref=e38]:
+        - textbox "输入 traceId，如 apm-traceid 值" [ref=e39]
+        - button "查询日志" [ref=e40] [cursor=pointer]

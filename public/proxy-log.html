@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>站点代理日志查询</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #5e35b1, #4527a0); color: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .env-select { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 12px; outline: none; }
+        .env-select:hover { background: rgba(255,255,255,0.25); }
+        .env-select option { background: #fff; color: #333; }
+        .nav-bar { display: flex; gap: 2px; align-items: stretch; }
+        .nav-group { position: relative; }
+        .nav-group-btn { color: rgba(255,255,255,0.75); background: none; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .nav-group-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-group.has-active .nav-group-btn { color: #ffeb3b; }
+        .nav-dropdown { display: none; position: absolute; top: 100%; right: 0; background: #4527a0; border-radius: 6px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; padding: 4px 0; margin-top: 2px; }
+        .nav-group:hover .nav-dropdown { display: block; }
+        .nav-dropdown a { display: block; color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+        .nav-dropdown a:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-dropdown a.active { color: #ffeb3b; background: rgba(255,255,255,0.1); }
+        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
+
+        /* ── Search Section ── */
+        .search-section {
+            background: white;
+            border-radius: 10px;
+            padding: 18px 22px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            border: 1px solid rgba(94,53,177,0.06);
+        }
+        .search-row { display: flex; gap: 10px; align-items: center; }
+        .query-mode-select {
+            padding: 9px 14px;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .query-mode-select:focus { border-color: #5e35b1; box-shadow: 0 0 0 2px rgba(94,53,177,0.10); }
+        .search-row input[type="text"] {
+            flex: 1;
+            padding: 9px 14px;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-row input[type="text"]:focus { border-color: #5e35b1; box-shadow: 0 0 0 2px rgba(94,53,177,0.10); }
+        .btn {
+            padding: 9px 28px;
+            background: linear-gradient(135deg, #5e35b1, #4527a0);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(94,53,177,0.25);
+        }
+        .btn:hover { background: linear-gradient(135deg, #6a3fbf, #4e2daa); box-shadow: 0 3px 8px rgba(94,53,177,0.35); }
+        .btn:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(94,53,177,0.2); }
+        .btn:disabled { background: #b39ddb; cursor: not-allowed; box-shadow: none; }
+        .spinner { display: none; width: 18px; height: 18px; border: 2px solid #e0e0e0; border-top-color: #5e35b1; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .spinner.active { display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Time Row ── */
+        .time-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f0ecf6;
+            flex-wrap: wrap;
+        }
+        .time-row-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #7e57c2;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .time-presets {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .time-preset-btn {
+            padding: 4px 10px;
+            background: #f3eefa;
+            color: #5e35b1;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+            line-height: 1.4;
+        }
+        .time-preset-btn:hover {
+            background: #ede7f6;
+            border-color: #d1c4e9;
+        }
+        .time-preset-btn:active {
+            background: #d1c4e9;
+        }
+        .time-preset-btn.active {
+            background: #5e35b1;
+            color: white;
+            border-color: #5e35b1;
+        }
+        .time-separator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .time-input {
+            padding: 6px 10px;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            color: #333;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .time-input:focus { border-color: #5e35b1; box-shadow: 0 0 0 2px rgba(94,53,177,0.10); }
+        .time-range-sep {
+            font-size: 12px;
+            color: #999;
+            font-weight: 500;
+        }
+        .btn-time-reset {
+            padding: 6px 12px;
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        .btn-time-reset:hover { background: #eee; color: #333; border-color: #ccc; }
+
+        /* ── Results ── */
+        .count-bar { font-size: 13px; color: #666; margin-bottom: 12px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+        .count-bar b { color: #5e35b1; }
+        .log-entry { background: white; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; }
+        .log-entry-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; transition: background 0.15s; user-select: none; flex-wrap: wrap; }
+        .log-entry-header:hover { background: #f5f0ff; }
+        .log-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .log-badge.site { background: #ede7f6; color: #4527a0; }
+        .log-badge.subcat { background: #e8f5e9; color: #2e7d32; }
+        .log-badge.time { background: #f5f5f5; color: #666; font-weight: 500; font-size: 11px; }
+        .log-badge.ip { background: #e3f2fd; color: #1565c0; font-size: 11px; }
+        .log-badge.priority-error { background: #ffebee; color: #c62828; }
+        .log-badge.priority-warn { background: #fff3e0; color: #e65100; }
+        .log-badge.priority-info { background: #f5f5f5; color: #666; }
+        .log-msg-preview { flex: 1; font-size: 12px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 100px; }
+        .log-arrow { font-size: 12px; color: #999; transition: transform 0.2s; }
+        .log-entry.collapsed .log-arrow { transform: rotate(-90deg); }
+        .log-entry-body { padding: 0 16px 16px; }
+        .log-entry.collapsed .log-entry-body { display: none; }
+        .log-msg-full { background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; max-height: 400px; overflow-y: auto; line-height: 1.5; }
+        .log-raw-toggle { margin-top: 8px; padding: 4px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; cursor: pointer; color: #666; }
+        .log-raw-toggle:hover { background: #eee; }
+        .log-raw-data { display: none; margin-top: 8px; background: #263238; color: #aed581; border-radius: 6px; padding: 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; line-height: 1.4; }
+        .log-raw-data.visible { display: block; }
+        .copy-btn { padding: 4px 10px; background: #5e35b1; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: 600; cursor: pointer; margin-left: 6px; }
+        .copy-btn:hover { background: #4527a0; }
+        .context-id-badge { cursor: pointer; margin-left: 8px; font-size: 11px; color: #5e35b1; font-family: monospace; background: #ede7f6; padding: 3px 8px; border-radius: 3px; }
+        .context-id-badge:hover { background: #d1c4e9; }
+        .log-debug-section { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+        .log-debug-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; cursor: pointer; user-select: none; }
+        .log-debug-header:hover { background: #fff3c4; }
+        .log-debug-header span { font-size: 13px; font-weight: 600; color: #e65100; }
+        .log-debug-body { display: none; padding: 0 16px 16px; }
+        .log-debug-body.visible { display: block; }
+        .log-debug-body pre { background: #263238; color: #aed581; border-radius: 6px; padding: 12px; font-family: "SF Mono","Monaco","Menlo","Consolas",monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; max-height: 400px; overflow-y: auto; line-height: 1.4; }
+        .log-debug-tab-bar { display: flex; gap: 4px; margin-bottom: 10px; }
+        .log-debug-tab { padding: 4px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; cursor: pointer; color: #666; }
+        .log-debug-tab:hover { background: #eee; }
+        .log-debug-tab.active { background: #5e35b1; color: white; border-color: #5e35b1; }
+        .empty-result { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+        .scroll-top-fab { position: fixed; bottom: 24px; right: 24px; background: #5e35b1; color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; z-index: 998; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: opacity 0.2s, background 0.2s; }
+        .scroll-top-fab:hover { background: #4527a0; }
+        .scroll-top-fab.visible { display: flex; }
+        .history-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 12px; color: #888; }
+        .history-label { font-weight: 600; color: #5e35b1; }
+        .history-text { cursor: pointer; color: #666; font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .history-text:hover { color: #5e35b1; text-decoration: underline; }
+        .history-restore { padding: 3px 10px; background: #ede7f6; color: #4527a0; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600; }
+        .history-restore:hover { background: #d1c4e9; }
+
+        /* ── Filter Dropdown ── */
+        .filter-dropdown { position: relative; display: inline-block; margin-bottom: 14px; }
+        .filter-dropdown-btn { padding: 7px 28px 7px 14px; background: white; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; color: #5e35b1; white-space: nowrap; position: relative; transition: border-color 0.2s, box-shadow 0.2s; min-width: 140px; text-align: left; }
+        .filter-dropdown-btn:hover { border-color: #5e35b1; }
+        .filter-dropdown-btn::after { content: '▼'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 9px; color: #999; }
+        .filter-dropdown-btn.has-selection { background: #ede7f6; border-color: #b39ddb; }
+        .filter-dropdown-panel { display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; background: white; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); z-index: 200; min-width: 220px; max-height: 320px; overflow-y: auto; padding: 6px 0; }
+        .filter-dropdown-panel.visible { display: block; }
+        .filter-dropdown-item { display: flex; align-items: center; gap: 8px; padding: 7px 14px; font-size: 13px; cursor: pointer; color: #333; transition: background 0.1s; user-select: none; }
+        .filter-dropdown-item:hover { background: #f5f0ff; }
+        .filter-dropdown-item label { flex: 1; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+        .filter-dropdown-item input[type="checkbox"] { accent-color: #5e35b1; width: 15px; height: 15px; cursor: pointer; margin: 0; flex-shrink: 0; }
+        .filter-dropdown-count { font-size: 11px; color: #999; margin-left: auto; }
+        .filter-dropdown-divider { height: 1px; background: #eee; margin: 4px 0; }
+        .filter-dropdown-item.all-item { font-weight: 600; color: #5e35b1; }
+        .log-entry.filtered-hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>站点代理日志查询</h1>
+            <p>通过 traceId 查询各站点 ServiceProxy、ConnectMinPriceAdapter 调用参数</p>
+        </div>
+        <div id="nav-placeholder"></div>
+    </div>
+
+    <div class="container">
+        <div class="search-section">
+            <div class="search-row">
+                <select id="queryMode" class="query-mode-select">
+                    <option value="traceId">TraceID查询</option>
+                    <option value="fuzzy">消息模糊查询</option>
+                </select>
+                <input type="text" id="traceIdInput" placeholder="输入 traceId" onkeydown="if(event.key==='Enter')doSearch()">
+                <div class="spinner" id="spinner"></div>
+                <button class="btn" id="searchBtn" onclick="doSearch()">查询</button>
+            </div>
+            <div class="time-row">
+                <span class="time-row-label">时间</span>
+                <div class="time-presets">
+                    <button class="time-preset-btn" onclick="setTimePreset(10, this)">10分钟</button>
+                    <button class="time-preset-btn" onclick="setTimePreset(30, this)">30分钟</button>
+                    <button class="time-preset-btn" onclick="setTimePreset(60, this)">1小时</button>
+                    <button class="time-preset-btn" onclick="setTimePreset(120, this)">2小时</button>
+                    <button class="time-preset-btn" onclick="setTimePreset(360, this)">6小时</button>
+                    <button class="time-preset-btn" onclick="setTimePreset(1440, this)">24小时</button>
+                </div>
+                <div class="time-separator">
+                    <input type="datetime-local" id="beginTimeInput" class="time-input">
+                    <span class="time-range-sep">至</span>
+                    <input type="datetime-local" id="endTimeInput" class="time-input">
+                </div>
+                <button class="btn-time-reset" onclick="resetTimeRange()" title="重置为默认时间范围">默认</button>
+            </div>
+        </div>
+
+        <div class="history-bar" id="historyBar" style="display:none;">
+            <span class="history-label">上次查询</span>
+            <span class="history-text" id="historyText" onclick="restoreHistory()"></span>
+            <span id="historyTime"></span>
+            <button class="history-restore" onclick="restoreHistory()">恢复</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <button class="scroll-top-fab" id="scrollTopFab" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
+
+    <script src="/navbar.js"></script>
+<script>
+        
+
+        var queryMode = document.getElementById('queryMode');
+
+        // 时间范围辅助函数
+        function formatDateTimeLocal(d) {
+            var pad = function(n) { return String(n).padStart(2, '0'); };
+            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        }
+
+        function formatToBackend(d) {
+            var pad = function(n) { return String(n).padStart(2, '0'); };
+            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.000';
+        }
+
+        function getBeginTime() {
+            var val = document.getElementById('beginTimeInput').value;
+            if (val) return formatToBackend(new Date(val));
+            return '';
+        }
+
+        function getEndTime() {
+            var val = document.getElementById('endTimeInput').value;
+            if (val) return formatToBackend(new Date(val));
+            return '';
+        }
+
+        function setDefaultTimeRange() {
+            var mode = queryMode.value;
+            var now = new Date();
+            var begin;
+            var presetMinutes;
+            if (mode === 'fuzzy') {
+                begin = new Date(now.getTime() - 10 * 60 * 1000);
+                presetMinutes = 10;
+            } else {
+                begin = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+                presetMinutes = 120;
+            }
+            document.getElementById('beginTimeInput').value = formatDateTimeLocal(begin);
+            document.getElementById('endTimeInput').value = formatDateTimeLocal(now);
+            // 高亮默认预设按钮
+            highlightPresetBtn(presetMinutes);
+        }
+
+        function highlightPresetBtn(minutes) {
+            var btns = document.querySelectorAll('.time-preset-btn');
+            btns.forEach(function(b) { b.classList.remove('active'); });
+            var activeBtn = document.querySelector('.time-preset-btn[onclick*="setTimePreset(' + minutes + '"]');
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        function resetTimeRange() {
+            setDefaultTimeRange();
+        }
+
+        setDefaultTimeRange();
+
+        // 手动修改时间时取消预设高亮
+        document.getElementById('beginTimeInput').addEventListener('change', function() {
+            document.querySelectorAll('.time-preset-btn').forEach(function(b) { b.classList.remove('active'); });
+        });
+        document.getElementById('endTimeInput').addEventListener('change', function() {
+            document.querySelectorAll('.time-preset-btn').forEach(function(b) { b.classList.remove('active'); });
+        });
+
+        // 切换模式时更新输入框占位符
+        queryMode.addEventListener('change', function() {
+            var input = document.getElementById('traceIdInput');
+            if (queryMode.value === 'fuzzy') {
+                input.placeholder = '输入模糊查询关键词';
+                input.value = '';
+            } else {
+                input.placeholder = '输入 traceId';
+            }
+            setDefaultTimeRange();
+            loadHistory();
+        });
+
+        function saveHistory(traceId) {
+            // 模糊查询不保存历史
+            var mode = document.getElementById('queryMode').value;
+            if (mode === 'fuzzy') return;
+            try {
+                localStorage.setItem('proxyLogHistory', JSON.stringify({ traceId: traceId, time: new Date().toLocaleString() }));
+            } catch(e) {}
+        }
+
+        function loadHistory() {
+            // 模糊查询模式下不显示历史
+            var mode = document.getElementById('queryMode').value;
+            if (mode === 'fuzzy') {
+                document.getElementById('historyBar').style.display = 'none';
+                return;
+            }
+            try {
+                var h = JSON.parse(localStorage.getItem('proxyLogHistory'));
+                if (h && h.traceId) {
+                    document.getElementById('historyBar').style.display = 'flex';
+                    document.getElementById('historyText').textContent = h.traceId;
+                    document.getElementById('historyTime').textContent = h.time || '';
+                }
+            } catch(e) {}
+        }
+
+        function restoreHistory() {
+            // 模糊查询模式下不恢复
+            var mode = document.getElementById('queryMode').value;
+            if (mode === 'fuzzy') return;
+            try {
+                var h = JSON.parse(localStorage.getItem('proxyLogHistory'));
+                if (h && h.traceId) {
+                    document.getElementById('traceIdInput').value = h.traceId;
+                }
+            } catch(e) {}
+        }
+
+        loadHistory();
+
+        function doSearch() {
+            var mode = document.getElementById('queryMode').value;
+            var inputVal = document.getElementById('traceIdInput').value.trim();
+            if (!inputVal) { alert(mode === 'fuzzy' ? '请输入模糊查询关键词' : '请输入 traceId'); return; }
+
+            saveHistory(inputVal);
+            var btn = document.getElementById('searchBtn');
+            var spinner = document.getElementById('spinner');
+            btn.disabled = true;
+            spinner.classList.add('active');
+            document.getElementById('results').innerHTML = '';
+
+            if (mode === 'fuzzy') {
+                loadHistory();
+                var appIds = ['102781', '3295971', '3303660', '106711'];
+                var totalFound = 0;
+                var container = document.getElementById('results');
+                container.innerHTML = '<div id="fuzzy-loading" style="text-align:center;padding:20px;color:#5e35b1;font-size:14px;">正在查询站点 ' + appIds[0] + '...</div>';
+
+                function queryNext(index) {
+                    if (index >= appIds.length) {
+                        btn.disabled = false;
+                        spinner.classList.remove('active');
+                        var loadingEl = document.getElementById('fuzzy-loading');
+                        if (loadingEl) loadingEl.remove();
+                        if (totalFound === 0) {
+                            container.innerHTML = '<div class="empty-result">无数据</div>';
+                        } else {
+                            renderSubCategoryFilter();
+                        }
+                        return;
+                    }
+
+                    var appId = appIds[index];
+                    var loadingEl = document.getElementById('fuzzy-loading');
+                    if (loadingEl) loadingEl.textContent = '正在查询站点 ' + appId + '...';
+
+                    fetch('/api/skyeye/proxy-log-fuzzy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ keyword: inputVal, appId: appId, beginTime: getBeginTime(), endTime: getEndTime() })
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.success && data.data && data.data.list && data.data.list.length > 0) {
+                            totalFound += data.data.list.length;
+                            renderFuzzySiteResult(data.data, loadingEl);
+                        }
+                        queryNext(index + 1);
+                    })
+                    .catch(function(err) {
+                        console.error('站点 ' + appId + ' 查询失败:', err);
+                        queryNext(index + 1);
+                    });
+                }
+
+                queryNext(0);
+            } else {
+                loadHistory();
+                fetch('/api/skyeye/proxy-log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ traceId: inputVal, beginTime: getBeginTime(), endTime: getEndTime() })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    btn.disabled = false;
+                    spinner.classList.remove('active');
+                    renderResults(data);
+                })
+                .catch(function(err) {
+                    btn.disabled = false;
+                    spinner.classList.remove('active');
+                    alert('查询失败: ' + err.message);
+                });
+            }
+        }
+
+        function renderResults(data) {
+            var container = document.getElementById('results');
+            var html = '';
+
+            // 参数名称替换工具函数（提升到外层避免块级作用域问题）
+            var replaceKeys = function(obj, skipFlightDate) {
+                if (!obj || typeof obj !== 'object') return;
+                if (Array.isArray(obj)) {
+                    obj.forEach(function(item) { replaceKeys(item, skipFlightDate); });
+                    return;
+                }
+                for (var key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        var value = obj[key];
+                        if (!skipFlightDate && key === 'flightDate') {
+                            obj['firstFlightDate'] = value;
+                            delete obj[key];
+                        } else if (key === 'interlineType') {
+                            obj['resourceType'] = value;
+                            delete obj[key];
+                        } else if (key === 'maxTransitStayMins') {
+                            obj['maxLayoeverMinutes'] = value;
+                            delete obj[key];
+                        } else if (key === 'route') {
+                            obj['detail'] = value;
+                            delete obj[key];
+                        }
+                        if (value && typeof value === 'object') {
+                            replaceKeys(value, skipFlightDate || key === 'routes');
+                        }
+                    }
+                }
+            };
+
+            if (!data.success) {
+                html += '<div class="empty-result">' + (data.error || '查询失败') + '</div>';
+                if (data._debug) html += renderDebugPanel(data._debug);
+                container.innerHTML = html;
+                return;
+            }
+            var list = (data.data && data.data.result && data.data.result.list) || [];
+            var totalCount = (data.data && data.data.result && data.data.result.totalCount) || 0;
+
+            html += '<div class="count-bar">共 <b>' + list.length + '</b> 条日志' + (totalCount ? '（totalCount=' + totalCount + '）' : '') + '</div>';
+
+            if (list.length === 0) {
+                html += '<div class="empty-result">未查到日志，请查看下方调试信息排查原因</div>';
+                if (data._debug) html += renderDebugPanel(data._debug);
+                container.innerHTML = html;
+                return;
+            }
+
+            list.sort(function(a, b) { return (a.logTime || '').localeCompare(b.logTime || ''); });
+
+            list.forEach(function(entry, idx) {
+                var msg = entry.msg || '';
+                msg = msg.replace(/^\+08:00/, '');
+                var logTime = entry.logTime || '';
+                var ip = entry.ip || '';
+                var priority = entry.priority;
+                var priorityMap = { 0: 'FATAL', 1: 'ERROR', 2: 'WARN', 3: 'INFO' };
+                var priorityClass = priority <= 1 ? 'priority-error' : (priority === 2 ? 'priority-warn' : 'priority-info');
+                var priorityLabel = priorityMap[priority] || String(priority);
+
+                var subCategory = '';
+                var appUk = '';
+                if (entry.appUk) {
+                    var parts = entry.appUk.split('.');
+                    appUk = parts[parts.length - 1] || entry.appUk;
+                }
+                if (entry.subCategory) subCategory = entry.subCategory;
+
+                // 提取 category 短名称（取最后一个 . 后面的部分）
+                var categoryShort = '';
+                if (entry.category) {
+                    var catParts = entry.category.split('.');
+                    categoryShort = catParts[catParts.length - 1] || entry.category;
+                }
+
+                // 解析 PipeSearch.Resource.ConnectMinPrice.ConnectMinPriceAdapter 分类日志
+                var parsedMsg = msg;
+                var parsedData = null;
+                if (entry.category === 'PipeSearch.Resource.ConnectMinPrice.ConnectMinPriceAdapter' && msg) {
+                    var resultsIdx = msg.indexOf(', { "results"');
+                    if (resultsIdx !== -1) {
+                        var prefix = msg.substring(0, resultsIdx);
+                        var jsonPart = msg.substring(resultsIdx + 2); // skip ", "
+                        try {
+                            parsedData = JSON.parse(jsonPart);
+                            parsedMsg = prefix;
+                            if (parsedData && typeof parsedData === 'object') {
+                                replaceKeys(parsedData, false);
+                            }
+                        } catch (e) {
+                            // 解析失败则保留原始消息
+                        }
+                    }
+                }
+
+                // 对 parsedMsg（前半部分文本）进行参数名称替换
+                if (parsedMsg && parsedMsg !== msg) {
+                    // 找到最外层 JSON（使用 indexOf 而非 lastIndexOf，避免嵌套 JSON 时只取到内层）
+                    var firstBrace = parsedMsg.indexOf('{');
+                    if (firstBrace !== -1) {
+                        try {
+                            var jsonPart = JSON.parse(parsedMsg.substring(firstBrace));
+                            replaceKeys(jsonPart, false);
+                            parsedMsg = parsedMsg.substring(0, firstBrace) + JSON.stringify(jsonPart);
+                        } catch (e) {
+                            // JSON 提取失败，回退到全局正则替换
+                            parsedMsg = parsedMsg
+                                .replace(/"flightDate"/g, '"firstFlightDate"')
+                                .replace(/"interlineType"/g, '"resourceType"')
+                                .replace(/"maxTransitStayMins"/g, '"maxLayoeverMinutes"')
+                                .replace(/"route"/g, '"detail"');
+                        }
+                    } else {
+                        parsedMsg = parsedMsg
+                            .replace(/"flightDate"/g, '"firstFlightDate"')
+                            .replace(/"interlineType"/g, '"resourceType"')
+                            .replace(/"maxTransitStayMins"/g, '"maxLayoeverMinutes"')
+                            .replace(/"route"/g, '"detail"');
+                    }
+                }
+
+                var filterTag = subCategory || categoryShort || '';
+                html += '<div class="log-entry" data-subcat="' + escHtml(filterTag) + '" id="log-entry-' + idx + '">';
+                html += '<div class="log-entry-header" onclick="toggleEntry(' + idx + ')">';
+                if (appUk) html += '<span class="log-badge site">' + escHtml(appUk) + '</span>';
+                if (categoryShort) html += '<span class="log-badge subcat">' + escHtml(categoryShort) + '</span>';
+                if (subCategory) html += '<span class="log-badge subcat">' + escHtml(subCategory) + '</span>';
+                html += '<span class="log-badge ' + priorityClass + '">' + priorityLabel + '</span>';
+                if (logTime) html += '<span class="log-badge time">' + escHtml(logTime) + '</span>';
+                if (ip) html += '<span class="log-badge ip">' + escHtml(ip) + '</span>';
+                html += '<span class="log-msg-preview">' + escHtml(parsedMsg.substring(0, 120)) + '</span>';
+                html += '<span class="log-arrow">▼</span>';
+                html += '</div>';
+
+                html += '<div class="log-entry-body">';
+                html += '<div class="log-msg-full" id="log-msg-' + idx + '">' + escHtml(parsedMsg) + '</div>';
+                if (parsedData) {
+                    html += '<div style="margin-top:8px;background:#e8f5e9;border:1px solid #c8e6c9;border-radius:6px;padding:12px;">';
+                    html += '<div style="font-size:12px;font-weight:600;color:#2e7d32;margin-bottom:8px;">📊 解析结果（results 数据）</div>';
+                    html += '<pre style="background:#fff;border:1px solid #eee;border-radius:4px;padding:8px;font-family:monospace;font-size:11px;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;">' + escHtml(JSON.stringify(parsedData, null, 2)) + '</pre>';
+                    html += '</div>';
+                }
+                html += '<button class="log-raw-toggle" onclick="toggleRaw(' + idx + ')">查看原始数据</button>';
+                html += '<button class="copy-btn" onclick="copyMsg(' + idx + ')">复制</button>';
+                html += '<div class="log-raw-data" id="log-raw-' + idx + '">' + escHtml(JSON.stringify(entry, null, 2)) + '</div>';
+                html += '</div>';
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+            renderSubCategoryFilter();
+        }
+
+        function renderFuzzySiteResult(siteResult, loadingEl) {
+            var container = document.getElementById('results');
+            var list = siteResult.list || [];
+            var html = '';
+
+            html += '<div style="margin-bottom:20px;border-left:3px solid #5e35b1;padding-left:12px;">';
+            html += '<div class="count-bar" style="margin-bottom:8px;">站点 <b>' + escHtml(siteResult.appId) + '</b> — 共 <b>' + list.length + '</b> 条日志' + (siteResult.totalCount ? '（totalCount=' + siteResult.totalCount + '）' : '') + '</div>';
+
+            list.sort(function(a, b) { return (a.logTime || '').localeCompare(b.logTime || ''); });
+
+            var siteIdx = siteResult.appId;
+            list.forEach(function(entry, idx) {
+                var globalIdx = 'fuzzy-' + siteIdx + '-' + idx;
+                var msg = entry.msg || '';
+                msg = msg.replace(/^\+08:00/, '');
+                var logTime = entry.logTime || '';
+                var ip = entry.ip || '';
+                var contextId = entry.contextId || '';
+                var priority = entry.priority;
+                var priorityMap = { 0: 'FATAL', 1: 'ERROR', 2: 'WARN', 3: 'INFO' };
+                var priorityClass = priority <= 1 ? 'priority-error' : (priority === 2 ? 'priority-warn' : 'priority-info');
+                var priorityLabel = priorityMap[priority] || String(priority);
+
+                var appUk = '';
+                if (entry.appUk) {
+                    var parts = entry.appUk.split('.');
+                    appUk = parts[parts.length - 1] || entry.appUk;
+                }
+                var subCategory = entry.subCategory || '';
+
+                var categoryShort = '';
+                if (entry.category) {
+                    var catParts = entry.category.split('.');
+                    categoryShort = catParts[catParts.length - 1] || entry.category;
+                }
+
+                var filterTag = subCategory || categoryShort || '';
+                html += '<div class="log-entry collapsed" data-subcat="' + escHtml(filterTag) + '" id="log-entry-' + globalIdx + '">';
+                html += '<div class="log-entry-header" onclick="toggleEntry(\'' + globalIdx + '\')">';
+                if (appUk) html += '<span class="log-badge site">' + escHtml(appUk) + '</span>';
+                if (categoryShort) html += '<span class="log-badge subcat">' + escHtml(categoryShort) + '</span>';
+                if (subCategory) html += '<span class="log-badge subcat">' + escHtml(subCategory) + '</span>';
+                html += '<span class="log-badge ' + priorityClass + '">' + priorityLabel + '</span>';
+                if (logTime) html += '<span class="log-badge time">' + escHtml(logTime) + '</span>';
+                if (ip) html += '<span class="log-badge ip">' + escHtml(ip) + '</span>';
+                html += '<span class="log-msg-preview">' + escHtml(msg.substring(0, 120)) + '</span>';
+                html += '<span class="log-arrow">▼</span>';
+                html += '</div>';
+
+                html += '<div class="log-entry-body">';
+                html += '<div class="log-msg-full" id="log-msg-' + globalIdx + '">' + escHtml(msg) + '</div>';
+                html += '<button class="log-raw-toggle" onclick="toggleRaw(\'' + globalIdx + '\')">查看原始数据</button>';
+                html += '<button class="copy-btn" onclick="copyMsg(\'' + globalIdx + '\')">复制</button>';
+                if (contextId) {
+                    html += '<span class="context-id-badge" data-context-id="' + escHtml(contextId) + '" onclick="copyContextId(this)" title="点击复制 contextId">' + escHtml(contextId) + '</span>';
+                }
+                html += '<div class="log-raw-data" id="log-raw-' + globalIdx + '">' + escHtml(JSON.stringify(entry, null, 2)) + '</div>';
+                html += '</div>';
+                html += '</div>';
+            });
+
+            html += '</div>';
+
+            // 插入到 loading 元素之前
+            loadingEl.insertAdjacentHTML('beforebegin', html);
+        }
+
+        function copyContextId(el) {
+            var contextId = el.getAttribute('data-context-id');
+            navigator.clipboard.writeText(contextId).then(function() {
+                var orig = el.textContent;
+                el.textContent = '已复制!';
+                setTimeout(function() { el.textContent = orig; }, 1500);
+            });
+        }
+        function renderDebugPanel(debug) {
+            if (!debug) return '';
+            var reqBody = debug.requestBody ? JSON.stringify(debug.requestBody, null, 2) : '';
+            var rawData = debug.rawData ? JSON.stringify(debug.rawData, null, 2) : '';
+            var reqHeaders = debug.requestHeaders ? JSON.stringify(debug.requestHeaders, null, 2) : '';
+            var html = '<div class="log-debug-section">';
+            html += '<div class="log-debug-header" onclick="this.nextElementSibling.classList.toggle(\'visible\')">';
+            html += '<span>🔍 调试信息（点击展开）</span>';
+            html += '<span style="font-size:11px;color:#999;">status=' + (debug.responseStatus || '-') + '</span>';
+            html += '</div>';
+            html += '<div class="log-debug-body">';
+            html += '<div class="log-debug-tab-bar">';
+            html += '<button class="log-debug-tab active" onclick="showDebugTab(this,\'reqBody\')">请求参数</button>';
+            html += '<button class="log-debug-tab" onclick="showDebugTab(this,\'rawData\')">原始响应</button>';
+            html += '<button class="log-debug-tab" onclick="showDebugTab(this,\'reqHeaders\')">请求头</button>';
+            html += '</div>';
+            html += '<pre id="debug-reqBody">' + escHtml(reqBody) + '</pre>';
+            html += '<pre id="debug-rawData" style="display:none;">' + escHtml(rawData.substring(0, 8000)) + (rawData.length > 8000 ? '\n... (truncated)' : '') + '</pre>';
+            html += '<pre id="debug-reqHeaders" style="display:none;">' + escHtml(reqHeaders) + '</pre>';
+            html += '</div>';
+            html += '</div>';
+            return html;
+        }
+
+        function showDebugTab(btn, tabId) {
+            var section = btn.closest('.log-debug-body');
+            section.querySelectorAll('.log-debug-tab').forEach(function(t) { t.classList.remove('active'); });
+            btn.classList.add('active');
+            section.querySelectorAll('pre').forEach(function(p) { p.style.display = 'none'; });
+            var target = section.querySelector('#debug-' + tabId);
+            if (target) target.style.display = 'block';
+        }
+
+        function escHtml(s) {
+            return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function toggleEntry(idx) {
+            var el = document.getElementById('log-entry-' + idx);
+            if (el) el.classList.toggle('collapsed');
+        }
+
+        function toggleRaw(idx) {
+            var el = document.getElementById('log-raw-' + idx);
+            if (el) el.classList.toggle('visible');
+        }
+
+        function copyMsg(idx) {
+            var el = document.getElementById('log-msg-' + idx);
+            if (el) {
+                navigator.clipboard.writeText(el.textContent).then(function() {
+                    var btns = document.querySelectorAll('#log-entry-' + idx + ' .copy-btn');
+                    btns.forEach(function(b) { b.textContent = '已复制!'; setTimeout(function() { b.textContent = '复制'; }, 1500); });
+                });
+            }
+        }
+
+        window.addEventListener('scroll', function() {
+            var btn = document.getElementById('scrollTopFab');
+            if (!btn) return;
+            if (window.scrollY > 300) btn.classList.add('visible');
+            else btn.classList.remove('visible');
+        });
+
+        function setTimePreset(minutes, btn) {
+            var now = new Date();
+            var begin = new Date(now.getTime() - minutes * 60 * 1000);
+            document.getElementById('beginTimeInput').value = formatDateTimeLocal(begin);
+            document.getElementById('endTimeInput').value = formatDateTimeLocal(now);
+            // 高亮选中按钮
+            var btns = document.querySelectorAll('.time-preset-btn');
+            btns.forEach(function(b) { b.classList.remove('active'); });
+            if (btn) btn.classList.add('active');
+        }
+
+        // ── 筛选功能 (多选下拉) ──
+        function renderSubCategoryFilter() {
+            var container = document.getElementById('results');
+            var existing = container.querySelector('.filter-dropdown');
+            if (existing) existing.remove();
+
+            // 收集所有 entry 的 data-subcat 标签及数量
+            var entries = container.querySelectorAll('[data-subcat]');
+            var tagMap = {};
+            entries.forEach(function(el) {
+                var tag = el.getAttribute('data-subcat');
+                if (tag) {
+                    tagMap[tag] = (tagMap[tag] || 0) + 1;
+                }
+            });
+
+            var tags = Object.keys(tagMap).sort();
+            if (tags.length <= 1) return; // 仅一种分类，无需筛选
+
+            var html = '<div class="filter-dropdown">';
+            html += '<button class="filter-dropdown-btn" id="filterDropdownBtn" onclick="toggleFilterDropdown(event)">筛选</button>';
+            html += '<div class="filter-dropdown-panel" id="filterDropdownPanel">';
+            html += '<div class="filter-dropdown-item all-item" onclick="toggleFilterAll(event)">';
+            html += '<input type="checkbox" id="filterAll" checked onclick="event.stopPropagation(); onFilterCheckboxChange()">';
+            html += '<label for="filterAll">全选</label>';
+            html += '</div>';
+            html += '<div class="filter-dropdown-divider"></div>';
+            tags.forEach(function(tag) {
+                html += '<div class="filter-dropdown-item" onclick="toggleFilterItem(event, this)">';
+                html += '<input type="checkbox" class="filter-tag-cb" value="' + escHtml(tag) + '" onclick="event.stopPropagation(); onFilterCheckboxChange()">';
+                html += '<label>' + escHtml(tag) + '<span class="filter-dropdown-count">' + tagMap[tag] + '</span></label>';
+                html += '</div>';
+            });
+            html += '</div>';
+            html += '</div>';
+
+            container.insertAdjacentHTML('afterbegin', html);
+            // 初始状态：全选，显示所有条目
+            applyFilter();
+        }
+
+        function toggleFilterDropdown(e) {
+            e.stopPropagation();
+            var panel = document.getElementById('filterDropdownPanel');
+            panel.classList.toggle('visible');
+        }
+
+        function toggleFilterAll(e) {
+            e.stopPropagation();
+            var allCb = document.getElementById('filterAll');
+            allCb.checked = !allCb.checked;
+            var cbs = document.querySelectorAll('.filter-tag-cb');
+            cbs.forEach(function(cb) { cb.checked = allCb.checked; });
+            onFilterCheckboxChange();
+        }
+
+        function toggleFilterItem(e, row) {
+            e.stopPropagation();
+            var cb = row.querySelector('input[type="checkbox"]');
+            cb.checked = !cb.checked;
+            onFilterCheckboxChange();
+        }
+
+        function onFilterCheckboxChange() {
+            var allCb = document.getElementById('filterAll');
+            var cbs = document.querySelectorAll('.filter-tag-cb');
+            var allChecked = true;
+            cbs.forEach(function(cb) {
+                if (!cb.checked) allChecked = false;
+            });
+            allCb.checked = allChecked;
+
+            // 更新按钮文案
+            var btn = document.getElementById('filterDropdownBtn');
+            var checkedCount = document.querySelectorAll('.filter-tag-cb:checked').length;
+            if (allChecked || checkedCount === cbs.length) {
+                btn.textContent = '筛选';
+                btn.classList.remove('has-selection');
+            } else if (checkedCount === 0) {
+                btn.textContent = '筛选';
+                btn.classList.remove('has-selection');
+            } else {
+                btn.textContent = '已选 ' + checkedCount + ' 项';
+                btn.classList.add('has-selection');
+            }
+
+            applyFilter();
+        }
+
+        function applyFilter() {
+            var container = document.getElementById('results');
+            var allCb = document.getElementById('filterAll');
+            var cbs = document.querySelectorAll('.filter-tag-cb');
+
+            // 收集选中的标签
+            var selected = {};
+            cbs.forEach(function(cb) {
+                if (cb.checked) selected[cb.value] = true;
+            });
+            var hasSelection = Object.keys(selected).length > 0;
+            var isAllSelected = allCb && allCb.checked;
+
+            var entries = container.querySelectorAll('[data-subcat]');
+            entries.forEach(function(el) {
+                var entryTag = el.getAttribute('data-subcat');
+                if (isAllSelected || !hasSelection || selected[entryTag]) {
+                    el.classList.remove('filtered-hidden');
+                } else {
+                    el.classList.add('filtered-hidden');
+                }
+            });
+        }
+
+        // 点击外部关闭下拉
+        document.addEventListener('click', function(e) {
+            var panel = document.getElementById('filterDropdownPanel');
+            if (panel && panel.classList.contains('visible')) {
+                var dropdown = panel.closest('.filter-dropdown');
+                if (dropdown && !dropdown.contains(e.target)) {
+                    panel.classList.remove('visible');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

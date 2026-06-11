@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B1下沉版本排查</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #6a1b9a, #4a148c); color: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .env-select { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 12px; outline: none; }
+        .env-select:hover { background: rgba(255,255,255,0.25); }
+        .env-select option { background: #fff; color: #333; }
+        .nav-bar { display: flex; gap: 2px; align-items: stretch; }
+        .nav-group { position: relative; }
+        .nav-group-btn { color: rgba(255,255,255,0.75); background: none; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .nav-group-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-group.has-active .nav-group-btn { color: #ffeb3b; }
+        .nav-dropdown { display: none; position: absolute; top: 100%; right: 0; background: #4a148c; border-radius: 6px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; padding: 4px 0; margin-top: 2px; }
+        .nav-group:hover .nav-dropdown { display: block; }
+        .nav-dropdown a { display: block; color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+        .nav-dropdown a:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-dropdown a.active { color: #ffeb3b; background: rgba(255,255,255,0.1); }
+        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
+        .input-section { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .input-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #6a1b9a; }
+        textarea { width: 100%; height: 160px; border: 1px solid #ddd; border-radius: 6px; padding: 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 12px; resize: vertical; outline: none; transition: border-color 0.2s; }
+        textarea:focus { border-color: #6a1b9a; box-shadow: 0 0 0 2px rgba(106,27,154,0.15); }
+        .params-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
+        .input-group { display: flex; flex-direction: column; gap: 4px; }
+        .input-group label { font-size: 12px; font-weight: 600; color: #6a1b9a; margin-bottom: 0; }
+        .input-group input, .input-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none; min-width: 100px; }
+        .input-group input:focus, .input-group select:focus { border-color: #6a1b9a; box-shadow: 0 0 0 2px rgba(106,27,154,0.15); }
+        .btn-row { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+        .btn { padding: 10px 28px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #6a1b9a; color: white; }
+        .btn-primary:hover { background: #5c1687; }
+        .btn-primary:disabled { background: #c4a6d8; cursor: not-allowed; }
+        .btn-secondary { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .loading { display: none; align-items: center; gap: 8px; color: #6a1b9a; font-size: 13px; }
+        .loading.active { display: flex; }
+        .spinner { width: 18px; height: 18px; border: 2px solid #e0e0e0; border-top-color: #6a1b9a; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .mode-tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid #e0e0e0; }
+        .mode-tab { padding: 10px 24px; border: none; background: none; font-size: 14px; font-weight: 600; cursor: pointer; color: #666; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+        .mode-tab:hover { color: #6a1b9a; }
+        .mode-tab.active { color: #6a1b9a; border-bottom-color: #6a1b9a; }
+        .mode-content { display: none; }
+        .mode-content.active { display: block; }
+        .results-section { display: none; }
+        .results-section.active { display: block; }
+        .query-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: white; border-radius: 8px; padding: 14px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 12px; user-select: none; }
+        .query-header:hover { background: #faf0fc; }
+        .query-header .header-title { font-size: 15px; font-weight: 600; color: #6a1b9a; }
+        .query-header .header-arrow { font-size: 12px; color: #999; transition: transform 0.2s; }
+        .query-header.collapsed .header-arrow { transform: rotate(-90deg); }
+        .query-body.collapsed { display: none; }
+        .comparison-summary { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .comparison-summary h2 { font-size: 16px; margin-bottom: 12px; color: #6a1b9a; }
+        .summary-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+        .stat-item { background: #f8f9fa; border-radius: 6px; padding: 12px 20px; text-align: center; cursor: default; }
+        .stat-value { font-size: 28px; font-weight: 700; color: #6a1b9a; }
+        .stat-label { font-size: 12px; color: #666; margin-top: 2px; }
+        .transfer-cities { margin-top: 16px; }
+        .transfer-cities h3 { font-size: 14px; color: #6a1b9a; margin-bottom: 8px; }
+        .city-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+        .city-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid #e0e0e0; background: #fff; color: #555; transition: all 0.2s; }
+        .city-chip:hover { border-color: #6a1b9a; color: #6a1b9a; }
+        .city-chip .chip-count { font-weight: 700; color: #6a1b9a; margin-left: 4px; }
+        .city-chip .chip-price { font-size: 11px; color: #e53935; margin-left: 4px; }
+        .filter-bar { background: white; border-radius: 8px; padding: 14px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: none; gap: 16px; align-items: center; flex-wrap: wrap; }
+        .filter-bar.active { display: flex; }
+        .filter-bar label { font-size: 13px; font-weight: 600; color: #555; white-space: nowrap; }
+        .filter-bar select { border: 1px solid #ddd; border-radius: 4px; padding: 6px 10px; font-size: 13px; outline: none; min-width: 120px; cursor: pointer; }
+        .filter-bar select:focus { border-color: #6a1b9a; }
+        .filter-count { font-size: 12px; color: #999; }
+        .tab-bar { display: flex; gap: 0; margin-bottom: 20px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .tab-btn { flex: 1; padding: 14px 20px; border: none; background: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: #666; border-bottom: 3px solid transparent; }
+        .tab-btn:hover { background: #f8f9fa; }
+        .tab-btn.active { color: #6a1b9a; border-bottom-color: #6a1b9a; background: #faf0fc; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .scheme-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 14px; transition: border-color 0.2s, box-shadow 0.2s; background: white; }
+        .scheme-card:hover { border-color: #6a1b9a; }
+        .scheme-card.lowest { border-color: #e53935; border-width: 2px; box-shadow: 0 0 0 1px #e53935; }
+        .scheme-card.lowest .scheme-idx::after { content: ' 最低价'; font-size: 11px; background: #e53935; color: #fff; padding: 1px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }
+        .scheme-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .scheme-identity { flex: 1; }
+        .scheme-idx { font-weight: 700; font-size: 15px; color: #6a1b9a; }
+        .scheme-route { font-size: 12px; color: #777; margin-top: 2px; font-family: monospace; }
+        .scheme-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+        .tag-rs { background: #e8f0fe; color: #1a73e8; }
+        .tag-mt { background: #f3e5f5; color: #6a1b9a; }
+        .tag-transfer { background: #e8f5e9; color: #2e7d32; }
+        .tag-overnight { background: #fff3e0; color: #e65100; }
+        .segments { display: flex; gap: 16px; margin: 10px 0; padding: 10px; background: #fafafa; border-radius: 6px; flex-wrap: wrap; }
+        .seg-block { flex: 1; min-width: 250px; }
+        .seg-header { font-weight: 600; font-size: 13px; color: #333; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .seg-header .flight-no { color: #6a1b9a; font-size: 14px; }
+        .seg-header .airline { color: #777; font-size: 12px; }
+        .seg-header .shared { background: #fff3e0; color: #e65100; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+        .seg-detail { font-size: 12px; color: #555; line-height: 1.8; }
+        .seg-detail .port { color: #6a1b9a; font-weight: 600; }
+        .seg-detail .time { color: #333; font-weight: 500; }
+        .seg-detail .terminal { color: #e65100; font-size: 11px; }
+        .seg-connector { display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; min-width: 40px; }
+        .price-section { margin-top: 10px; }
+        .price-row { display: flex; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+        .price-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px 14px; flex: 1; min-width: 220px; background: #fff; }
+        .price-card .cabin-label { font-size: 12px; font-weight: 600; color: #6a1b9a; margin-bottom: 6px; }
+        .price-card .price-main { font-size: 20px; font-weight: 700; color: #e53935; }
+        .price-card .price-main .yen { font-size: 14px; }
+        .price-card .price-orig { font-size: 13px; color: #999; text-decoration: line-through; margin-left: 6px; }
+        .price-card .price-discount { font-size: 12px; color: #2e7d32; margin-left: 6px; font-weight: 600; }
+        .price-card .price-tags { margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap; }
+        .price-card .price-detail { font-size: 11px; color: #777; margin-top: 4px; line-height: 1.6; }
+        .service-section { margin-top: 10px; padding: 10px; background: #f5f0fa; border-radius: 6px; }
+        .service-section .svc-title { font-size: 13px; font-weight: 600; color: #6a1b9a; margin-bottom: 6px; }
+        .service-item { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; margin: 2px 4px 2px 0; }
+        .svc-discount { background: #e8f5e9; color: #2e7d32; }
+        .svc-fastcheck { background: #e3f2fd; color: #1565c0; }
+        .svc-lounge { background: #fce4ec; color: #c62828; }
+        .svc-guide { background: #fff3e0; color: #e65100; }
+        .svc-giftbox { background: #f3e5f5; color: #6a1b9a; }
+        .svc-default { background: #f5f5f5; color: #555; }
+        .b15-section { margin-top: 10px; padding: 14px; background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 6px; }
+        .b15-section .b15-title { font-size: 13px; font-weight: 600; color: #e65100; margin-bottom: 6px; cursor: pointer; user-select: none; }
+        .b15-json { display: none; background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow: auto; }
+        .b15-json.active { display: block; }
+        .b15-copy-btn { margin-top: 6px; padding: 4px 12px; background: #ff6d00; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .b15-copy-btn:hover { background: #e65100; }
+        .b15-view-btn { margin-top: 6px; margin-left: 6px; padding: 4px 12px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .b15-view-btn:hover { background: #1557b0; }
+        .b15-toggle { cursor: pointer; user-select: none; }
+        .filter-tags-section { margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
+        .filter-tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 500; }
+        .ft-type { background: #e3f2fd; color: #1565c0; }
+        .ft-cabin { background: #f3e5f5; color: #6a1b9a; }
+        .ft-airline { background: #fff3e0; color: #e65100; }
+        .ft-dep { background: #e8f5e9; color: #2e7d32; }
+        .ft-arr { background: #fce4ec; color: #c62828; }
+        .ft-transfer { background: #e0f2f1; color: #00695c; }
+        .ft-special { background: #f5f5f5; color: #555; }
+        .train-scheme-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 14px; background: white; }
+        .train-scheme-card:hover { border-color: #6a1b9a; }
+        .train-seg { padding: 8px 12px; background: #fafafa; border-radius: 6px; margin-bottom: 6px; }
+        .train-seg .train-no { font-weight: 600; color: #1565c0; font-size: 14px; }
+        .train-flight-seg { padding: 8px 12px; background: #f0faf5; border-radius: 6px; margin-bottom: 6px; }
+        .raw-toggle { margin-top: 8px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .raw-toggle:hover { background: #e8e8e8; }
+        .raw-data { display: none; margin-top: 10px; max-height: 400px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 6px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+        .raw-data.active { display: block; }
+        .empty-result { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+        .apm-fab { position: fixed; bottom: 72px; right: 24px; background: #333; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-size: 12px; cursor: pointer; z-index: 999; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .apm-fab:hover { background: #555; }
+        .apm-fab.visible { display: block; }
+        .apm-fab .label { margin-right: 6px; }
+        .apm-fab .id { font-family: monospace; font-size: 11px; color: #ffeb3b; max-width: 200px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+        .scroll-top-fab { position: fixed; bottom: 24px; right: 24px; background: #6a1b9a; color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; z-index: 998; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .scroll-top-fab:hover { background: #5c1687; }
+        .scroll-top-fab.visible { display: flex; }
+        .custom-plat { display: none; margin-top: 4px; }
+        .custom-plat.active { display: block; }
+        .custom-plat input { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; width: 80px; outline: none; }
+        .custom-plat input:focus { border-color: #6a1b9a; }
+        .wiki-link { font-size: 12px; color: #6a1b9a; text-decoration: underline; margin-top: 8px; display: inline-block; }
+        .history-bar { background: white; border-radius: 8px; padding: 12px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 13px; }
+        .history-bar.active { display: flex; }
+        .history-bar .history-label { color: #999; font-weight: 600; white-space: nowrap; }
+        .history-bar .history-text { color: #333; cursor: pointer; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; }
+        .history-bar .history-text:hover { color: #6a1b9a; }
+        .history-bar .history-time { color: #999; font-size: 11px; white-space: nowrap; }
+        .history-bar .history-restore { padding: 4px 12px; background: #6a1b9a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+        .history-bar .history-restore:hover { background: #5c1687; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>B1下沉版本排查</h1>
+            <p>查询 connectbigsearch 下沉接口，排查航班对、服务、价格呈现 — 空空 / 空铁</p>
+        </div>
+        <div id="nav-placeholder"></div>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <div class="mode-tabs">
+                <button class="mode-tab active" onclick="switchMode('api')">接口查询</button>
+                <button class="mode-tab" onclick="switchMode('paste')">粘贴解析</button>
+            </div>
+            <div class="mode-content active" id="modeApi">
+                <div class="params-row">
+                    <div class="input-group">
+                        <label>站点 (site)</label>
+                        <select id="siteSelect">
+                            <option value="wechatcore" selected>wechatcore</option>
+                            <option value="app">app</option>
+                            <option value="connectgateway">connectgateway</option>
+                            <option value="wechat">wechat</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex-direction:row;align-items:center;gap:6px;">
+                        <label>渠道 (plat)</label>
+                        <select id="platSelect" onchange="onPlatChange()">
+                            <option value="852" selected>852-小程序</option>
+                            <option value="433">433-IOS</option>
+                            <option value="434">434-Android</option>
+                            <option value="518">518-H5</option>
+                            <option value="10212">10212-Harmony</option>
+                            <option value="custom">自定义...</option>
+                        </select>
+                        <input type="text" id="customPlat" placeholder="输入plat" style="display:none;width:80px;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none;">
+                    </div>
+                </div>
+                <label>请求参数 JSON</label>
+                <textarea id="requestJson" placeholder='粘贴 Book1 下沉版本请求参数 JSON ...'></textarea>
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">查询</button>
+                    <button class="btn btn-secondary" onclick="formatJson()">美化</button>
+                    <button class="btn btn-secondary" onclick="clearAll()">清空</button>
+                    <div class="loading" id="loading"><div class="spinner"></div><span>正在查询下沉版本...</span></div>
+                </div>
+                <a class="wiki-link" href="https://wiki.17u.cn/wiki?fid=892a4c037b7c44c988f876239f742f86" target="_blank">下沉版本接口文档 ↗</a>
+            </div>
+            <div class="mode-content" id="modePaste">
+                <label>下沉版本返回值 JSON</label>
+                <textarea id="pasteJson" placeholder='粘贴 connectbigsearch 接口返回值 JSON（完整响应体）' style="height:260px"></textarea>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="doParse()">解析</button>
+                    <button class="btn btn-secondary" onclick="formatPasteJson()">美化</button>
+                    <button class="btn btn-secondary" onclick="clearPaste()">清空</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-bar" id="historyBar">
+            <span class="history-label">上次查询</span>
+            <span class="history-text" id="historyText" onclick="restoreHistory()"></span>
+            <span class="history-time" id="historyTime"></span>
+            <button class="history-restore" onclick="restoreHistory()">恢复</button>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="query-header" id="queryHeader" onclick="toggleQueryResults()">
+                <span class="header-title">查询结果</span>
+                <span class="header-arrow">▼</span>
+            </div>
+            <div class="query-body" id="queryBody">
+                <div class="comparison-summary" id="summarySection">
+                    <h2>方案摘要</h2>
+                    <div class="summary-stats" id="summaryStats"></div>
+                    <div class="transfer-cities" id="transferCities"></div>
+                </div>
+                <div class="filter-bar" id="filterBar">
+                    <label>中转点</label>
+                    <select id="filterTransfer" onchange="applyFilter()"><option value="">全部</option></select>
+                    <label>第一程航班号</label>
+                    <select id="filterSeg1" onchange="onSeg1Change();applyFilter()"><option value="">全部</option></select>
+                    <label>第二程航班号</label>
+                    <select id="filterSeg2" onchange="applyFilter()"><option value="">全部</option></select>
+                    <span class="filter-count" id="filterCount"></span>
+                </div>
+                <div class="tab-bar" id="tabBar"></div>
+                <div id="tabContents"></div>
+                <div class="comparison-summary" style="margin-top:20px">
+                    <button class="raw-toggle" onclick="toggleDebug()">调试信息</button>
+                    <div class="raw-data" id="debugInfo"></div>
+                </div>
+                <div class="comparison-summary" style="margin-top:12px">
+                    <button class="raw-toggle" onclick="toggleRaw()">查看原始数据</button>
+                    <div class="raw-data" id="rawData"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="apm-fab" id="apmFab" onclick="copyApmTraceId()"><span class="label">apmTraceId</span><span class="id" id="apmFabId"></span></button>
+    <button class="scroll-top-fab" id="scrollTopFab" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+    <script src="/navbar.js"></script>
+<script>
+        var _rawData = null;
+        var _allSchemes = null;
+        var _apmTraceId = '';
+        var _lowestSchemeIdx = -1;
+        var _lowestPrice = null;
+        var _requestParams = null; // store original request for B15 generation
+
+        
+
+        function onPlatChange() { document.getElementById('customPlat').style.display = document.getElementById('platSelect').value === 'custom' ? 'inline-block' : 'none'; }
+        function getPlat() { var v = document.getElementById('platSelect').value; return v === 'custom' ? (document.getElementById('customPlat').value.trim() || '852') : v; }
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-tab').forEach(function(t){t.classList.remove('active');});
+            document.querySelectorAll('.mode-content').forEach(function(c){c.classList.remove('active');});
+            if (mode==='api') { document.querySelector('.mode-tab:nth-child(1)').classList.add('active'); document.getElementById('modeApi').classList.add('active'); }
+            else { document.querySelector('.mode-tab:nth-child(2)').classList.add('active'); document.getElementById('modePaste').classList.add('active'); }
+        }
+
+        function doSearch() {
+            var textarea = document.getElementById('requestJson');
+            var raw = textarea.value.trim();
+            if (!raw) { alert('请输入请求参数 JSON'); return; }
+            var requestObj;
+            try { requestObj = JSON.parse(raw); } catch (e) { alert('JSON 格式错误: ' + e.message); return; }
+            var site = document.getElementById('siteSelect').value;
+            var plat = getPlat();
+            // Store raw requestObj for B15 generation — no field extraction needed
+            _requestParams = Object.assign({ site: site, plat: plat }, requestObj);
+            saveHistory(raw, site, plat);
+            var btn = document.getElementById('searchBtn');
+            var loading = document.getElementById('loading');
+            btn.disabled = true; loading.classList.add('active');
+            document.getElementById('resultsSection').classList.remove('active');
+            var _searchStartTime = Date.now();
+            fetch('/api/gateway/search?' + envQs(), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({site:site,plat:plat,queryParams:requestObj}) })
+            .then(function(r){return r.json();})
+            .then(function(data){
+                btn.disabled=false; loading.classList.remove('active');
+                data._debug = {
+                    requestUrl: data.requestUrl || '',
+                    requestParams: data.requestParams || requestObj,
+                    site: site,
+                    plat: plat,
+                    env: _currentEnv,
+                    inputJson: raw,
+                    elapsed: Date.now() - _searchStartTime
+                };
+                renderResults(data);
+            })
+            .catch(function(err){btn.disabled=false;loading.classList.remove('active');alert('请求失败: '+err.message);});
+        }
+        function formatJson() { var t=document.getElementById('requestJson'),r=t.value.trim(); if(!r)return; try{t.value=JSON.stringify(JSON.parse(r),null,2);}catch(e){alert('JSON 格式错误: '+e.message);} }
+        function doParse() {
+            var t=document.getElementById('pasteJson'),r=t.value.trim(); if(!r){alert('请粘贴接口返回值 JSON');return;}
+            var cleaned=r.replace(/\u001b\[[0-9;]*[a-zA-Z]/g,''),parsed; try{parsed=JSON.parse(cleaned);}catch(e){alert('JSON 格式错误: '+e.message);return;}
+            _requestParams = null;
+            renderResults({success:true,data:parsed});
+        }
+        function formatPasteJson() { var t=document.getElementById('pasteJson'),r=t.value.trim(); if(!r)return; try{t.value=JSON.stringify(JSON.parse(r),null,2);}catch(e){alert('JSON 格式错误: '+e.message);} }
+        function clearPaste() { document.getElementById('pasteJson').value=''; document.getElementById('resultsSection').classList.remove('active'); }
+        function clearAll() { document.getElementById('requestJson').value=''; document.getElementById('resultsSection').classList.remove('active'); _allSchemes=null; }
+
+        // --- Data extraction ---
+        var MT_LABELS = {1:'无餐食',2:'有餐食',3:'部分有餐食'};
+        var RS_LABELS = {'HuiXing':'慧行','TransitTravel':'V7'};
+        var LPT_LABELS = {11:'经济舱',2:'公务/头等舱'};
+        var SVC_TYPE_CLASS = {'DISCOUNT_STAY':'svc-discount','COUPON_FASTCHECK':'svc-fastcheck','TRANSFER_LOUNGE':'svc-lounge','TRANSFER_GUIDE':'svc-guide','TRANSFER_GIFT_BOX':'svc-giftbox'};
+
+        function extractGatewaySchemes(data) {
+            var result = {'空空':[],'空铁':[]};
+            if (!data) return result;
+            (data.fps || []).forEach(function(fp) {
+                var ss=fp.ss||[], lps=fp.lps||[], stss=fp.stss||[], fs=fp.fs||[], cfis=fp.cfis||[];
+                var prices = [];
+                lps.forEach(function(lp) {
+                    var cabinLabel = LPT_LABELS[lp.lpt]||('舱位'+lp.lpt);
+                    var dps=lp.dps||{}, mpk={};
+                    try{mpk=JSON.parse(lp.mpk||'{}');}catch(e){}
+                    prices.push({
+                        lpt:lp.lpt, cabinLabel:cabinLabel,
+                        atp:lp.atp||0, sp:lp.sp||0, pa:lp.pa||0, not:lp.not,
+                        mdp:dps.mdp||0, bdp:dps.bdp||0, iap:dps.iap||false,
+                        mpk:mpk,
+                        pts:(lp.pts||[]).map(function(p){return p.td;}).join(', '),
+                        mts:(lp.mts||[]).map(function(m){return m.td;}).join(', '),
+                        rts:(lp.rts||[]).map(function(r){return r.td;}).join(', '),
+                        qpst:(lp.qpst||[]).map(function(q){return q.td;}).join(', '),
+                        tags:lp.tags||[], ccid:lp.ccid||0,
+                        ofl:lp.ofl||0, tht:lp.tht||0, fcd:lp.fcd||false, dup:lp.dup||false
+                    });
+                });
+                var seg1No=(ss[0]||{}).fn||'', seg2No=(ss[1]||{}).fn||'';
+                var schemeLowestPrice=null;
+                prices.forEach(function(p){ if(p.sp>0&&(schemeLowestPrice===null||p.sp<schemeLowestPrice)) schemeLowestPrice=p.sp; });
+                // Find tags from lowest-price cabin's first product
+                var lowestTags = [];
+                if (prices.length > 0) {
+                    var sortedByPrice = prices.slice().sort(function(a,b){ return (a.sp||Infinity) - (b.sp||Infinity); });
+                    lowestTags = sortedByPrice[0].tags || [];
+                }
+                result['空空'].push({
+                    fId:fp.fId||'', it:fp.it, dt:fp.dt||'', at:fp.at||'',
+                    ad:fp.ad||'0', dst:fp.dst||'', ast:fp.ast||'', td:fp.td||'',
+                    dasn:fp.dasn||'', aasn:fp.aasn||'',
+                    sc:fp.sc||'', sd:fp.sd||'', rs:fp.rs||'', mt:fp.mt,
+                    icat:fp.icat||false,
+                    score:fp.score||'0', fprt:fp.fprt||0, fcd:fp.fcd||false, dup:fp.dup||false,
+                    segments:ss, prices:prices, services:stss, filterTags:fs, cfis:cfis,
+                    seg1No:seg1No, seg2No:seg2No, transferCity:fp.sc||'',
+                    seg1DepPort:(ss[0]||{}).dac||'', seg1ArrPort:(ss[0]||{}).aac||'',
+                    seg2DepPort:(ss[1]||{}).dac||'', seg2ArrPort:(ss[1]||{}).aac||'',
+                    lowestPrice:schemeLowestPrice, lowestTags:lowestTags
+                });
+            });
+            (data.ftps || []).forEach(function(ftp) {
+                var lps=ftp.lps||[], ss=ftp.ss||[], cts=ftp.cts||[];
+                var prices = [];
+                lps.forEach(function(lp) {
+                    prices.push({ lpt:lp.lpt, cabinLabel:LPT_LABELS[lp.lpt]||('舱位'+lp.lpt), sp:lp.sp||0, atp:lp.atp||0, not:lp.not||'', sds:lp.sds||[] });
+                });
+                var schemeLowestPrice=null;
+                prices.forEach(function(p){ if(p.sp>0&&(schemeLowestPrice===null||p.sp<schemeLowestPrice)) schemeLowestPrice=p.sp; });
+                result['空铁'].push({
+                    it:ftp.it, st:ftp.st, dn:ftp.dn||'', an:ftp.an||'',
+                    dt:ftp.dt||'', at:ftp.at||'', ad:ftp.ad||'0',
+                    dst:ftp.dst||'', ast:ftp.ast||'', td:ftp.td||'', tdm:ftp.tdm||0,
+                    sc:ftp.sc||'', sd:ftp.sd||'',
+                    segments:ss, prices:prices, cts:cts, fs:ftp.fs||[],
+                    transferCity:ftp.sc||'', lowestPrice:schemeLowestPrice,
+                    seg1No:'', seg2No:'', lowestTags:[]
+                });
+            });
+            return result;
+        }
+
+        // --- B15 入参生成 ---
+        function generateB15Input(scheme, requestParams) {
+            var ss = scheme.segments || [];
+            if (ss.length < 2) return null;
+            var seg1 = ss[0], seg2 = ss[1];
+            var depAirport = seg1.dac || '';
+            var arrAirport = seg2.aac || '';
+            var transferAirport = seg1.aac || ''; // 中转机场 = 第一段到达
+            // Read directly from original request JSON — no field name guessing
+            var rp = requestParams || {};
+            var depDate = rp.departDate || rp.dd || scheme.dt || '';
+            var depCityCode = rp.departureCityCode || rp.departureCode || rp.departure || depAirport;
+            var arrCityCode = rp.arrivalCityCode || rp.arrivalCode || rp.arrival || arrAirport;
+            var plat = rp.plat ? parseInt(rp.plat, 10) : 852;
+
+            // Build flights with Identifier and tag
+            var flights = [];
+            var tags = scheme.lowestTags || [];
+            ss.forEach(function(seg, idx) {
+                var segTag = tags[idx] || '';
+                var depTime = seg.dt || '';
+                // Identifier format: DEPARR+datetime+flightNo+tag
+                var depCode = seg.dac || '';
+                var arrCode = seg.aac || '';
+                var identifier = depCode + arrCode + depTime + seg.fn + segTag;
+                flights.push({
+                    Identifier: identifier,
+                    departureAirportCode: depCode,
+                    arrivalAirportCode: arrCode,
+                    departDatetime: depTime,
+                    flightNo: seg.fn || '',
+                    tag: segTag
+                });
+            });
+
+            return {
+                departureCityCode: depCityCode,
+                arrivalCityCode: arrCityCode,
+                transferCityCode: transferAirport || null,
+                departDate: depDate,
+                passengerType: rp.passengerType != null ? rp.passengerType : 0,
+                divideFlag: rp.divideFlag != null ? rp.divideFlag : null,
+                isThroughType: 0,
+                resourceType: scheme.fprt || 47,
+                flights: flights,
+                train: null,
+                car: null,
+                entrance: 91,
+                refId: rp.refId || 0,
+                tickets: 0,
+                lowestPrice: scheme.lowestPrice || 0,
+                plat: plat,
+                linkTrackerId: rp.linkTrackerId || '',
+                realTimeMode: rp.realTimeMode || null,
+                user: rp.user || { memberId: '', unionId: '', openId: '', deviceId: '', contextId: '', traceId: null },
+                ABTests: rp.ABTests || [],
+                enviroments: rp.enviroments || null,
+                passengerInfo: rp.passengerInfo || { adultCount: 1, childCount: 0, infantCount: 0 },
+                passengerDetailInfos: rp.passengerDetailInfos || null
+            };
+        }
+
+        // --- Rendering ---
+        function renderResults(data) {
+            document.getElementById('resultsSection').classList.add('active');
+            var qH=document.getElementById('queryHeader'), qB=document.getElementById('queryBody');
+            qH.classList.remove('collapsed'); qB.classList.remove('collapsed');
+            _apmTraceId=data.apmTraceId||''; showApmFab(_apmTraceId);
+            // Render debug info
+            renderDebugInfo(data);
+            if (!data.success) {
+                document.getElementById('summaryStats').innerHTML='<div class="stat-item"><div class="stat-value" style="color:#e53935">✗</div><div class="stat-label">'+(data.error||'查询失败')+'</div></div>';
+                document.getElementById('transferCities').innerHTML=''; document.getElementById('tabBar').innerHTML=''; document.getElementById('tabContents').innerHTML=''; return;
+            }
+            var gatewayData=data.data; _rawData=gatewayData;
+            if (gatewayData && gatewayData.ec!==undefined && gatewayData.ec!==0) {
+                document.getElementById('summaryStats').innerHTML='<div class="stat-item"><div class="stat-value" style="color:#e53935">✗</div><div class="stat-label">接口返回 ec='+gatewayData.ec+'</div></div>'; return;
+            }
+            var schemes=extractGatewaySchemes(gatewayData); _allSchemes=schemes;
+            var totalKK=(schemes['空空']||[]).length, totalKT=(schemes['空铁']||[]).length, total=totalKK+totalKT;
+            _lowestPrice=null; _lowestSchemeIdx=-1;
+            schemes['空空'].forEach(function(s,idx){
+                if(s.lowestPrice!==null&&(_lowestPrice===null||s.lowestPrice<_lowestPrice)){_lowestPrice=s.lowestPrice;_lowestSchemeIdx=idx;}
+            });
+            (schemes['空铁']||[]).forEach(function(s){
+                if(s.lowestPrice!==null&&(_lowestPrice===null||s.lowestPrice<_lowestPrice)){_lowestPrice=s.lowestPrice;_lowestSchemeIdx=-1;}
+            });
+            var qh=document.getElementById('queryHeader');
+            qh.querySelector('.header-title').textContent='查询结果（'+total+' 个方案：空空 '+totalKK+' / 空铁 '+totalKT+'）';
+            renderSummary(schemes,gatewayData); populateFilters(schemes); renderTabs(schemes);
+            document.getElementById('rawData').textContent=JSON.stringify(data,null,2);
+        }
+
+        function renderSummary(schemes,rawData) {
+            var stats=document.getElementById('summaryStats'), html='';
+            var totalKK=(schemes['空空']||[]).length, totalKT=(schemes['空铁']||[]).length;
+            html+='<div class="stat-item"><div class="stat-value">'+totalKK+'</div><div class="stat-label">空空方案</div></div>';
+            html+='<div class="stat-item"><div class="stat-value">'+totalKT+'</div><div class="stat-label">空铁方案</div></div>';
+            if(_lowestPrice!==null) html+='<div class="stat-item clickable" onclick="scrollToLowest()"><div class="stat-value" style="color:#e53935">¥'+_lowestPrice+'</div><div class="stat-label">全局最低价 (点击聚焦)</div></div>';
+            if(rawData) html+='<div class="stat-item"><div class="stat-value" style="font-size:18px;">'+(rawData.d||'')+' → '+(rawData.a||'')+'</div><div class="stat-label">'+(rawData.dd||'')+'</div></div>';
+            stats.innerHTML=html;
+            // Transfer cities
+            var cityMap={};
+            ['空空','空铁'].forEach(function(cat){ (schemes[cat]||[]).forEach(function(s){
+                if(s.transferCity){ if(!cityMap[s.transferCity]) cityMap[s.transferCity]={count:0,lowestPrice:null}; cityMap[s.transferCity].count++;
+                    if(s.lowestPrice!==null){ var c=cityMap[s.transferCity]; if(c.lowestPrice===null||s.lowestPrice<c.lowestPrice) c.lowestPrice=s.lowestPrice; }
+                } }); });
+            var citiesHtml='<h3>中转点</h3><div class="city-chips">';
+            Object.keys(cityMap).sort().forEach(function(city){
+                var info=cityMap[city];
+                citiesHtml+='<div class="city-chip" onclick="filterByTransferCity(\''+city+'\')">'+city+'<span class="chip-count">'+info.count+'个方案</span>';
+                if(info.lowestPrice!==null) citiesHtml+='<span class="chip-price">¥'+info.lowestPrice+'起</span>';
+                citiesHtml+='</div>';
+            });
+            citiesHtml+='</div>';
+            document.getElementById('transferCities').innerHTML=citiesHtml;
+        }
+
+        function filterByTransferCity(city) {
+            var sel=document.getElementById('filterTransfer');
+            if(sel){for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===city){sel.selectedIndex=i;break;}}}
+            applyFilter();
+        }
+        function scrollToLowest() {
+            if(_lowestSchemeIdx>=0){
+                switchTab('空空',document.querySelector('.tab-btn'));
+                setTimeout(function(){
+                    var el=document.getElementById('scheme-kk-'+_lowestSchemeIdx);
+                    if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('lowest');setTimeout(function(){el.classList.remove('lowest');},3000);}
+                },100);
+            }
+        }
+
+        // --- Filters ---
+        function populateFilters(schemes) {
+            var transferSet={},seg1Set={},seg2Set={};
+            ['空空','空铁'].forEach(function(cat){(schemes[cat]||[]).forEach(function(s){
+                if(s.transferCity) transferSet[s.transferCity]=true;
+                if(s.seg1No) seg1Set[s.seg1No]=true;
+                if(s.seg2No) seg2Set[s.seg2No]=true;
+            });});
+            var sT=document.getElementById('filterTransfer'),s1=document.getElementById('filterSeg1'),s2=document.getElementById('filterSeg2');
+            sT.innerHTML='<option value="">全部</option>'; s1.innerHTML='<option value="">全部</option>'; s2.innerHTML='<option value="">全部</option>';
+            Object.keys(transferSet).sort().forEach(function(c){sT.innerHTML+='<option value="'+c+'">'+c+'</option>';});
+            Object.keys(seg1Set).sort().forEach(function(no){s1.innerHTML+='<option value="'+no+'">'+no+'</option>';});
+            _seg2List=Object.keys(seg2Set).sort();
+            _seg2List.forEach(function(no){s2.innerHTML+='<option value="'+no+'">'+no+'</option>';});
+            document.getElementById('filterBar').classList.add('active');
+            document.getElementById('filterCount').textContent='';
+        }
+        var _seg2List=[];
+        function onSeg1Change() {
+            var f1=document.getElementById('filterSeg1').value,ft=document.getElementById('filterTransfer').value,sel2=document.getElementById('filterSeg2'),cur=sel2.value;
+            if(!_allSchemes||!f1){sel2.innerHTML='<option value="">全部</option>';_seg2List.forEach(function(no){sel2.innerHTML+='<option value="'+no+'">'+no+'</option>';});sel2.value=cur;return;}
+            var cs={};
+            ['空空','空铁'].forEach(function(cat){(_allSchemes[cat]||[]).forEach(function(s){if(s.seg1No===f1&&s.seg2No){if(!ft||s.transferCity===ft) cs[s.seg2No]=true;}});});
+            var cl=Object.keys(cs).sort(); sel2.innerHTML='<option value="">全部</option>'; cl.forEach(function(no){sel2.innerHTML+='<option value="'+no+'">'+no+'</option>';}); if(cs[cur]) sel2.value=cur;
+        }
+        function applyFilter() {
+            if(!_allSchemes) return;
+            var ft=document.getElementById('filterTransfer').value,f1=document.getElementById('filterSeg1').value,f2=document.getElementById('filterSeg2').value;
+            var filtered={},totalCount=0;
+            ['空空','空铁'].forEach(function(cat){
+                var schemes=(_allSchemes[cat]||[]).filter(function(s){if(ft&&s.transferCity!==ft)return false;if(f1&&s.seg1No!==f1)return false;if(f2&&s.seg2No!==f2)return false;return true;});
+                filtered[cat]=schemes; totalCount+=schemes.length;
+            });
+            renderTabs(filtered);
+            var allTotal=0; ['空空','空铁'].forEach(function(cat){allTotal+=(_allSchemes[cat]||[]).length;});
+            document.getElementById('filterCount').textContent=(ft||f1||f2)?('筛选: '+totalCount+'/'+allTotal):'';
+        }
+
+        // --- Tabs ---
+        function renderTabs(schemes) {
+            var tabBar=document.getElementById('tabBar'),tabContents=document.getElementById('tabContents'),cats=['空空','空铁'];
+            var tH='',cH='';
+            cats.forEach(function(cat,idx){var c=(schemes[cat]||[]).length;tH+='<button class="tab-btn'+(idx===0?' active':'')+'" onclick="switchTab(\''+cat+'\',this)">'+cat+' ('+c+')</button>';cH+='<div class="tab-content'+(idx===0?' active':'')+'" id="tab-'+cat+'"></div>';});
+            tabBar.innerHTML=tH; tabContents.innerHTML=cH;
+            cats.forEach(function(cat){renderCategory(cat,schemes[cat]||[]);});
+        }
+        function switchTab(cat,btn) {
+            document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+            document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active');});
+            document.getElementById('tab-'+cat).classList.add('active'); if(btn) btn.classList.add('active');
+        }
+
+        // --- 空空方案 ---
+        function renderCategory(cat,schemes) {
+            var container=document.getElementById('tab-'+cat);
+            if(!schemes||schemes.length===0){container.innerHTML='<div class="empty-result">无'+cat+'方案</div>';return;}
+            if(cat==='空空') renderFlightSchemes(container,schemes);
+            else renderTrainSchemes(container,schemes);
+        }
+
+        function renderFlightSchemes(container,schemes) {
+            var html='';
+            schemes.forEach(function(s,idx){
+                var rsLabel=RS_LABELS[s.rs]||s.rs, mtLabel=MT_LABELS[s.mt]||('类型'+s.mt), rawId='raw-kk-'+idx;
+                var isOvernight=s.ad==='1', isLowest=(_lowestSchemeIdx>=0&&s.lowestPrice===_lowestPrice&&s.lowestPrice!==null);
+                html+='<div class="scheme-card'+(isLowest?' lowest':'')+'" id="scheme-kk-'+idx+'">';
+                html+='<div class="scheme-top"><div class="scheme-identity">';
+                html+='<span class="scheme-idx">方案 '+(idx+1)+'</span>';
+                html+='<div class="scheme-route">'+s.fId+'</div>';
+                html+='<div class="scheme-tags">';
+                html+='<span class="tag tag-rs">'+rsLabel+'</span>';
+                html+='<span class="tag tag-mt">'+mtLabel+'</span>';
+                html+='<span class="tag" style="background:#e0f2f1;color:#00695c;">'+(s.icat?'通程':'联程')+'</span>';
+                html+='<span class="tag tag-transfer">经'+s.sc+'</span>';
+                if(isOvernight) html+='<span class="tag tag-overnight">隔夜中转</span>';
+                if(s.fcd) html+='<span class="tag" style="background:#fce4ec;color:#c62828;">fcd</span>';
+                if(s.dup) html+='<span class="tag" style="background:#fff3e0;color:#e65100;">dup</span>';
+                html+='</div></div>';
+                html+='<div style="text-align:right;font-size:12px;color:#777;">总耗时: '+s.td+'<br>中转停留: '+s.sd+'</div></div>';
+
+                // Segments
+                html+='<div class="segments">';
+                s.segments.forEach(function(seg,si){
+                    if(si>0) html+='<div class="seg-connector">→<br><span style="font-size:10px;">'+s.sc+'</span></div>';
+                    html+='<div class="seg-block"><div class="seg-header">';
+                    html+='<span class="flight-no">'+seg.fn+'</span><span class="airline">'+(seg.asn||'')+'</span><span class="airline">'+(seg.amn||'')+'</span>';
+                    if(seg.isf==='True') html+='<span class="shared">共享</span>';
+                    html+='</div><div class="seg-detail">';
+                    html+='<span class="port">'+(seg.dac||'')+'</span>';
+                    if(seg.dat) html+=' <span class="terminal">'+seg.dat+'</span>';
+                    html+=' <span class="time">'+((seg.dt||'').split(' ')[1]||seg.dt)+'</span> → ';
+                    html+='<span class="port">'+(seg.aac||'')+'</span>';
+                    if(seg.aat) html+=' <span class="terminal">'+seg.aat+'</span>';
+                    html+=' <span class="time">'+((seg.at||'').split(' ')[1]||seg.at)+'</span>';
+                    html+='<br>飞行时间: '+(seg.td||'')+'</div></div>';
+                });
+                html+='</div>';
+
+                // Prices
+                html+='<div class="price-section"><div style="font-size:13px;font-weight:600;color:#6a1b9a;margin-bottom:6px;">价格信息</div><div class="price-row">';
+                s.prices.forEach(function(p){
+                    html+='<div class="price-card"><div class="cabin-label">'+p.cabinLabel+(p.pts?' ('+p.pts+')':'')+'</div>';
+                    html+='<span class="price-main"><span class="yen">¥</span>'+p.sp+'</span>';
+                    if(p.iap||p.pa>0){html+='<span class="price-orig">¥'+p.bdp+'</span>';if(p.pa>0) html+='<span class="price-discount">-¥'+p.pa+'</span>';}
+                    html+='<div class="price-detail">成人原价(atp): ¥'+p.atp;
+                    if(p.bdp) html+=' | 优惠前(bdp): ¥'+p.bdp;
+                    if(p.mdp) html+=' | 优惠后(mdp): ¥'+p.mdp;
+                    html+='<br>余票: '+(p.not==='A'?'充足':p.not);
+                    html+=' | '+(p.ofl===1?'真联程':'假联程');
+                    if(p.tht) html+=' | tht: '+p.tht;
+                    html+='</div>';
+                    if(p.mts||p.rts||p.qpst){
+                        html+='<div class="price-tags">';
+                        if(p.mts) html+='<span class="tag" style="background:#e8f5e9;color:#2e7d32;">'+p.mts+'</span>';
+                        if(p.rts) html+='<span class="tag" style="background:#e3f2fd;color:#1565c0;">'+p.rts+'</span>';
+                        if(p.qpst) html+='<span class="tag" style="background:#fff3e0;color:#e65100;">'+p.qpst+'</span>';
+                        html+='</div>';
+                    }
+                    if(p.mpk&&Object.keys(p.mpk).length>0) html+='<div class="price-detail" style="margin-top:2px;">mpk: ma='+(p.mpk.ma||0)+', ra='+(p.mpk.ra||0)+', npa='+(p.mpk.npa||0)+', dpa='+(p.mpk.dpa||0)+', ias='+p.mpk.ias+'</div>';
+                    html+='</div>';
+                });
+                html+='</div></div>';
+
+                // Services
+                if(s.services&&s.services.length>0){
+                    html+='<div class="service-section"><div class="svc-title">中转服务</div>';
+                    s.services.forEach(function(svc){var cls=SVC_TYPE_CLASS[svc.ServiceType]||'svc-default';html+='<span class="service-item '+cls+'">'+(svc.ServiceName||svc.ServiceType)+'</span>';});
+                    html+='</div>';
+                }
+
+                // B15 入参
+                var b15 = generateB15Input(s, _requestParams);
+                if (b15) {
+                    var b15Id = 'b15-' + idx;
+                    html += '<div class="b15-section">';
+                    html += '<h3 class="b15-title b15-toggle" onclick="toggleB15(\'' + b15Id + '\')">转Book1.5入参 <span id="b15arrow-' + b15Id + '" style="font-size:11px">▶</span></h3>';
+                    html += '<div class="b15-json" id="b15json-' + b15Id + '">' + escHtml(JSON.stringify(b15, null, 2)) + '</div>';
+                    html += '<button class="b15-copy-btn" id="copyB15Btn-' + b15Id + '" onclick="copyB15(\'' + b15Id + '\')">复制B15入参</button>';
+                    html += '<button class="b15-view-btn" onclick="viewB15Products(\'' + b15Id + '\')">查看产品列表</button>';
+                    html += '</div>';
+                }
+
+                html+='<div style="display:flex;gap:6px;margin-top:8px;">';
+                html+='<button class="raw-toggle" onclick="toggleSchemeRaw(\''+rawId+'\')">查看原始数据</button>';
+                html+='<button class="raw-toggle" id="copyBtn-'+rawId+'" onclick="copySchemeRaw(\''+rawId+'\')">复制原始数据</button>';
+                html+='</div><div class="raw-data" id="'+rawId+'"></div></div>';
+            });
+            container.innerHTML=html;
+            schemes.forEach(function(s,idx){var el=document.getElementById('raw-kk-'+idx);if(el) el.textContent=JSON.stringify(s,null,2);});
+        }
+
+        // --- 空铁方案 ---
+        function renderTrainSchemes(container,schemes) {
+            var html='';
+            schemes.forEach(function(s,idx){
+                var rawId='raw-kt-'+idx, ss=s.segments||[];
+                html+='<div class="train-scheme-card"><div class="scheme-top"><div class="scheme-identity">';
+                html+='<span class="scheme-idx" style="color:#1565c0;">空铁方案 '+(idx+1)+'</span>';
+                html+='<div class="scheme-tags" style="margin-top:4px;"><span class="tag tag-transfer">经'+s.sc+'</span></div></div>';
+                html+='<div style="text-align:right;font-size:12px;color:#777;">'+s.dn+' → '+s.an+'<br>总耗时: '+s.td+' | 中转停留: '+s.sd+'</div></div>';
+                ss.forEach(function(seg,si){
+                    if(seg.ac||seg.asn){html+='<div class="train-flight-seg"><div style="font-weight:600;color:#2e7d32;font-size:13px;">第'+(si+1)+'程: 航班 '+(seg.fn||'')+' — '+(seg.asn||'')+'</div><div style="font-size:12px;color:#555;">航司: '+(seg.ac||'')+' '+(seg.an||'')+'</div></div>';}
+                    else{html+='<div class="train-seg"><div class="train-no">第'+(si+1)+'程: '+(seg.fn||'')+'</div></div>';}
+                });
+                if(s.prices&&s.prices.length>0){
+                    html+='<div class="price-section"><div style="font-size:13px;font-weight:600;color:#1565c0;margin-bottom:6px;">价格信息</div><div class="price-row">';
+                    s.prices.forEach(function(p){
+                        html+='<div class="price-card"><div class="cabin-label">'+p.cabinLabel+'</div>';
+                        html+='<span class="price-main" style="color:#1565c0;"><span class="yen">¥</span>'+p.sp+'</span>';
+                        if(p.atp&&p.atp!==p.sp) html+='<span class="price-orig">¥'+p.atp+'</span>';
+                        html+='<div class="price-detail">余票: '+(p.not==='A'?'充足':p.not)+'</div>';
+                        if(p.sds&&p.sds.length>0){
+                            p.sds.forEach(function(sd,si){
+                                if(si===0) return; // 跳过第一组综合信息
+                                if(sd.fromStationName){
+                                    html+='<div style="margin-top:6px;padding:6px 8px;background:#f5f5f5;border-radius:4px;font-size:11px;color:#555;line-height:1.6;">';
+                                    html+='<b>火车: '+sd.trainNo+'</b> '+sd.fromStationName+'('+sd.fromStationCode+') → '+sd.toStationName+'('+sd.toStationCode+')<br>';
+                                    html+=sd.fromTime+' → '+sd.toTime+' | 运行: '+sd.runTimeSpan+'min';
+                                    if(sd.cabins&&sd.cabins.length>0) sd.cabins.forEach(function(c){html+='<br>'+c.seatName+': ¥'+c.price+' 余'+c.seats;});
+                                    html+='</div>';
+                                } else if(sd.flightNo){
+                                    html+='<div style="margin-top:6px;padding:6px 8px;background:#f0faf5;border-radius:4px;font-size:11px;color:#555;line-height:1.6;">';
+                                    html+='<b>航班: '+sd.flightNo+'</b> '+(sd.airCompanyName||'')+'<br>';
+                                    html+=sd.originAirportShortName+'('+sd.originAirportCode+') → '+sd.arriveAirportShortName+'('+sd.arriveAirportCode+')<br>';
+                                    html+=sd.flyOffOnlyTime+' → '+sd.arrivalOnlyTime+' | '+sd.spantime;
+                                    if(sd.cabins&&sd.cabins.length>0){var cabin=sd.cabins[0];html+='<br>'+(cabin.BaseRoomName||'')+' '+(cabin.roomDes||'')+': ¥'+(cabin.SellPrice||cabin.smtp||'')+' | 余票: '+(cabin.ticketsNum||'');}
+                                    html+='</div>';
+                                }
+                            });
+                        }
+                        html+='</div>';
+                    });
+                    html+='</div></div>';
+                }
+                html+='<div style="display:flex;gap:6px;margin-top:8px;"><button class="raw-toggle" onclick="toggleSchemeRaw(\''+rawId+'\')">查看原始数据</button></div><div class="raw-data" id="'+rawId+'"></div></div>';
+            });
+            container.innerHTML=html;
+            schemes.forEach(function(s,idx){var el=document.getElementById('raw-kt-'+idx);if(el) el.textContent=JSON.stringify(s,null,2);});
+        }
+
+        // --- Helpers ---
+        var FT_LABELS={1:'时段',2:'航司',3:'舱位',4:'出发',5:'到达',6:'中转',7:'筛选项',8:'到达时段',9:'出发站',11:'准点率'};
+        var FT_CLASSES={1:'ft-type',2:'ft-airline',3:'ft-cabin',4:'ft-dep',5:'ft-arr',6:'ft-transfer',7:'ft-special',8:'ft-type',9:'ft-dep',11:'ft-special'};
+        function getFilterTagLabel(ft){return FT_LABELS[ft]||('ft'+ft);}
+        function getFilterTagClass(ft){return FT_CLASSES[ft]||'ft-special';}
+        function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+        function toggleRaw(){document.getElementById('rawData').classList.toggle('active');}
+        function toggleSchemeRaw(rawId){var el=document.getElementById(rawId);if(el)el.classList.toggle('active');}
+        function copySchemeRaw(rawId){var el=document.getElementById(rawId);if(!el||!el.textContent.trim())return;navigator.clipboard.writeText(el.textContent).then(function(){var btn=document.getElementById('copyBtn-'+rawId);if(btn){btn.textContent='已复制!';setTimeout(function(){btn.textContent='复制原始数据';},2000);}});}
+        function toggleB15(id) {
+            var el = document.getElementById('b15json-' + id);
+            var arrow = document.getElementById('b15arrow-' + id);
+            if (!el) return;
+            el.classList.toggle('active');
+            if (arrow) arrow.textContent = el.classList.contains('active') ? '▼' : '▶';
+        }
+        function copyB15(id) {
+            var el = document.getElementById('b15json-' + id);
+            if (!el) return;
+            navigator.clipboard.writeText(el.textContent).then(function() {
+                var btn = document.getElementById('copyB15Btn-' + id);
+                if (btn) { btn.textContent = '已复制!'; setTimeout(function() { btn.textContent = '复制B15入参'; }, 2000); }
+            });
+        }
+        function viewB15Products(id) {
+            var el = document.getElementById('b15json-' + id);
+            if (!el) return;
+            try {
+                localStorage.setItem('b15param', el.textContent);
+            } catch(e) {}
+            window.open('/b15-standard.html', '_blank');
+        }
+        function toggleQueryResults(){document.getElementById('queryHeader').classList.toggle('collapsed');document.getElementById('queryBody').classList.toggle('collapsed');}
+        function showApmFab(traceId){_apmTraceId=traceId||'';var fab=document.getElementById('apmFab');if(_apmTraceId){fab.classList.add('visible');document.getElementById('apmFabId').textContent=_apmTraceId;document.getElementById('apmFabId').title=_apmTraceId;}else{fab.classList.remove('visible');}}
+        function copyApmTraceId(){if(!_apmTraceId)return;navigator.clipboard.writeText(_apmTraceId).then(function(){var fab=document.getElementById('apmFab');fab.textContent='已复制!';setTimeout(function(){fab.innerHTML='<span class="label">apmTraceId</span><span class="id" id="apmFabId">'+_apmTraceId+'</span>';document.getElementById('apmFabId').title=_apmTraceId;},1500);});}
+        // --- History ---
+        function saveHistory(inputJson, site, plat) {
+            if (!inputJson) return;
+            try {
+                var entry = { input: inputJson, site: site || '', plat: plat || '', time: new Date().toLocaleString() };
+                localStorage.setItem('doctor_history_gateway', JSON.stringify(entry));
+                loadHistory();
+            } catch(e) {}
+        }
+        function loadHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_gateway');
+                if (!stored) { document.getElementById('historyBar').classList.remove('active'); return; }
+                var entry = JSON.parse(stored);
+                var bar = document.getElementById('historyBar');
+                bar.classList.add('active');
+                // Build a short summary from the JSON — support both short-form (d/a/dd) and full-form (departureCityCode etc.)
+                var obj;
+                try { obj = JSON.parse(entry.input); } catch(e) { obj = null; }
+                var parts = [];
+                if (obj) {
+                    // Route: departure → arrival (via transfer)
+                    var depCode = obj.departureCityCode || obj.d || '';
+                    var arrCode = obj.arrivalCityCode || obj.a || '';
+                    var viaCode = obj.transferCityCode || obj.sc || '';
+                    if (depCode && arrCode) {
+                        var routeStr = depCode + ' → ' + arrCode;
+                        if (viaCode) routeStr += ' (经' + viaCode + ')';
+                        parts.push(routeStr);
+                    }
+                    // Date
+                    var depDate = obj.departDate || obj.dd || '';
+                    if (depDate) parts.push(depDate);
+                    // Flight numbers
+                    var flights = obj.flights || [];
+                    if (flights.length > 0) {
+                        var fnos = [];
+                        for (var i = 0; i < flights.length; i++) {
+                            var fn = flights[i].flightNo || flights[i].fn || '';
+                            if (fn) fnos.push(fn);
+                        }
+                        if (fnos.length > 0) parts.push(fnos.join('/'));
+                    }
+                    // Resource type
+                    if (obj.resourceType != null) parts.push('RT:' + obj.resourceType);
+                }
+                var summary = parts.join('  ');
+                if (!summary) summary = entry.input.substring(0, 80);
+                document.getElementById('historyText').textContent = summary;
+                document.getElementById('historyText').title = entry.input;
+                document.getElementById('historyTime').textContent = entry.time;
+            } catch(e) { document.getElementById('historyBar').classList.remove('active'); }
+        }
+        function restoreHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_gateway');
+                if (!stored) return;
+                var entry = JSON.parse(stored);
+                document.getElementById('requestJson').value = entry.input;
+                if (entry.site) document.getElementById('siteSelect').value = entry.site;
+                if (entry.plat) {
+                    var platSel = document.getElementById('platSelect');
+                    var found = false;
+                    for (var i = 0; i < platSel.options.length; i++) {
+                        if (platSel.options[i].value === entry.plat) { found = true; break; }
+                    }
+                    if (found) { platSel.value = entry.plat; document.getElementById('customPlat').style.display = 'none'; }
+                    else { platSel.value = 'custom'; document.getElementById('customPlat').style.display = 'inline-block'; document.getElementById('customPlat').value = entry.plat; }
+                }
+            } catch(e) {}
+        }
+
+        // --- Debug Info ---
+        function renderDebugInfo(data) {
+            var dbg = data._debug || {};
+            var lines = [];
+            lines.push('╔══════════════════════════════════════════════════════════════╗');
+            lines.push('║                        调 试 信 息                          ║');
+            lines.push('╚══════════════════════════════════════════════════════════════╝');
+            lines.push('');
+            lines.push('【环境】  ' + (dbg.env || _currentEnv));
+            lines.push('【站点】  ' + (dbg.site || '-'));
+            lines.push('【渠道】  ' + (dbg.plat || '-'));
+            lines.push('【耗时】  ' + (dbg.elapsed != null ? dbg.elapsed + ' ms' : '-'));
+            lines.push('');
+            lines.push('【请求 URL】');
+            lines.push(dbg.requestUrl || '(粘贴解析模式，无实际请求)');
+            lines.push('');
+            lines.push('【请求参数 (发送给上游)】');
+            lines.push(JSON.stringify(dbg.requestParams || {}, null, 2));
+            lines.push('');
+            lines.push('【用户输入 JSON】');
+            lines.push(dbg.inputJson || '-');
+            lines.push('');
+            lines.push('【apmTraceId】  ' + (data.apmTraceId || '-'));
+            if (!data.success) {
+                lines.push('');
+                lines.push('【错误信息】  ' + (data.error || '-'));
+            }
+            document.getElementById('debugInfo').textContent = lines.join('\n');
+        }
+        function toggleDebug(){document.getElementById('debugInfo').classList.toggle('active');}
+
+        // Load history on page load
+        window.addEventListener('load', function() { loadHistory(); });
+
+        window.addEventListener('scroll',function(){var btn=document.getElementById('scrollTopFab');if(!btn)return;btn.classList.toggle('visible',window.scrollY>300);});
+    </script>
+</body>
+</html>

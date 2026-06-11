@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>联程产品站Book1方案对比工具</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .env-select { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 12px; outline: none; }
+        .env-select:hover { background: rgba(255,255,255,0.25); }
+        .env-select option { background: #fff; color: #333; }
+        .nav-bar { display: flex; gap: 2px; align-items: stretch; }
+        .nav-group { position: relative; }
+        .nav-group-btn { color: rgba(255,255,255,0.75); background: none; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .nav-group-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-group.has-active .nav-group-btn { color: #ffeb3b; }
+        .nav-dropdown { display: none; position: absolute; top: 100%; right: 0; background: #065f37; border-radius: 6px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; padding: 4px 0; margin-top: 2px; }
+        .nav-group:hover .nav-dropdown { display: block; }
+        .nav-dropdown a { display: block; color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+        .nav-dropdown a:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-dropdown a.active { color: #ffeb3b; background: rgba(255,255,255,0.1); }
+        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
+        .input-section { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .input-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #1a73e8; }
+        textarea { width: 100%; height: 200px; border: 1px solid #ddd; border-radius: 6px; padding: 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 12px; resize: vertical; outline: none; transition: border-color 0.2s; }
+        textarea:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.15); }
+        .btn-row { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+        .btn { padding: 10px 28px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #1a73e8; color: white; }
+        .btn-primary:hover { background: #1557b0; }
+        .btn-primary:disabled { background: #94c2f5; cursor: not-allowed; }
+        .btn-secondary { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .loading { display: none; align-items: center; gap: 8px; color: #1a73e8; font-size: 13px; }
+        .loading.active { display: flex; }
+        .spinner { width: 18px; height: 18px; border: 2px solid #e0e0e0; border-top-color: #1a73e8; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .results-section { display: none; }
+        .results-section.active { display: block; }
+        .comparison-summary { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .comparison-summary h2 { font-size: 16px; margin-bottom: 12px; color: #1a73e8; }
+        .summary-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+        .stat-item { background: #f8f9fa; border-radius: 6px; padding: 12px 20px; text-align: center; }
+        .stat-value { font-size: 28px; font-weight: 700; color: #1a73e8; }
+        .stat-label { font-size: 12px; color: #666; margin-top: 2px; }
+        .stat-item.match .stat-value { color: #0d904f; }
+        .stat-item.diff .stat-value { color: #e53935; }
+        .tab-bar { display: flex; gap: 0; margin-bottom: 20px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .tab-btn { flex: 1; padding: 14px 20px; border: none; background: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: #666; border-bottom: 3px solid transparent; }
+        .tab-btn:hover { background: #f8f9fa; }
+        .tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; background: #f0f6ff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .columns { display: flex; gap: 20px; }
+        .column { flex: 1; background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; }
+        .column-header { padding: 14px 20px; font-weight: 600; font-size: 15px; color: white; }
+        .column-header.book1 { background: linear-gradient(135deg, #1a73e8, #0d47a1); }
+        .column-header.huixing { background: linear-gradient(135deg, #0d904f, #065f37); }
+        .column-body { padding: 16px; max-height: 700px; overflow-y: auto; }
+        .scheme-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 14px; margin-bottom: 12px; transition: border-color 0.2s; }
+        .scheme-card:hover { border-color: #1a73e8; }
+        .scheme-card.match { border-left: 4px solid #0d904f; }
+        .scheme-card.only-book1 { border-left: 4px solid #1a73e8; }
+        .scheme-card.only-huixing { border-left: 4px solid #0d904f; }
+        .scheme-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .scheme-type { font-weight: 600; font-size: 14px; color: #333; }
+        .scheme-price { font-weight: 700; font-size: 16px; color: #e53935; }
+        .scheme-price.na { color: #999; font-weight: 400; font-size: 13px; }
+        .segment-info { font-size: 12px; color: #555; margin-top: 6px; line-height: 1.6; }
+        .segment-info .flight-no { font-weight: 600; color: #333; }
+        .segment-info .port { color: #1a73e8; font-weight: 500; }
+        .segment-info .time { color: #666; }
+        .segment-info .arrow { margin: 0 4px; color: #999; }
+        .error-box { background: #fce8e6; border: 1px solid #f5c6c0; border-radius: 6px; padding: 14px; color: #c62828; font-size: 13px; margin-bottom: 12px; }
+        .empty-result { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+        .tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; }
+        .tag-yes { background: #e6f4ea; color: #0d904f; }
+        .tag-no { background: #fce8e6; color: #e53935; }
+        .raw-toggle { margin-top: 12px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .raw-toggle:hover { background: #e8e8e8; }
+        .raw-data { display: none; margin-top: 10px; max-height: 400px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 6px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+        .raw-data.active { display: block; }
+        .scheme-key { font-size: 11px; color: #999; font-family: monospace; margin-top: 4px; }
+        .rs-section { margin-top: 6px; font-size: 12px; color: #555; }
+        .rs-tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin: 2px 4px 2px 0; background: #e8f0fe; color: #1a73e8; }
+        .rs-tag.warn { background: #fff3e0; color: #e65100; }
+        .rs-warn-icon { color: #e65100; font-weight: 700; margin-left: 4px; }
+        .rs-diff { font-size: 11px; color: #e65100; margin-top: 2px; padding-left: 12px; }
+        .b15-section { background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 6px; padding: 14px; margin-top: 8px; }
+        .b15-section h3 { font-size: 13px; color: #e65100; margin-bottom: 6px; }
+        .b15-json { display: none; background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow: auto; }
+        .b15-json.active { display: block; }
+        .b15-copy-btn { margin-top: 6px; padding: 4px 12px; background: #ff6d00; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .b15-copy-btn:hover { background: #e65100; }
+        .b15-view-btn { margin-top: 6px; margin-left: 6px; padding: 4px 12px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .b15-view-btn:hover { background: #1557b0; }
+        .b15-toggle { cursor: pointer; user-select: none; }
+        .global-lowest { background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 6px; padding: 12px 20px; margin-bottom: 20px; font-size: 15px; font-weight: 600; }
+        .global-lowest .price { color: #e53935; font-size: 22px; }
+        .global-lowest .cat { color: #1a73e8; }
+        .apm-fab { position: fixed; bottom: 24px; right: 24px; background: #333; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-size: 12px; cursor: pointer; z-index: 999; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: background 0.2s; }
+        .apm-fab:hover { background: #555; }
+        .apm-fab.visible { display: block; }
+        .apm-fab .label { margin-right: 6px; }
+        .apm-fab .id { font-family: monospace; font-size: 11px; color: #ffeb3b; max-width: 200px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+        .history-bar { background: white; border-radius: 8px; padding: 12px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 13px; }
+        .history-bar.active { display: flex; }
+        .history-bar .history-label { color: #999; font-weight: 600; white-space: nowrap; }
+        .history-bar .history-text { color: #333; cursor: pointer; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; }
+        .history-bar .history-text:hover { color: #1a73e8; }
+        .history-bar .history-time { color: #999; font-size: 11px; white-space: nowrap; }
+        .history-bar .history-restore { padding: 4px 12px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+        .history-bar .history-restore:hover { background: #1557b0; }
+    
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>联程产品站Book1方案对比工具</h1>
+            <p>对比 Book1 与慧行方案 — 空空 / 通程 / 空铁 / 云上公交 | 显示中转服务标签及差异 | 支持空空方案转Book1.5入参</p>
+        </div>
+        <div id="nav-placeholder"></div>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <label>请求参数 (Book1 JSON)</label>
+            <textarea id="requestJson" placeholder='粘贴 Book1 请求参数 JSON...'></textarea>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">查询</button>
+                <button class="btn btn-secondary" onclick="formatJson()">美化</button>
+                <button class="btn btn-secondary" onclick="clearAll()">清空</button>
+                <select id="hxApiSelect" style="padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;outline:none;">
+                    <option value="hx">慧行HX接口</option>
+                    <option value="v7">慧行V7接口</option>
+                </select>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <span>正在查询 Book1 和慧行方案...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-bar" id="historyBar">
+            <span class="history-label">上次查询</span>
+            <span class="history-text" id="historyText" onclick="restoreHistory()"></span>
+            <span class="history-time" id="historyTime"></span>
+            <button class="history-restore" onclick="restoreHistory()">恢复</button>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="comparison-summary" id="summarySection">
+                <h2>对比摘要</h2>
+                <div class="summary-stats" id="summaryStats"></div>
+            </div>
+            <div class="global-lowest" id="globalLowest" style="display:none"></div>
+            <div class="tab-bar" id="tabBar"></div>
+            <div id="tabContents"></div>
+            <div class="comparison-summary" style="margin-top:20px">
+                <button class="raw-toggle" onclick="toggleHxReq()">慧行请求入参</button>
+                <button class="raw-toggle" onclick="goHuixingQuery()">跳转慧行查询</button>
+                <div class="raw-data" id="hxReqData"></div>
+                <button class="raw-toggle" onclick="toggleRaw()">查看原始数据</button>
+                <div class="raw-data" id="rawData"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/logic.js"></script>
+    <script src="/navbar.js"></script>
+<script>
+        var CATEGORIES = ['空空', '通程', '空铁', '云上公交'];
+        var _originalRequest = null;
+        var _lastData = null;
+        
+
+        function doSearch() {
+            var textarea = document.getElementById('requestJson');
+            var raw = textarea.value.trim();
+            if (!raw) { alert('请输入请求参数 JSON'); return; }
+            var requestObj;
+            try { requestObj = JSON.parse(raw); } catch (e) { alert('JSON 格式错误: ' + e.message); return; }
+            _originalRequest = requestObj;
+            var btn = document.getElementById('searchBtn');
+            var loading = document.getElementById('loading');
+            btn.disabled = true;
+            loading.classList.add('active');
+            document.getElementById('resultsSection').classList.remove('active');
+            var hxApi = document.getElementById('hxApiSelect').value;
+            fetch('/api/search?hxApi=' + encodeURIComponent(hxApi) + '&' + envQs(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestObj) })
+            .then(function(r) { return r.json(); })
+            .then(function(data) { btn.disabled = false; loading.classList.remove('active'); renderResults(data); })
+            .catch(function(err) { btn.disabled = false; loading.classList.remove('active'); alert('请求失败: ' + err.message); });
+        }
+
+        function formatJson() {
+            var textarea = document.getElementById('requestJson');
+            var raw = textarea.value.trim();
+            if (!raw) return;
+            try { textarea.value = JSON.stringify(JSON.parse(raw), null, 2); } catch (e) { alert('JSON 格式错误: ' + e.message); }
+        }
+
+        function clearAll() {
+            document.getElementById('requestJson').value = '';
+            document.getElementById('resultsSection').classList.remove('active');
+            _originalRequest = null; _lastData = null;
+        }
+
+        function renderResults(data) {
+            document.getElementById('resultsSection').classList.add('active');
+            _lastData = data;
+            showApmFab(data.apmTraceIds);
+            var b1 = extractBook1Schemes(data.book1);
+            var hx = extractHuixingSchemes(data.huixing);
+            // Save history: store the request JSON input
+            saveHistory(document.getElementById('requestJson').value.trim());
+            renderSummary(b1, hx);
+            renderGlobalLowest(b1);
+            renderTabs(b1, hx);
+            document.getElementById('rawData').textContent = JSON.stringify(data, null, 2);
+            if (data.huixingRequest) {
+                document.getElementById('hxReqData').textContent = JSON.stringify(data.huixingRequest, null, 2);
+            }
+        }
+
+        function saveHistory(inputJson) {
+            if (!inputJson) return;
+            try {
+                var entry = { input: inputJson, time: new Date().toLocaleString() };
+                localStorage.setItem('doctor_history_index', JSON.stringify(entry));
+                loadHistory();
+            } catch(e) {}
+        }
+
+        function loadHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_index');
+                if (!stored) { document.getElementById('historyBar').classList.remove('active'); return; }
+                var entry = JSON.parse(stored);
+                var bar = document.getElementById('historyBar');
+                bar.classList.add('active');
+                // Show a brief summary of the input
+                var obj;
+                try { obj = JSON.parse(entry.input); } catch(e) { obj = null; }
+                var summary = '';
+                if (obj) {
+                    if (obj.departureCityCode) summary += obj.departureCityCode + '→';
+                    if (obj.arrivalCityCode) summary += obj.arrivalCityCode;
+                    if (obj.departDate) summary += ' ' + obj.departDate;
+                    if (obj.passenger) summary += ' 乘客:' + obj.passenger;
+                }
+                if (!summary) summary = entry.input.substring(0, 80);
+                document.getElementById('historyText').textContent = summary;
+                document.getElementById('historyText').title = entry.input;
+                document.getElementById('historyTime').textContent = entry.time;
+            } catch(e) { document.getElementById('historyBar').classList.remove('active'); }
+        }
+
+        function restoreHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_index');
+                if (!stored) return;
+                var entry = JSON.parse(stored);
+                document.getElementById('requestJson').value = entry.input;
+            } catch(e) {}
+        }
+
+        // Load history on page load
+        window.onload = function() { loadHistory(); };
+
+        function renderSummary(b1, hx) {
+            var stats = document.getElementById('summaryStats');
+            var html = '';
+            CATEGORIES.forEach(function(cat) {
+                var b1Count = (b1[cat] || []).length;
+                var hxCount = (hx[cat] || []).length;
+                var b1Keys = new Set((b1[cat] || []).map(function(s) { return s.key; }));
+                var hxKeys = new Set((hx[cat] || []).map(function(s) { return s.key; }));
+                var match = 0;
+                b1Keys.forEach(function(k) { if (hxKeys.has(k)) match++; });
+                html += '<div class="stat-item"><div class="stat-value">' + b1Count + '/' + hxCount + '</div><div class="stat-label">' + cat + ' Book1/慧行</div></div>';
+                html += '<div class="stat-item match"><div class="stat-value">' + match + '</div><div class="stat-label">' + cat + '匹配</div></div>';
+            });
+            stats.innerHTML = html;
+        }
+
+        function renderGlobalLowest(b1) {
+            var gl = computeGlobalLowestPrice(b1);
+            var el = document.getElementById('globalLowest');
+            if (gl.lowestPrice !== null) {
+                el.style.display = 'block';
+                el.innerHTML = 'Book1 全局最低价: <span class="price">¥' + gl.lowestPrice + '</span> <span class="cat">(' + gl.lowestCategory + ')</span>';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        function renderTabs(b1, hx) {
+            var tabBar = document.getElementById('tabBar');
+            var tabContents = document.getElementById('tabContents');
+            var tabHtml = '';
+            var contentHtml = '';
+            CATEGORIES.forEach(function(cat, idx) {
+                var b1Schemes = b1[cat] || [];
+                var hxSchemes = hx[cat] || [];
+                tabHtml += '<button class="tab-btn' + (idx === 0 ? ' active' : '') + '" onclick="switchTab(\'' + cat + '\')">' + cat + ' (' + b1Schemes.length + '/' + hxSchemes.length + ')</button>';
+                contentHtml += '<div class="tab-content' + (idx === 0 ? ' active' : '') + '" id="tab-' + cat + '"><div class="columns">';
+                contentHtml += '<div class="column"><div class="column-header book1">Book1 ' + cat + ' 方案</div><div class="column-body" id="b1-' + cat + '"></div></div>';
+                contentHtml += '<div class="column"><div class="column-header huixing">慧行 ' + cat + ' 方案</div><div class="column-body" id="hx-' + cat + '"></div></div>';
+                contentHtml += '</div></div>';
+            });
+            tabBar.innerHTML = tabHtml;
+            tabContents.innerHTML = contentHtml;
+            CATEGORIES.forEach(function(cat) {
+                renderBook1Column(cat, b1[cat] || [], hx[cat] || []);
+                renderHuixingColumn(cat, hx[cat] || [], b1[cat] || []);
+            });
+        }
+
+        function switchTab(cat) {
+            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+            document.getElementById('tab-' + cat).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function renderSegmentHtml(s) {
+            // For 空铁: connectPairType=2 → 先空后铁(seg1=航班,seg2=火车); connectPairType=3 → 先铁后空(需要反转渲染)
+            var isTrainFlight = s.connectPairType === 3;
+            var first = isTrainFlight ? {
+                no: s.seg2No, depPort: s.seg2DepPort, arrPort: s.seg2ArrPort,
+                depTime: s.seg2DepTime, type: s.seg2Type, date: s.seg2Date
+            } : {
+                no: s.seg1No, depPort: s.seg1DepPort, arrPort: s.seg1ArrPort,
+                depTime: s.seg1DepTime, type: s.seg1Type, date: s.seg1Date
+            };
+            var second = isTrainFlight ? {
+                no: s.seg1No, depPort: s.seg1DepPort, arrPort: s.seg1ArrPort,
+                depTime: s.seg1DepTime, type: s.seg1Type, date: s.seg1Date
+            } : {
+                no: s.seg2No, depPort: s.seg2DepPort, arrPort: s.seg2ArrPort,
+                depTime: s.seg2DepTime, type: s.seg2Type, date: s.seg2Date
+            };
+            return '<div class="segment-info"><span class="flight-no">' + first.no + '</span> <span class="port">' + first.depPort + '</span><span class="arrow">→</span><span class="port">' + first.arrPort + '</span> <span class="time">' + first.depTime + '</span> <span style="color:#999">[' + first.type + '] ' + first.date + '</span></div>' +
+                '<div class="segment-info" style="text-align:center;color:#999;">↓ 中转 ↓</div>' +
+                '<div class="segment-info"><span class="flight-no">' + second.no + '</span> <span class="port">' + second.depPort + '</span><span class="arrow">→</span><span class="port">' + second.arrPort + '</span> <span class="time">' + second.depTime + '</span> <span style="color:#999">[' + second.type + '] ' + second.date + '</span></div>';
+        }
+
+        function renderRouteServices(scheme, compareWith) {
+            var labels = scheme.routeServices || [];
+            if (labels.length === 0) return '<div class="rs-section" style="color:#999">无中转服务</div>';
+            var html = '<div class="rs-section">中转服务: ';
+            var cmp = compareRouteServices(labels, compareWith);
+            labels.forEach(function(l) { html += '<span class="rs-tag">' + l + '</span>'; });
+            if (!cmp.match) {
+                html += '<span class="rs-warn-icon">⚠️</span>';
+                if (cmp.onlyInB1 && cmp.onlyInB1.length > 0) html += ' <span style="color:#1a73e8;font-size:11px">Book1独有: ' + cmp.onlyInB1.join(', ') + '</span>';
+                if (cmp.onlyInHx && cmp.onlyInHx.length > 0) html += ' <span style="color:#0d904f;font-size:11px">慧行独有: ' + cmp.onlyInHx.join(', ') + '</span>';
+            }
+            html += '</div>';
+            // Show cabinType service diffs for 慧行
+            if (scheme.routeServicesDiff && scheme.routeServicesDiff.length > 0) {
+                scheme.routeServicesDiff.forEach(function(d) {
+                    html += '<div class="rs-diff">⚠️ [' + d.cabinType + '] 服务差异: 仅此舱等有 ' + d.onlyInThis.join(', ') + ' / 缺少 ' + d.missingFromThis.join(', ') + '</div>';
+                });
+            }
+            return html;
+        }
+
+        function renderBook1Column(cat, b1Schemes, hxSchemes) {
+            var container = document.getElementById('b1-' + cat);
+            if (!b1Schemes || b1Schemes.length === 0) {
+                container.innerHTML = '<div class="empty-result">Book1 无' + cat + '方案</div>';
+                return;
+            }
+            var hxKeys = new Set(hxSchemes.map(function(s) { return s.key; }));
+            var html = '';
+            b1Schemes.forEach(function(s, idx) {
+                var matched = hxKeys.has(s.key);
+                var cardClass = matched ? 'match' : 'only-book1';
+                var badge = matched ? '<span class="tag tag-yes">慧行有</span>' : '<span class="tag tag-no">慧行无</span>';
+                var b15Json = generateB15Json(s, _originalRequest);
+                var b15Section = '';
+                if (b15Json) {
+                    b15Section = '<div class="b15-section"><h3 class="b15-toggle" onclick="toggleB15(\'' + cat + '-' + idx + '\')">转Book1.5入参 <span id="b15arrow-' + cat + '-' + idx + '" style="font-size:11px">▶</span></h3><div class="b15-json" id="b15json-' + cat + '-' + idx + '">' + JSON.stringify(b15Json, null, 2) + '</div><button class="b15-copy-btn" onclick="copyB15(\'' + cat + '-' + idx + '\')">复制B15入参</button><button class="b15-view-btn" onclick="viewB15Products(\'' + cat + '-' + idx + '\')">查看产品列表</button></div>';
+                }
+                var hxMatch = hxSchemes.find(function(h) { return h.key === s.key; });
+                var hxRsLabels = hxMatch ? hxMatch.routeServices : [];
+                html += '<div class="scheme-card ' + cardClass + '"><div class="scheme-title"><span class="scheme-type">方案 ' + (idx+1) + ' (' + s.type + ') ' + badge + '</span>' + (s.lowestPrice !== null ? '<span class="scheme-price">¥' + s.lowestPrice + '</span>' : '<span class="scheme-price na">价格不可用</span>') + '</div>' + renderSegmentHtml(s) + '<div class="scheme-key">ID: ' + (s.id || '') + '</div><div class="segment-info" style="color:#999;margin-top:4px;">产品数: ' + s.productCount + ' | FlightPairType: ' + (s.flightPairType || '-') + '</div>' + renderRouteServices(s, hxRsLabels) + b15Section + '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        function renderHuixingColumn(cat, hxSchemes, b1Schemes) {
+            var container = document.getElementById('hx-' + cat);
+            if (!hxSchemes || hxSchemes.length === 0) {
+                container.innerHTML = '<div class="empty-result">慧行无' + cat + '方案</div>';
+                return;
+            }
+            var b1Keys = new Set(b1Schemes.map(function(s) { return s.key; }));
+            var html = '';
+            hxSchemes.forEach(function(s, idx) {
+                var matched = b1Keys.has(s.key);
+                var cardClass = matched ? 'match' : 'only-huixing';
+                var badge = matched ? '<span class="tag tag-yes">Book1有</span>' : '<span class="tag tag-no">Book1无</span>';
+                var sourceLabel = getSourceTypeLabel(s.sourceType);
+                var b1Match = b1Schemes.find(function(b) { return b.key === s.key; });
+                var b1RsLabels = b1Match ? b1Match.routeServices : [];
+                var setTypesHtml = '';
+                var rawLine0 = (s._rawLines && s._rawLines[0]) || null;
+                if (rawLine0 && rawLine0.sourceExchangeTypes !== undefined && rawLine0.sourceExchangeTypes !== null) {
+                    var setTypes = decodeSourceExchangeTypes(rawLine0.sourceExchangeTypes);
+                    if (setTypes.length > 0) {
+                        setTypesHtml = '<div class="segment-info" style="margin-bottom:4px;">适用资源: ';
+                        setTypes.forEach(function(t) { setTypesHtml += '<span class="rs-tag" style="background:#f3e5f5;color:#7b1fa2;">' + t.label + '</span>'; });
+                        setTypesHtml += '</div>';
+                    }
+                }
+                html += '<div class="scheme-card ' + cardClass + '"><div class="scheme-title"><span class="scheme-type">' + sourceLabel + ' (' + s.sourceType + ') ' + badge + '</span></div>' + '<div class="segment-info" style="margin-bottom:4px;">来源: ' + s.routeSource + ' | 舱等: ' + s.cabinType + '</div>' + setTypesHtml + renderSegmentHtml(s) + '<div class="scheme-key">ID: ' + (s.id || '') + '</div>' + renderRouteServices(s, b1RsLabels) + '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleB15(id) {
+            var el = document.getElementById('b15json-' + id);
+            var arrow = document.getElementById('b15arrow-' + id);
+            if (!el) return;
+            el.classList.toggle('active');
+            if (arrow) arrow.textContent = el.classList.contains('active') ? '▼' : '▶';
+        }
+
+        function copyB15(id) {
+            var el = document.getElementById('b15json-' + id);
+            if (!el) return;
+            navigator.clipboard.writeText(el.textContent).then(function() {
+                var btn = el.parentElement.querySelector('.b15-copy-btn');
+                btn.textContent = '已复制!';
+                setTimeout(function() { btn.textContent = '复制B15入参'; }, 2000);
+            });
+        }
+
+        function viewB15Products(id) {
+            var el = document.getElementById('b15json-' + id);
+            if (!el) return;
+            try {
+                localStorage.setItem('b15param', el.textContent);
+            } catch(e) {}
+            window.open('/b15-standard.html', '_blank');
+        }
+
+        function toggleRaw() { document.getElementById('rawData').classList.toggle('active'); }
+        function toggleHxReq() { document.getElementById('hxReqData').classList.toggle('active'); }
+
+        function goHuixingQuery() {
+            var el = document.getElementById('hxReqData');
+            if (!el || !el.textContent.trim()) { alert('暂无慧行请求参数，请先查询'); return; }
+            try {
+                localStorage.setItem('hxparam', el.textContent);
+            } catch(e) {}
+            window.open('/huixing.html', '_blank');
+        }
+
+        // apmTraceId FAB - only show Book1 traceId
+        var _apmTraceId = '';
+        function showApmFab(traceIds) {
+            _apmTraceId = (traceIds && traceIds.book1) || '';
+            var fab = document.getElementById('apmFab');
+            if (!fab) return;
+            if (_apmTraceId) {
+                fab.classList.add('visible');
+                document.getElementById('apmFabId').textContent = _apmTraceId;
+                document.getElementById('apmFabId').title = _apmTraceId;
+            } else {
+                fab.classList.remove('visible');
+            }
+        }
+        function copyApmTraceIds() {
+            if (!_apmTraceId) return;
+            navigator.clipboard.writeText(_apmTraceId).then(function() {
+                var fab = document.getElementById('apmFab');
+                fab.textContent = '已复制!';
+                setTimeout(function() {
+                    fab.innerHTML = '<span class="label">apmTraceId</span><span class="id" id="apmFabId">' + _apmTraceId + '</span>';
+                    document.getElementById('apmFabId').title = _apmTraceId;
+                }, 1500);
+            });
+        }
+    </script>
+    <button class="apm-fab" id="apmFab" onclick="copyApmTraceIds()" title="点击复制 apmTraceId"><span class="label">apmTraceId</span><span class="id" id="apmFabId"></span></button>
+</body>
+</html>

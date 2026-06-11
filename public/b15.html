@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B15 产品列表查询</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #e65100, #bf360c); color: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .env-select { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 12px; outline: none; }
+        .env-select:hover { background: rgba(255,255,255,0.25); }
+        .env-select option { background: #fff; color: #333; }
+        .nav-bar { display: flex; gap: 2px; align-items: stretch; }
+        .nav-group { position: relative; }
+        .nav-group-btn { color: rgba(255,255,255,0.75); background: none; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .nav-group-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-group.has-active .nav-group-btn { color: #ffeb3b; }
+        .nav-dropdown { display: none; position: absolute; top: 100%; right: 0; background: #bf360c; border-radius: 6px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; padding: 4px 0; margin-top: 2px; }
+        .nav-group:hover .nav-dropdown { display: block; }
+        .nav-dropdown a { display: block; color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+        .nav-dropdown a:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-dropdown a.active { color: #ffeb3b; background: rgba(255,255,255,0.1); }
+        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
+        .input-section { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .input-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #e65100; }
+        textarea { width: 100%; height: 200px; border: 1px solid #ddd; border-radius: 6px; padding: 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 12px; resize: vertical; outline: none; transition: border-color 0.2s; }
+        textarea:focus { border-color: #e65100; box-shadow: 0 0 0 2px rgba(230,81,0,0.15); }
+        .btn-row { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+        .btn { padding: 10px 28px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #e65100; color: white; }
+        .btn-primary:hover { background: #bf360c; }
+        .btn-primary:disabled { background: #f5b09a; cursor: not-allowed; }
+        .btn-secondary { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .loading { display: none; align-items: center; gap: 8px; color: #e65100; font-size: 13px; }
+        .loading.active { display: flex; }
+        .spinner { width: 18px; height: 18px; border: 2px solid #e0e0e0; border-top-color: #e65100; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .results-section { display: none; }
+        .results-section.active { display: block; }
+        .product-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 14px; margin-bottom: 12px; transition: border-color 0.2s; }
+        .product-card:hover { border-color: #e65100; }
+        .product-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .product-name { font-weight: 600; font-size: 14px; color: #333; }
+        .product-price { font-weight: 700; font-size: 18px; color: #e53935; }
+        .product-detail { font-size: 12px; color: #555; line-height: 1.8; }
+        .product-detail .label { color: #999; display: inline-block; min-width: 80px; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin-right: 4px; }
+        .tag-cabin { background: #fff3e0; color: #e65100; }
+        .tag-discount { background: #e8f5e9; color: #2e7d32; }
+        .tag-product-th { background: #e3f2fd; color: #1565c0; }
+        .tag-product-xc { background: #e8f5e9; color: #2e7d32; }
+        .tag-product-jx { background: #f3e5f5; color: #7b1fa2; }
+        .tag-deduct { background: #fff3e0; color: #e65100; display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+        .tag-policy { background: #fff8e1; color: #f57f17; font-size: 10px; }
+        .tag-service { background: #e0f2f1; color: #00695c; cursor: pointer; }
+        .tag-service:hover { background: #b2dfdb; }
+        .leg-section { background: #fafafa; border: 1px solid #eee; border-radius: 4px; padding: 8px 10px; margin-top: 6px; }
+        .leg-header { font-weight: 600; font-size: 12px; color: #e65100; margin-bottom: 4px; border-bottom: 1px dashed #e0e0e0; padding-bottom: 3px; }
+        .leg-detail { font-size: 11px; color: #555; line-height: 1.9; }
+        .leg-detail .label { color: #999; display: inline-block; min-width: 70px; }
+        .services-section { margin-top: 6px; padding: 6px 10px; background: #f5f5f5; border-radius: 4px; }
+        .services-header { font-size: 11px; color: #777; margin-bottom: 4px; }
+        .service-desc { display: none; font-size: 11px; color: #666; margin-top: 2px; padding-left: 8px; border-left: 2px solid #b2dfdb; }
+        .service-desc.active { display: block; }
+        .product-raw-toggle { margin-top: 6px; padding: 3px 10px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 3px; cursor: pointer; font-size: 11px; }
+        .product-raw-toggle:hover { background: #e8e8e8; }
+        .product-raw-data { display: none; margin-top: 6px; max-height: 300px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 4px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 10px; white-space: pre-wrap; word-break: break-all; }
+        .product-raw-data.active { display: block; }
+        .limit-label-remark { color: #999; font-size: 10px; margin-left: 2px; }
+        .error-box { background: #fce8e6; border: 1px solid #f5c6c0; border-radius: 6px; padding: 14px; color: #c62828; font-size: 13px; margin-bottom: 12px; }
+        .empty-result { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+        .raw-toggle { margin-top: 12px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .raw-toggle:hover { background: #e8e8e8; }
+        .raw-data { display: none; margin-top: 10px; max-height: 400px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 6px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+        .raw-data.active { display: block; }
+        .summary-bar { background: white; border-radius: 8px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; font-size: 14px; }
+        .summary-bar .count { font-weight: 700; color: #e65100; font-size: 20px; }
+        .apm-fab { position: fixed; bottom: 24px; right: 24px; background: #333; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-size: 12px; cursor: pointer; z-index: 999; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: background 0.2s; }
+        .apm-fab:hover { background: #555; }
+        .apm-fab.visible { display: block; }
+        .apm-fab .label { margin-right: 6px; }
+        .apm-fab .id { font-family: monospace; font-size: 11px; color: #ffeb3b; max-width: 200px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+        .history-bar { background: white; border-radius: 8px; padding: 12px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 13px; }
+        .history-bar.active { display: flex; }
+        .history-bar .history-label { color: #999; font-weight: 600; white-space: nowrap; }
+        .history-bar .history-text { color: #333; cursor: pointer; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; }
+        .history-bar .history-text:hover { color: #e65100; }
+        .history-bar .history-time { color: #999; font-size: 11px; white-space: nowrap; }
+        .history-bar .history-restore { padding: 4px 12px; background: #e65100; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+        .history-bar .history-restore:hover { background: #bf360c; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>B15 产品列表查询</h1>
+            <p>查询 Book1.5 联程产品列表</p>
+        </div>
+        <div id="nav-placeholder"></div>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <label>B15 请求参数 JSON</label>
+            <textarea id="requestJson" placeholder='粘贴 B15 请求参数 JSON...'></textarea>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">查询</button>
+                <button class="btn btn-secondary" onclick="formatJson()">美化</button>
+                <button class="btn btn-secondary" onclick="clearAll()">清空</button>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <span>正在查询 B15 产品列表...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-bar" id="historyBar">
+            <span class="history-label">上次查询</span>
+            <span class="history-text" id="historyText" onclick="restoreHistory()"></span>
+            <span class="history-time" id="historyTime"></span>
+            <button class="history-restore" onclick="restoreHistory()">恢复</button>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="summary-bar" id="summaryBar"></div>
+            <div id="productList"></div>
+            <div style="margin-top:20px">
+                <button class="raw-toggle" onclick="toggleRaw()">查看原始数据</button>
+                <div class="raw-data" id="rawData"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/navbar.js"></script>
+<script>
+        
+
+        function doSearch() {
+            var textarea = document.getElementById('requestJson');
+            var raw = textarea.value.trim();
+            if (!raw) { alert('请输入 B15 请求参数 JSON'); return; }
+            var requestObj;
+            try { requestObj = JSON.parse(raw); } catch (e) { alert('JSON 格式错误: ' + e.message); return; }
+            saveHistory(raw);
+            var btn = document.getElementById('searchBtn');
+            var loading = document.getElementById('loading');
+            btn.disabled = true;
+            loading.classList.add('active');
+            document.getElementById('resultsSection').classList.remove('active');
+            fetch('/api/b15/search?' + envQs(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestObj) })
+            .then(function(r) { return r.json(); })
+            .then(function(data) { btn.disabled = false; loading.classList.remove('active'); renderResults(data); })
+            .catch(function(err) { btn.disabled = false; loading.classList.remove('active'); alert('请求失败: ' + err.message); });
+        }
+
+        function formatJson() {
+            var textarea = document.getElementById('requestJson');
+            var raw = textarea.value.trim();
+            if (!raw) return;
+            try { textarea.value = JSON.stringify(JSON.parse(raw), null, 2); } catch (e) { alert('JSON 格式错误: ' + e.message); }
+        }
+
+        function clearAll() {
+            document.getElementById('requestJson').value = '';
+            document.getElementById('resultsSection').classList.remove('active');
+        }
+
+        function renderResults(data) {
+            document.getElementById('resultsSection').classList.add('active');
+            document.getElementById('rawData').textContent = JSON.stringify(data, null, 2);
+            showApmFab(data.apmTraceId);
+
+            if (!data.success) {
+                document.getElementById('summaryBar').innerHTML = '<span style="color:#e53935">查询失败: ' + (data.error || '未知错误') + '</span>';
+                document.getElementById('productList').innerHTML = '';
+                return;
+            }
+
+            var responseData = data.data || {};
+            if (responseData.ErrorCode !== undefined && responseData.ErrorCode !== 0) {
+                document.getElementById('summaryBar').innerHTML = '<span style="color:#e53935">Book1 返回错误: ErrorCode=' + responseData.ErrorCode + ' ' + (responseData.ErrorMessage || '') + '</span>';
+                document.getElementById('productList').innerHTML = '';
+                return;
+            }
+
+            var trips = responseData.Trips || [];
+            document.getElementById('summaryBar').innerHTML = '共 <span class="count">' + trips.length + '</span> 个方案';
+
+            if (trips.length === 0) {
+                document.getElementById('productList').innerHTML = '<div class="empty-result">无产品数据</div>';
+                return;
+            }
+
+            var html = '';
+            trips.forEach(function(trip, idx) {
+                var pair = trip.TripPair || [];
+                var connectType = trip.ConnectPairType || 0;
+                var flightPairType = (trip.TripProperty || {}).FlightPairType || 0;
+                var segInfo = '';
+                // Render segments based on ConnectPairType: 2=空铁(first flight then train), 3=铁空(first train then flight)
+                // For type 2: show flight first then train; For type 3: show train first then flight
+                if (connectType === 2 || connectType === 3) {
+                    var flightPair = null, trainPair = null;
+                    pair.forEach(function(p) {
+                        if (p.Flight && (p.Flight.FlightNo || p.Flight.DepartureTime)) flightPair = p;
+                        if (p.TrainTrip || (p.Train && p.Train.TrainNo)) trainPair = p;
+                    });
+                    // Fallback: if can't detect by content, use index (type 2: [0]=flight [1]=train; type 3: [0]=train [1]=flight)
+                    if (!flightPair && !trainPair && pair.length >= 2) {
+                        if (connectType === 2) { flightPair = pair[0]; trainPair = pair[1]; }
+                        else { trainPair = pair[0]; flightPair = pair[1]; }
+                    }
+                    // For type 3 (铁空), render train first then flight
+                    if (connectType === 3) { var tmp = flightPair; flightPair = trainPair; trainPair = tmp; }
+                    // Render flight segment
+                    if (flightPair) {
+                        var f = flightPair.Flight || {};
+                        var depAp = flightPair.DepartureAirport || {};
+                        var arrAp = flightPair.ArrivalAirport || {};
+                        segInfo += '<div class="product-detail"><span class="label">第1程</span><span style="color:#1565c0;font-weight:600;">✈ 航班</span> <b>' + (f.FlightNo || '') + '</b> ' + (depAp.AirportCode || f.DepartureAirportCode || '') + '→' + (arrAp.AirportCode || f.ArrivalAirportCode || '') + ' ' + (f.DepartureTime || '') + '-' + (f.ArrivalTime || '') + '</div>';
+                    }
+                    segInfo += '<div class="product-detail" style="text-align:center;color:#999;">↓ 中转 ↓</div>';
+                    // Render train segment
+                    if (trainPair) {
+                        var t = trainPair.Train || trainPair.TrainTrip || {};
+                        var depApT = trainPair.DepartureAirport || trainPair.DepartureStation || {};
+                        var arrApT = trainPair.ArrivalAirport || trainPair.ArrivalStation || {};
+                        segInfo += '<div class="product-detail"><span class="label">第2程</span><span style="color:#2e7d32;font-weight:600;">🚄 火车</span> <b>' + (t.TrainNo || '') + '</b> ' + (depApT.AirportCode || depApT.StationCode || t.DepPortCode || '') + '→' + (arrApT.AirportCode || arrApT.StationCode || t.ArrPortCode || '') + ' ' + (t.FromTime || t.DepartureTime || '') + '-' + (t.ToTime || t.ArrivalTime || '') + '</div>';
+                    }
+                } else {
+                    // Default: all flight segments
+                    pair.forEach(function(p, i) {
+                        var f = p.Flight || {};
+                        if (i > 0) segInfo += '<div class="product-detail" style="text-align:center;color:#999;">↓ 中转 ↓</div>';
+                        segInfo += '<div class="product-detail"><span class="label">第' + (i+1) + '程</span><b>' + (f.FlightNo || '') + '</b> ' + (f.DepartureAirportCode || '') + '→' + (f.ArrivalAirportCode || '') + ' ' + (f.DepartureTime || '') + '-' + (f.ArrivalTime || '') + '</div>';
+                    });
+                }
+
+                var products = trip.Products || [];
+                var productHtml = '';
+                products.forEach(function(p, pi) {
+                    var adultPrice = p.AdultPrice || {};
+                    var price = adultPrice.TicketPrice !== undefined ? adultPrice.TicketPrice : adultPrice.PreciseTicketPrice;
+
+                    // Product type tag
+                    var productCode = p.ProductCode || '';
+                    var productType = p.DetailType || '';
+                    var tagClass = '';
+                    var typeLabel = '';
+                    if (productCode === 'TH') { tagClass = 'tag-product-th'; typeLabel = '同程特惠'; }
+                    else if (productCode === 'XC') { tagClass = 'tag-product-xc'; typeLabel = '行程'; }
+                    else if (productCode === 'JX') { tagClass = 'tag-product-jx'; typeLabel = '精选'; }
+                    else if (productCode) { tagClass = 'tag-cabin'; typeLabel = productCode; }
+
+                    productHtml += '<div style="border-top:1px solid #f0f0f0;padding-top:8px;margin-top:8px;">';
+                    productHtml += '<div class="product-title"><span class="product-name">产品 ' + (pi+1);
+                    if (tagClass) productHtml += ' <span class="tag ' + tagClass + '">' + typeLabel + '(' + productType + ')</span>';
+                    productHtml += '</span>';
+                    if (price !== undefined && price !== null) productHtml += '<span class="product-price">¥' + price + '</span>';
+                    productHtml += '</div>';
+
+                    // Price line
+                    productHtml += '<div class="product-detail">';
+                    if (adultPrice.TicketPrice !== undefined) productHtml += '<span class="label">票面价</span>¥' + adultPrice.TicketPrice + ' ';
+                    if (adultPrice.PreciseTicketPrice !== undefined) productHtml += '<span class="label">精确价</span>¥' + adultPrice.PreciseTicketPrice + ' ';
+                    if (p.AdultTax !== undefined) productHtml += '<span class="label">税</span>¥' + p.AdultTax + ' ';
+                    if (p.ProductId) productHtml += '<span class="label">产品ID</span>' + p.ProductId + ' ';
+                    productHtml += '</div>';
+
+                    // Per-leg details
+                    var productPairs = p.ProductPair || [];
+                    productPairs.forEach(function(pp, legIdx) {
+                        var legAdultPrice = pp.AdultPrice || {};
+                        var cabin = pp.Cabin || {};
+                        var adultCabin = cabin.AdultCabin || {};
+                        var resource = pp.Resource || {};
+                        var policy = resource.Policy || {};
+                        var config = pp.Config || {};
+                        var meal = config.Meal || {};
+                        var limitLabels = config.LimitLabel || [];
+                        var baggageInfo = config.BaggageInfo || [];
+                        var refundRule = config.RefundEndorseRule || {};
+
+                        // PolicyType label
+                        var policyTypeLabel = 'unknown(' + (resource.PolicyType || '') + ')';
+                        if (resource.PolicyType === 1) policyTypeLabel = '普通政策(1)';
+                        else if (resource.PolicyType === 21) policyTypeLabel = '特价政策(21)';
+                        else if (resource.PolicyType === 40) policyTypeLabel = '加减比例政策(40)';
+                        else if (resource.PolicyType === 41) policyTypeLabel = '加减价格政策(41)';
+                        else if (resource.PolicyType === 42) policyTypeLabel = '固价政策(42)';
+                        else if (resource.PolicyType === 43) policyTypeLabel = '往返政策(43)';
+                        else if (resource.PolicyType === 45) policyTypeLabel = '官网(45)';
+                        else if (resource.PolicyType === 46) policyTypeLabel = '联程政策(46)';
+                        else if (resource.PolicyType === 60) policyTypeLabel = '外部运价(60)';
+
+                        productHtml += '<div class="leg-section">';
+                        var fareRule = config.FareRule || {};
+                        var ruleCode = fareRule.RuleCode || '00000';
+                        productHtml += '<div class="leg-header">第' + (legIdx + 1) + '程 <span style="font-weight:400;color:#999;font-size:11px;">RuleCode: ' + ruleCode + '</span></div>';
+                        productHtml += '<div class="leg-detail">';
+                        productHtml += '<span class="label">政策</span><span class="tag tag-policy">' + policyTypeLabel + '</span> ' + (policy.PolicyId || '') + '<br>';
+                        var cabinStr = (adultCabin.CabinCode || '') + ' ' + (adultCabin.CabinDiscribe || '');
+                        if (adultCabin.DiscountRate) cabinStr += ' ' + adultCabin.DiscountRate + '折';
+                        if (adultCabin.BaseRoomName) cabinStr += ' (' + adultCabin.BaseRoomName + ')';
+                        productHtml += '<span class="label">舱位</span>' + cabinStr + '<br>';
+                        productHtml += '<span class="label">餐食</span>' + (meal.Meals || '-') + '<br>';
+
+                        // LimitLabels
+                        if (limitLabels.length > 0) {
+                            var llStr = '';
+                            limitLabels.forEach(function(ll) {
+                                llStr += ll.Name || '';
+                                if (ll.Remark) llStr += '<span class="limit-label-remark">(' + ll.Remark + ')</span>';
+                                llStr += ' ';
+                            });
+                            productHtml += '<span class="label">限制标签</span>' + llStr + '<br>';
+                        }
+
+                        // Baggage (adult PassType=0)
+                        var adultBag = null;
+                        for (var bi = 0; bi < baggageInfo.length; bi++) {
+                            if (baggageInfo[bi].PassType === 0) { adultBag = baggageInfo[bi]; break; }
+                        }
+                        if (adultBag) {
+                            var bagStr = '';
+                            if (adultBag.Allowance) bagStr += '托运:' + adultBag.Allowance;
+                            if (adultBag.HandAllowance) bagStr += (bagStr ? ' ' : '') + '手提:' + adultBag.HandAllowance;
+                            if (adultBag.HasCheckBaggage !== undefined) bagStr += (bagStr ? ' ' : '') + '有托运:' + (adultBag.HasCheckBaggage ? '是' : '否');
+                            if (bagStr) productHtml += '<span class="label">行李</span>' + bagStr + '<br>';
+                        }
+
+                        // Refund/Endorse
+                        if (refundRule.LowestRefundPrice !== undefined || refundRule.LowestEndorsePrice !== undefined) {
+                            var reStr = '';
+                            if (refundRule.LowestRefundPrice !== undefined) reStr += '最低退:' + refundRule.LowestRefundPrice;
+                            if (refundRule.LowestEndorsePrice !== undefined) reStr += (reStr ? ' ' : '') + '最低改:' + refundRule.LowestEndorsePrice;
+                            if (refundRule.HighestRefundPrice !== undefined) reStr += ' 最高退:' + refundRule.HighestRefundPrice;
+                            if (refundRule.HighestEndorsePrice !== undefined) reStr += ' 最高改:' + refundRule.HighestEndorsePrice;
+                            productHtml += '<span class="label">退改</span>' + reStr + '<br>';
+                        }
+
+                        // Leg price
+                        if (legAdultPrice.TicketPrice !== undefined) productHtml += '<span class="label">程票面价</span>¥' + legAdultPrice.TicketPrice + '<br>';
+                        if (legAdultPrice.PreciseTicketPrice !== undefined) productHtml += '<span class="label">程精确价</span>¥' + legAdultPrice.PreciseTicketPrice + '<br>';
+
+                        // PORT_DEDUCT subsidies per leg
+                        var deductsList = config.Deducts || [];
+                        var portDeducts = deductsList.filter(function(d) { return d.DeductType === 'PORT_DEDUCT'; });
+                        if (portDeducts.length > 0) {
+                            portDeducts.forEach(function(d) {
+                                var label = d.LabelPrefix || d.DeductMsg || '机场补贴';
+                                var deduction = d.Deduction !== undefined ? '-¥' + d.Deduction : '';
+                                var remark = d.DeductRemark || '';
+                                productHtml += '<span class="label">补贴</span><span class="tag tag-deduct">' + label + '</span> ' + deduction;
+                                if (remark) productHtml += ' <span style="color:#999;font-size:11px;">(' + remark + ')</span>';
+                                productHtml += '<br>';
+                            });
+                        }
+
+                        productHtml += '</div></div>';
+                    });
+
+                    // ProductServices
+                    var priceProp = p.ProductPriceProperty || {};
+                    var productServices = priceProp.ProductServices || [];
+                    if (productServices.length > 0) {
+                        productHtml += '<div class="services-section">';
+                        productHtml += '<div class="services-header">产品服务</div>';
+                        productHtml += '<div>';
+                        productServices.forEach(function(svc, si) {
+                            var svcId = 'svc-' + idx + '-' + pi + '-' + si;
+                            productHtml += '<span class="tag tag-service" onclick="toggleServiceDesc(\'' + svcId + '\')">' + (svc.ServiceName || '服务' + (si+1)) + '</span>';
+                            var descs = svc.ServiceDesc || [];
+                            if (descs.length > 0) {
+                                productHtml += '<div class="service-desc" id="' + svcId + '">';
+                                descs.forEach(function(d) {
+                                    productHtml += (typeof d === 'string' ? d : (d.Description || d.Desc || JSON.stringify(d))) + '<br>';
+                                });
+                                productHtml += '</div>';
+                            }
+                        });
+                        productHtml += '</div></div>';
+                    }
+
+                    // Per-product raw data toggle + copy
+                    var rawId = 'raw-product-' + idx + '-' + pi;
+                    productHtml += '<div style="display:flex;gap:6px;margin-top:6px;">';
+                    productHtml += '<button class="product-raw-toggle" onclick="toggleProductRaw(\'' + rawId + '\')">查看原始数据</button>';
+                    productHtml += '<button class="product-raw-toggle" id="copyBtn-' + rawId + '" onclick="copyProductRaw(\'' + rawId + '\')">复制原始数据</button>';
+                    productHtml += '</div>';
+                    productHtml += '<div class="product-raw-data" id="' + rawId + '">' + JSON.stringify(p, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+
+                    productHtml += '</div>';
+                });
+
+                html += '<div class="product-card">';
+                    var typeLabel = connectType === 2 ? '空铁' : (connectType === 3 ? '铁空' : (connectType === 1 ? '空空' : ''));
+                    html += '<div class="product-title"><span class="product-name">方案 ' + (idx+1) + (typeLabel ? ' (' + typeLabel + ')' : (flightPairType ? ' (' + flightPairType + ')' : '')) + '</span><span style="color:#999;font-size:12px">' + products.length + ' 个产品</span></div>';
+                html += segInfo;
+                html += productHtml;
+                html += '</div>';
+            });
+
+            document.getElementById('productList').innerHTML = html;
+        }
+
+        function toggleRaw() { document.getElementById('rawData').classList.toggle('active'); }
+
+        function toggleServiceDesc(id) { var el = document.getElementById(id); if (el) el.classList.toggle('active'); }
+
+        function toggleProductRaw(id) { var el = document.getElementById(id); if (el) el.classList.toggle('active'); }
+
+        function copyProductRaw(id) {
+            var el = document.getElementById(id);
+            if (!el || !el.textContent.trim()) return;
+            navigator.clipboard.writeText(el.textContent).then(function() {
+                var btn = document.getElementById('copyBtn-' + id);
+                if (btn) { btn.textContent = '已复制!'; setTimeout(function() { btn.textContent = '复制原始数据'; }, 2000); }
+            });
+        }
+
+        // apmTraceId FAB
+        var _apmTraceId = '';
+        function showApmFab(traceId) {
+            _apmTraceId = traceId || '';
+            var fab = document.getElementById('apmFab');
+            if (!fab) return;
+            if (_apmTraceId) {
+                fab.classList.add('visible');
+                document.getElementById('apmFabId').textContent = _apmTraceId;
+                document.getElementById('apmFabId').title = _apmTraceId;
+            } else {
+                fab.classList.remove('visible');
+            }
+        }
+        function copyApmTraceId() {
+            if (!_apmTraceId) return;
+            navigator.clipboard.writeText(_apmTraceId).then(function() {
+                var fab = document.getElementById('apmFab');
+                fab.textContent = '已复制!';
+                setTimeout(function() {
+                    fab.innerHTML = '<span class="label">apmTraceId</span><span class="id" id="apmFabId">' + _apmTraceId + '</span>';
+                    document.getElementById('apmFabId').title = _apmTraceId;
+                }, 1500);
+            });
+        }
+
+        // Auto-fill from localStorage (priority) or URL params (fallback)
+        window.onload = function() {
+            loadB15History();
+            var b15param = '';
+            try { b15param = localStorage.getItem('b15param'); if (b15param) localStorage.removeItem('b15param'); } catch(e) {}
+            if (!b15param) {
+                var params = new URLSearchParams(window.location.search);
+                b15param = params.get('b15param');
+                if (b15param) b15param = decodeURIComponent(b15param);
+            }
+            if (b15param) {
+                try {
+                    var obj = JSON.parse(b15param);
+                    document.getElementById('requestJson').value = JSON.stringify(obj, null, 2);
+                } catch(e) {}
+            }
+        };
+
+        function saveHistory(inputJson) {
+            if (!inputJson) return;
+            try {
+                var entry = { input: inputJson, time: new Date().toLocaleString() };
+                localStorage.setItem('doctor_history_b15', JSON.stringify(entry));
+                loadB15History();
+            } catch(e) {}
+        }
+
+        function loadB15History() {
+            try {
+                var stored = localStorage.getItem('doctor_history_b15');
+                if (!stored) { document.getElementById('historyBar').classList.remove('active'); return; }
+                var entry = JSON.parse(stored);
+                var bar = document.getElementById('historyBar');
+                bar.classList.add('active');
+                var obj;
+                try { obj = JSON.parse(entry.input); } catch(e) { obj = null; }
+                var summary = '';
+                if (obj) {
+                    if (obj.departureAirportCode) summary += obj.departureAirportCode + '→';
+                    if (obj.arrivalAirportCode) summary += obj.arrivalAirportCode;
+                    if (obj.departDate) summary += ' ' + obj.departDate;
+                    if (obj.transferPortCode) summary += ' 经:' + obj.transferPortCode;
+                }
+                if (!summary) summary = entry.input.substring(0, 80);
+                document.getElementById('historyText').textContent = summary;
+                document.getElementById('historyText').title = entry.input;
+                document.getElementById('historyTime').textContent = entry.time;
+            } catch(e) { document.getElementById('historyBar').classList.remove('active'); }
+        }
+
+        function restoreHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_b15');
+                if (!stored) return;
+                var entry = JSON.parse(stored);
+                document.getElementById('requestJson').value = entry.input;
+            } catch(e) {}
+        }
+    </script>
+    <button class="apm-fab" id="apmFab" onclick="copyApmTraceId()" title="点击复制 apmTraceId"><span class="label">apmTraceId</span><span class="id" id="apmFabId"></span></button>
+</body>
+</html>

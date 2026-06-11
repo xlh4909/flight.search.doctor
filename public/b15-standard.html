@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book1.5 标准版结构化查询</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1565c0, #0d47a1); color: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .env-select { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 12px; outline: none; }
+        .env-select:hover { background: rgba(255,255,255,0.25); }
+        .env-select option { background: #fff; color: #333; }
+        .nav-bar { display: flex; gap: 2px; align-items: stretch; }
+        .nav-group { position: relative; }
+        .nav-group-btn { color: rgba(255,255,255,0.75); background: none; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .nav-group-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-group.has-active .nav-group-btn { color: #ffeb3b; }
+        .nav-dropdown { display: none; position: absolute; top: 100%; right: 0; background: #0d47a1; border-radius: 6px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; padding: 4px 0; margin-top: 2px; }
+        .nav-group:hover .nav-dropdown { display: block; }
+        .nav-dropdown a { display: block; color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+        .nav-dropdown a:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-dropdown a.active { color: #ffeb3b; background: rgba(255,255,255,0.1); }
+        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
+        .input-section { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .input-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #1565c0; }
+        textarea { width: 100%; height: 200px; border: 1px solid #ddd; border-radius: 6px; padding: 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 12px; resize: vertical; outline: none; transition: border-color 0.2s; }
+        textarea:focus { border-color: #1565c0; box-shadow: 0 0 0 2px rgba(21,101,192,0.15); }
+        .btn-row { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+        .btn { padding: 10px 28px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #1565c0; color: white; }
+        .btn-primary:hover { background: #0d47a1; }
+        .btn-primary:disabled { background: #90caf9; cursor: not-allowed; }
+        .btn-secondary { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .loading { display: none; align-items: center; gap: 8px; color: #1565c0; font-size: 13px; }
+        .loading.active { display: flex; }
+        .spinner { width: 18px; height: 18px; border: 2px solid #e0e0e0; border-top-color: #1565c0; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .results-section { display: none; }
+        .results-section.active { display: block; }
+        .summary-bar { background: white; border-radius: 8px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; font-size: 14px; }
+        .summary-bar .count { font-weight: 700; color: #1565c0; font-size: 20px; }
+        .product-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 14px; margin-bottom: 12px; transition: border-color 0.2s; background: white; }
+        .product-card:hover { border-color: #1565c0; }
+        .product-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .product-name { font-weight: 600; font-size: 14px; color: #333; }
+        .product-price { font-weight: 700; font-size: 18px; color: #e53935; }
+        .product-detail { font-size: 12px; color: #555; line-height: 1.8; }
+        .product-detail .label { color: #999; display: inline-block; min-width: 80px; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin-right: 4px; }
+        .tag-cabin { background: #e3f2fd; color: #1565c0; }
+        .tag-policy { background: #fff8e1; color: #f57f17; font-size: 10px; }
+        .tag-discount { background: #e8f5e9; color: #2e7d32; }
+        .tag-product-th { background: #e3f2fd; color: #1565c0; }
+        .tag-product-xc { background: #e8f5e9; color: #2e7d32; }
+        .tag-product-jx { background: #f3e5f5; color: #7b1fa2; }
+        .tag-deduct { background: #fff3e0; color: #e65100; font-weight: 600; }
+        .tag-copy-btn { padding: 0 4px; background: none; border: 1px solid #ddd; border-radius: 3px; cursor: pointer; font-size: 10px; line-height: 18px; color: #999; }
+        .tag-copy-btn:hover { background: #f0f0f0; color: #333; }
+        .limit-label-remark { color: #999; font-size: 10px; margin-left: 2px; }
+        .leg-section { background: #fafafa; border: 1px solid #eee; border-radius: 4px; padding: 8px 10px; margin-top: 6px; }
+        .leg-header { font-weight: 600; font-size: 12px; color: #1565c0; margin-bottom: 4px; border-bottom: 1px dashed #e0e0e0; padding-bottom: 3px; }
+        .leg-detail { font-size: 11px; color: #555; line-height: 1.9; }
+        .leg-detail .label { color: #999; display: inline-block; min-width: 70px; }
+        .services-section { margin-top: 6px; padding: 6px 10px; background: #f5f5f5; border-radius: 4px; }
+        .services-header { font-size: 11px; color: #777; margin-bottom: 4px; }
+        .tag-service { background: #e0f2f1; color: #00695c; cursor: pointer; }
+        .tag-service:hover { background: #b2dfdb; }
+        .service-desc { display: none; font-size: 11px; color: #666; margin-top: 2px; padding-left: 8px; border-left: 2px solid #b2dfdb; }
+        .service-desc.active { display: block; }
+        .seg-connector { text-align: center; color: #999; font-size: 12px; padding: 4px 0; }
+        .raw-toggle { margin-top: 12px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .raw-toggle:hover { background: #e8e8e8; }
+        .raw-data { display: none; margin-top: 10px; max-height: 400px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 6px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+        .raw-data.active { display: block; }
+        .empty-result { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+        .error-box { background: #fce8e6; border: 1px solid #f5c6c0; border-radius: 6px; padding: 14px; color: #c62828; font-size: 13px; margin-bottom: 12px; }
+        .apm-fab { position: fixed; bottom: 24px; right: 24px; background: #333; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-size: 12px; cursor: pointer; z-index: 999; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: background 0.2s; }
+        .apm-fab:hover { background: #555; }
+        .apm-fab.visible { display: block; }
+        .apm-fab .label { margin-right: 6px; }
+        .apm-fab .id { font-family: monospace; font-size: 11px; color: #ffeb3b; max-width: 200px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+        .history-bar { background: white; border-radius: 8px; padding: 12px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 13px; }
+        .history-bar.active { display: flex; }
+        .history-bar .history-label { color: #999; font-weight: 600; white-space: nowrap; }
+        .history-bar .history-text { color: #333; cursor: pointer; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; }
+        .history-bar .history-text:hover { color: #1565c0; }
+        .history-bar .history-time { color: #999; font-size: 11px; white-space: nowrap; }
+        .history-bar .history-restore { padding: 4px 12px; background: #1565c0; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+        .history-bar .history-restore:hover { background: #0d47a1; }
+        .wiki-link { font-size: 12px; color: #1565c0; text-decoration: underline; margin-top: 8px; display: inline-block; }
+        .product-raw-toggle { margin-top: 6px; padding: 3px 10px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 3px; cursor: pointer; font-size: 11px; }
+        .product-raw-toggle:hover { background: #e8e8e8; }
+        .product-raw-data { display: none; margin-top: 6px; max-height: 300px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 4px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 10px; white-space: pre-wrap; word-break: break-all; }
+        .product-raw-data.active { display: block; }
+        .params-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
+        .input-group { display: flex; flex-direction: column; gap: 4px; }
+        .input-group label { font-size: 12px; font-weight: 600; color: #1565c0; margin-bottom: 0; }
+        .input-group input, .input-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none; min-width: 100px; }
+        .input-group input:focus, .input-group select:focus { border-color: #1565c0; box-shadow: 0 0 0 2px rgba(21,101,192,0.15); }
+        .custom-plat { display: none; }
+        .custom-plat.active { display: inline-block; }
+        .custom-plat input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; width: 80px; outline: none; }
+        .custom-plat input:focus { border-color: #1565c0; }
+        /* Response structure dropdown */
+        .resp-struct-dropdown { position: relative; display: inline-block; margin-left: 16px; vertical-align: middle; }
+        .resp-struct-btn { padding: 4px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 12px; color: #333; font-weight: 500; }
+        .resp-struct-btn:hover { background: #e8e8e8; }
+        .resp-struct-btn .arrow { margin-left: 4px; font-size: 10px; transition: transform 0.2s; }
+        .resp-struct-btn.open .arrow { transform: rotate(180deg); }
+        .resp-struct-panel { display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; background: #fff; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; min-width: 220px; max-width: 360px; max-height: 400px; overflow: hidden; }
+        .resp-struct-panel.open { display: flex; flex-direction: column; }
+        .resp-struct-filter { padding: 8px; border-bottom: 1px solid #eee; }
+        .resp-struct-filter input { width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; outline: none; }
+        .resp-struct-filter input:focus { border-color: #1565c0; box-shadow: 0 0 0 2px rgba(21,101,192,0.15); }
+        .resp-struct-list { overflow-y: auto; max-height: 320px; padding: 4px 0; }
+        .resp-struct-item { padding: 6px 12px; font-size: 12px; cursor: pointer; color: #333; font-family: "SF Mono","Monaco","Menlo","Consolas",monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background 0.15s; }
+        .resp-struct-item:hover { background: #e3f2fd; color: #1565c0; }
+        .resp-struct-item.selected { background: #1565c0; color: #fff; }
+        .resp-struct-item .key-path { color: #999; font-size: 10px; margin-left: 4px; }
+        .resp-struct-item.selected .key-path { color: rgba(255,255,255,0.7); }
+        .resp-struct-empty { padding: 12px; text-align: center; color: #999; font-size: 12px; }
+        /* Raw data highlight */
+        .raw-highlight { background: #fff176; color: #1e1e1e; border-radius: 2px; padding: 0 2px; font-weight: 700; }
+        .raw-highlight-flash { animation: hlFlash 1.5s ease-out; }
+        @keyframes hlFlash { 0% { background: #ffeb3b; box-shadow: 0 0 8px #ffeb3b; } 100% { background: #fff176; box-shadow: none; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>Book1.5 标准版结构化查询</h1>
+            <p>查询 Book1.5 标准版接口，结构化展示航班、价格、服务信息</p>
+        </div>
+        <div id="nav-placeholder"></div>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <div class="params-row">
+                <div class="input-group">
+                    <label>站点 (site)</label>
+                    <select id="siteSelect">
+                        <option value="wechatcore">wechatcore</option>
+                        <option value="app">app</option>
+                        <option value="connectgateway" selected>connectgateway</option>
+                        <option value="wechat">wechat</option>
+                    </select>
+                </div>
+                <div class="input-group" style="flex-direction:row;align-items:center;gap:6px;">
+                    <label>渠道 (plat)</label>
+                    <select id="platSelect" onchange="onPlatChange()">
+                        <option value="852" selected>852-小程序</option>
+                        <option value="433">433-IOS</option>
+                        <option value="434">434-Android</option>
+                        <option value="518">518-H5</option>
+                        <option value="10212">10212-Harmony</option>
+                        <option value="custom">自定义...</option>
+                    </select>
+                    <div class="custom-plat" id="customPlatWrap">
+                        <input type="text" id="customPlat" placeholder="输入plat">
+                    </div>
+                </div>
+            </div>
+            <label>Book1.5 标准版请求参数 JSON</label>
+            <textarea id="requestJson" placeholder='粘贴 Book1.5 标准版请求参数 JSON...'></textarea>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">查询</button>
+                <button class="btn btn-secondary" onclick="formatJson()">美化</button>
+                <button class="btn btn-secondary" onclick="clearAll()">清空</button>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <span>正在查询 Book1.5 标准版...</span>
+                </div>
+            </div>
+            <a class="wiki-link" href="https://wiki.17u.cn/wiki?fid=22620716dfd243c7ab90af41bea756a7" target="_blank">Book1.5 标准版接口文档 ↗</a>
+        </div>
+
+        <div class="history-bar" id="historyBar">
+            <span class="history-label">上次查询</span>
+            <span class="history-text" id="historyText" onclick="restoreHistory()"></span>
+            <span class="history-time" id="historyTime"></span>
+            <button class="history-restore" onclick="restoreHistory()">恢复</button>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="summary-bar" id="summaryBar">
+                <span id="summaryBarContent"></span>
+                <div class="resp-struct-dropdown" id="respStructDropdown" style="display:none;">
+                    <button class="resp-struct-btn" id="respStructBtn" onclick="toggleRespStructPanel()">
+                        返回结构 <span class="arrow">▼</span>
+                    </button>
+                    <div class="resp-struct-panel" id="respStructPanel">
+                        <div class="resp-struct-filter">
+                            <input type="text" id="respStructFilter" placeholder="搜索参数名..." oninput="filterRespStruct()">
+                        </div>
+                        <div class="resp-struct-list" id="respStructList"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="schemeList"></div>
+            <div style="margin-top:20px">
+                <button class="raw-toggle" onclick="toggleRaw()">查看原始数据</button>
+                <div class="raw-data" id="rawData"></div>
+            </div>
+        </div>
+    </div>
+
+    <button class="apm-fab" id="apmFab" onclick="copyApmTraceId()" title="点击复制 apmTraceId"><span class="label">apmTraceId</span><span class="id" id="apmFabId"></span></button>
+
+    <script src="/navbar.js"></script>
+<script>
+        
+        function onPlatChange() { document.getElementById('customPlat').style.display = document.getElementById('platSelect').value === 'custom' ? 'inline-block' : 'none'; }
+        function getPlat() { var v = document.getElementById('platSelect').value; return v === 'custom' ? (document.getElementById('customPlat').value.trim() || '852') : v; }
+
+        function doSearch() {
+            var textarea = document.getElementById('requestJson');
+            var raw = textarea.value.trim();
+            if (!raw) { alert('请输入 Book1.5 标准版请求参数 JSON'); return; }
+            var requestObj;
+            try { requestObj = JSON.parse(raw); } catch (e) { alert('JSON 格式错误: ' + e.message); return; }
+            var site = document.getElementById('siteSelect').value;
+            var plat = getPlat();
+            saveHistory(raw, site, plat);
+            var btn = document.getElementById('searchBtn');
+            var loading = document.getElementById('loading');
+            btn.disabled = true;
+            loading.classList.add('active');
+            document.getElementById('resultsSection').classList.remove('active');
+            fetch('/api/b15-standard/search?' + envQs(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({site:site, plat:plat, queryParams: requestObj}) })
+            .then(function(r) { return r.json(); })
+            .then(function(data) { btn.disabled = false; loading.classList.remove('active'); renderResults(data); })
+            .catch(function(err) { btn.disabled = false; loading.classList.remove('active'); alert('请求失败: ' + err.message); });
+        }
+
+        function formatJson() {
+            var textarea = document.getElementById('requestJson');
+            var raw = textarea.value.trim();
+            if (!raw) return;
+            try { textarea.value = JSON.stringify(JSON.parse(raw), null, 2); } catch (e) { alert('JSON 格式错误: ' + e.message); }
+        }
+
+        function clearAll() {
+            document.getElementById('requestJson').value = '';
+            document.getElementById('resultsSection').classList.remove('active');
+        }
+
+        var PRODUCT_TYPE_LABELS = {1:'普通',2:'同程特惠',3:'品质出行',4:'两舱',5:'精选特价',8:'公务舱',9:'头等舱',10:'联程套票',12:'小众限制',30:'真联程'};
+        var PRODUCT_GROUP_LABELS = {1:'普通产品'};
+        var POLICY_TYPE_LABELS = {40:'加减价格',41:'加减价格',42:'固价',43:'往返',45:'官网',46:'联程',60:'外部运价'};
+
+        var _selectedRespKey = '';
+        var _productRawData = [];
+        var _lastFullRawJson = '';
+
+        function renderResults(data) {
+            document.getElementById('resultsSection').classList.add('active');
+            _lastFullRawJson = JSON.stringify(data, null, 2);
+            document.getElementById('rawData').textContent = _lastFullRawJson;
+            showApmFab(data.apmTraceId);
+
+            if (!data.success) {
+                var dbg = data.debug;
+                var errHtml = '<div class="error-box" style="margin-bottom:12px;">';
+                errHtml += '<div style="font-size:14px;font-weight:700;margin-bottom:6px;">' + (data.error || '未知错误') + '</div>';
+                if (dbg) {
+                    errHtml += '<div style="font-size:11px;color:#888;line-height:1.8;">';
+                    errHtml += '<b>请求URL:</b> ' + (dbg.requestUrl || '-') + '<br>';
+                    errHtml += '<b>上游状态:</b> ' + (dbg.upstreamStatus || '-') + '<br>';
+                    errHtml += '<b>错误码:</b> ' + (dbg.errorCode || '-') + ' <b>消息:</b> ' + (dbg.errorMessage || '-') + '<br>';
+                    if (dbg.upstreamBody) errHtml += '<b>上游返回:</b> <span style="font-family:monospace;">' + (typeof dbg.upstreamBody === 'string' ? dbg.upstreamBody : JSON.stringify(dbg.upstreamBody)) + '</span><br>';
+                    errHtml += '</div>';
+                    // raw debug json toggle
+                    errHtml += '<button class="product-raw-toggle" onclick="toggleProductRaw(\'debugRaw\')">查看调试详情</button>';
+                    errHtml += '<div class="product-raw-data" id="debugRaw" style="margin-top:6px;">' + JSON.stringify(dbg, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+                }
+                errHtml += '</div>';
+                document.getElementById('summaryBarContent').innerHTML = errHtml;
+                document.getElementById('schemeList').innerHTML = '';
+                document.getElementById('respStructDropdown').style.display = 'none';
+                return;
+            }
+
+            var resp = data.data || {};
+            var trip = resp.trip;
+            if (!trip) {
+                document.getElementById('summaryBarContent').innerHTML = '<span style="color:#e53935">响应中无 trip 数据</span>';
+                document.getElementById('schemeList').innerHTML = '';
+                document.getElementById('respStructDropdown').style.display = 'none';
+                return;
+            }
+
+            var depCity = trip.departureCity || {};
+            var arrCity = trip.arrivalCity || {};
+            var segs = trip.tripSegments || [];
+            var products = trip.productList || [];
+            var depDate = trip.departDate || '';
+            var noticeList = trip.noticeList || [];
+            var productSystem = resp.productSystem != null ? resp.productSystem : '';
+
+            // Summary bar
+            var summaryParts = [];
+            summaryParts.push((depCity.cityCode || '') + ' → ' + (arrCity.cityCode || ''));
+            if (depDate) summaryParts.push(depDate);
+            summaryParts.push('共 <span class="count">' + products.length + '</span> 个产品');
+            if (productSystem !== '') summaryParts.push('<span style="color:#999;font-size:12px;">PS' + productSystem + '</span>');
+            document.getElementById('summaryBarContent').innerHTML = summaryParts.join('  ');
+
+            // Populate response structure dropdown from response data
+            _selectedRespKey = '';
+            populateRespStructDropdown(resp);
+
+            if (products.length === 0) {
+                document.getElementById('schemeList').innerHTML = '<div class="empty-result">无产品数据</div>';
+                return;
+            }
+
+            var html = '';
+
+            // Store product raw data for later access
+            _productRawData = [];
+            products.forEach(function(prod) { _productRawData.push(JSON.stringify(prod, null, 2)); });
+
+            // Render flight segments once at top
+            var flightInfoHtml = '';
+            segs.forEach(function(seg) {
+                var ts = seg.trafficSequences || [];
+                if (ts.length === 0) return;
+                ts.forEach(function(seq, si) {
+                    var f = seq.flight || {};
+                    var al = f.airline || {};
+                    var ac = f.aircraft || {};
+                    var depAp = f.departureAirport || {};
+                    var arrAp = f.arrivalAirport || {};
+                    var depCity = seq.departureCity || {};
+                    var arrCity = seq.arrivalCity || {};
+                    var comfort = f.comfortDegrees || {};
+                    // Get meal from serviceTags
+                    var meal = '';
+                    var tags = f.serviceTags || [];
+                    for (var ti = 0; ti < tags.length; ti++) {
+                        if (tags[ti].tagType === 4) { meal = tags[ti].tagDisplay || ''; break; }
+                    }
+
+                    flightInfoHtml += '<div class="product-detail" style="display:flex;align-items:center;gap:8px;">';
+                    flightInfoHtml += '<span class="label" style="min-width:50px;">第' + (si+1) + '程</span>';
+                    // Airline logo
+                    if (al.logoUrl) flightInfoHtml += '<img src="' + al.logoUrl + '" style="width:18px;height:18px;border-radius:3px;" onerror="this.style.display=\'none\'">';
+                    flightInfoHtml += '<b>' + (f.flightNo || '') + '</b> ' + (al.airlineShortName || '') + ' ';
+                    flightInfoHtml += '</div>';
+                    // Route line
+                    flightInfoHtml += '<div class="product-detail">';
+                    flightInfoHtml += '<span class="label" style="min-width:50px;"></span>';
+                    flightInfoHtml += (depCity.cityName || depCity.cityCode || depAp.airportCode || '') + '→' + (arrCity.cityName || arrCity.cityCode || arrAp.airportCode || '') + ' ';
+                    flightInfoHtml += (seq.departureTime || '') + '-' + (seq.arrivalTime || '');
+                    if (seq.totalDuration) flightInfoHtml += ' (' + Math.floor(seq.totalDuration/60) + 'h' + (seq.totalDuration%60) + 'm)';
+                    flightInfoHtml += '</div>';
+                    // Detail line: aircraft, on-time, meal
+                    flightInfoHtml += '<div class="product-detail" style="font-size:11px;color:#888;">';
+                    flightInfoHtml += '<span class="label" style="min-width:50px;"></span>';
+                    if (ac.aircraftName) flightInfoHtml += ac.aircraftName + ' (' + (ac.aircraftCode || '') + ')  ';
+                    if (comfort.onTimeRate) flightInfoHtml += '准点' + comfort.onTimeRate + '%  ';
+                    if (meal) flightInfoHtml += meal + '  ';
+                    flightInfoHtml += '</div>';
+
+                    // Transfer layover time
+                    if (si > 0) {
+                        var prevSeq = ts[si-1];
+                        var prevArr = prevSeq.arrivalTime || '';
+                        var curDep = seq.departureTime || '';
+                        if (prevArr && curDep) {
+                            var layoverMin = (new Date(curDep) - new Date(prevArr)) / 60000;
+                            if (layoverMin > 0) {
+                                flightInfoHtml += '<div class="seg-connector">↓ 中转停留 ' + Math.floor(layoverMin/60) + 'h' + (layoverMin%60) + 'm ↓</div>';
+                            } else {
+                                flightInfoHtml += '<div class="seg-connector">↓ 中转 ↓</div>';
+                            }
+                        } else {
+                            flightInfoHtml += '<div class="seg-connector">↓ 中转 ↓</div>';
+                        }
+                    }
+                });
+            });
+            if (flightInfoHtml) {
+                html += '<div class="product-card">' + flightInfoHtml;
+                // Transfer notice
+                if (noticeList.length > 0) {
+                    html += '<div class="product-detail" style="margin-top:8px;padding-top:8px;border-top:1px dashed #e0e0e0;">';
+                    noticeList.forEach(function(n) {
+                        html += '<span class="label" style="color:#e65100;">' + (n.nd || '提示') + '</span>';
+                        html += '<span style="color:#888;font-size:11px;">' + (n.nr || '') + '</span>';
+                    });
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+
+            // Render products using b15.html style
+            products.forEach(function(prod, pi) {
+                var price = prod.adultTicketPrice;
+                var reduceAmount = prod.reduceAmount || 0;
+                var resourceReduce = prod.resourceReduceAmount || 0;
+                var totalPref = prod.totalPreferentialPrice || 0;
+                var afterPref = prod.ticketPriceAfterPreferential;
+                var tickets = prod.numberOfTickets;
+                var ptLabel = PRODUCT_TYPE_LABELS[prod.productType] || ('类型' + prod.productType);
+                var limitTags = prod.limitTags || [];
+                var tsProducts = prod.trafficSequenceProducts || [];
+                var topMerchantId = prod.merchantId;
+
+                // Determine product tag color class
+                var productCode = prod.productType;
+                var tagClass = 'tag-cabin';
+                if (prod.productType === 2) tagClass = 'tag-product-th';
+                else if (prod.productType === 3) tagClass = 'tag-product-xc';
+                else if (prod.productType === 5) tagClass = 'tag-product-jx';
+
+                html += '<div class="product-card">';
+                // Product header
+                html += '<div>';
+                html += '<div class="product-title"><span class="product-name">产品 ' + (pi+1);
+                html += ' <span class="tag ' + tagClass + '">' + ptLabel + '</span>';
+                if (tickets !== undefined && tickets !== null) html += ' <span style="color:#999;font-size:11px;">余' + tickets + '</span>';
+                if (topMerchantId) html += ' <span style="color:#e65100;font-size:11px;">供应商' + topMerchantId + '</span>';
+                html += '</span>';
+                // Price in header
+                if (price !== undefined && price !== null) {
+                    if (totalPref > 0 && afterPref > 0) {
+                        html += '<span class="product-price" style="text-decoration:line-through;font-size:14px;color:#999;">¥' + price + '</span>';
+                        html += '<span class="product-price" style="font-size:20px;color:#2e7d32;">¥' + afterPref + '</span>';
+                    } else {
+                        html += '<span class="product-price">¥' + price + '</span>';
+                    }
+                }
+                html += '</div>';
+
+                // Limit tags
+                if (limitTags.length > 0) {
+                    html += '<div class="product-detail" style="margin-top:4px;">';
+                    html += '<span style="color:#999;font-size:11px;">限制：</span>';
+                    limitTags.forEach(function(lt) {
+                        var display = lt.tagDisplay || ('标签' + lt.tagType);
+                        var remark = lt.tagRemark || '';
+                        var title = remark ? display + ': ' + remark : display;
+                        html += '<span class="tag tag-cabin" title="' + title + '">' + display + '</span>';
+                        if (remark) html += '<span class="limit-label-remark">' + remark + '</span> ';
+                    });
+                    html += '</div>';
+                }
+                // Price detail line with prominent discounts
+                if (totalPref > 0 || reduceAmount > 0 || resourceReduce > 0) {
+                    html += '<div style="margin:8px 0;padding:8px 12px;background:linear-gradient(135deg,#fff3e0,#fff8e1);border-radius:6px;border:1px solid #ffe0b2;">';
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">';
+                    html += '<div style="font-size:12px;color:#888;">';
+                    if (price !== undefined) html += '票面价 <b style="color:#333;">¥' + price + '</b> ';
+                    if (reduceAmount) html += ' 立减 <b style="color:#e65100;">-¥' + reduceAmount + '</b> ';
+                    if (resourceReduce) html += ' 资源减 <b style="color:#e65100;">-¥' + resourceReduce + '</b> ';
+                    html += '</div>';
+                    if (totalPref > 0) {
+                        html += '<div style="text-align:right;">';
+                        html += '<div style="font-size:12px;color:#888;">总优惠</div>';
+                        html += '<div style="font-size:20px;font-weight:700;color:#e65100;">-¥' + totalPref + '</div>';
+                        html += '</div>';
+                    }
+                    html += '</div>';
+                    if (afterPref > 0) {
+                        html += '<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #ffe0b2;display:flex;align-items:center;justify-content:space-between;">';
+                        html += '<span style="font-size:12px;color:#888;">优惠后实付</span>';
+                        html += '<span style="font-size:22px;font-weight:700;color:#2e7d32;">¥' + afterPref + '</span>';
+                        html += '</div>';
+                    }
+                    html += '</div>';
+                } else {
+                    html += '<div class="product-detail">';
+                    if (price !== undefined && price !== null) html += '<span class="label">票面价</span>¥' + price + ' ';
+                    html += '</div>';
+                }
+
+                // Per-segment details in leg-section
+                tsProducts.forEach(function(tsp, ti) {
+                    var fr = tsp.fareRule || {};
+                    var segPolicyType = tsp.policyType;
+                    var segPolicyId = tsp.policyId;
+                    var segMerchantId = tsp.merchantId;
+                    var segTag = tsp.tag || '';
+                    var ptLabel2 = POLICY_TYPE_LABELS[segPolicyType] || ('政策' + segPolicyType);
+
+                    html += '<div class="leg-section">';
+                    html += '<div class="leg-header">第' + (ti+1) + '程 <span style="font-weight:400;color:#999;font-size:11px;">ruleCode: ' + (fr.ruleCode || '00000') + '</span></div>';
+                    html += '<div class="leg-detail">';
+                    html += '<span class="label">政策</span><span class="tag tag-policy">' + ptLabel2 + '(' + (segPolicyType || '') + ')</span>';
+                    if (segPolicyId) html += ' ' + segPolicyId;
+                    html += '<br>';
+                    var cabinStr = (tsp.cabinCode || '') + ' ' + (tsp.cabinDescription || '');
+                    if (tsp.adultDiscountRate) cabinStr += ' ' + tsp.adultDiscountRate + '折';
+                    html += '<span class="label">舱位</span>' + cabinStr + '<br>';
+                    if (tsp.meal) html += '<span class="label">餐食</span>' + tsp.meal + '<br>';
+                    var reStr = '';
+                    if (tsp.lowestRefundPrice !== undefined) reStr += '退¥' + tsp.lowestRefundPrice;
+                    if (tsp.lowestEndorsePrice !== undefined) reStr += (reStr ? ' ' : '') + '改¥' + tsp.lowestEndorsePrice;
+                    if (reStr) html += '<span class="label">退改</span>' + reStr + '<br>';
+                    if (segMerchantId) html += '<span class="label">供应商</span>' + segMerchantId + '<br>';
+                    // Tag with copy
+                    if (segTag) {
+                        var tagDisplay = segTag.length > 60 ? segTag.substring(0, 60) + '...' : segTag;
+                        var tagCopyId = 'tag-' + pi + '-' + ti;
+                        html += '<span class="label">tag</span><span style="font-family:monospace;font-size:10px;color:#666;" id="' + tagCopyId + '">' + tagDisplay + '</span>';
+                        html += ' <button class="tag-copy-btn" onclick="copySegTag(\'' + tagCopyId + '\')" title="复制完整tag">📋</button>';
+                        html += '<textarea id="tagFull-' + pi + '-' + ti + '" style="display:none;">' + segTag + '</textarea>';
+                        html += '<br>';
+                    }
+                    html += '</div></div>';
+                });
+
+                // Product services
+                var prodServices = prod.productServices || [];
+                if (prodServices.length > 0) {
+                    html += '<div class="services-section">';
+                    html += '<div class="services-header">产品服务</div>';
+                    prodServices.forEach(function(group, gi) {
+                        var svcs = group.services || [];
+                        svcs.forEach(function(svc, svi) {
+                            var svcId = 'svc-' + pi + '-' + svi;
+                            html += '<span class="tag tag-service" onclick="toggleServiceDesc(\'' + svcId + '\')">' + (svc.serviceName || '服务') + '</span> ';
+                            var descs = svc.serviceDesc || [];
+                            if (descs.length > 0) {
+                                html += '<div class="service-desc" id="' + svcId + '">';
+                                descs.forEach(function(d) {
+                                    html += '<div style="font-size:11px;color:#666;">' + (typeof d === 'string' ? d : (d.Description || JSON.stringify(d))) + '</div>';
+                                });
+                                html += '</div>';
+                            }
+                        });
+                    });
+                    html += '</div>';
+                }
+
+                // Dynamic package / ancillary product configText (only once per product, from first segment)
+                if (tsProducts.length > 0) {
+                    var dp0 = tsProducts[0].dynamicPackageInfo || {};
+                    var ap0 = dp0.ancillaryProduct || {};
+                    var ct = ap0.configText;
+                    if (ct) {
+                        html += '<div style="margin-top:8px;padding:10px;background:#f0f8ff;border-radius:4px;border:1px solid #d0e4f5;">';
+                        html += '<div style="font-weight:600;font-size:12px;color:#1565c0;cursor:pointer;user-select:none;" onclick="toggleB15Ap(\'ap-' + pi + '\')">';
+                        html += '📦 ' + (ct.packageLabel || ap0.productName || '礼包') + ' <span style="font-weight:400;color:#e65100;">¥' + (ap0.salePrice || '') + '</span>';
+                        html += ' <span id="ap-' + pi + '-arrow" style="font-size:11px;">▶</span>';
+                        html += '</div>';
+                        html += '<div class="product-raw-data" id="ap-' + pi + '" style="margin-top:8px;">';
+                        if (ct.recommendPoint) html += '<div style="color:#e65100;font-weight:600;margin-bottom:6px;font-size:12px;">' + ct.recommendPoint + '</div>';
+                        var titles = ct.packSellTitles || [];
+                        if (titles.length > 0) {
+                            titles.forEach(function(t) {
+                                html += '<div style="font-size:11px;color:#555;margin-bottom:4px;">' + (t.text || '') + '</div>';
+                            });
+                        }
+                        var pps = ct.packagePointSummary || [];
+                        if (pps.length > 0) {
+                            pps.forEach(function(item) {
+                                html += '<div style="font-size:11px;color:#2e7d32;margin-bottom:2px;">✓ ' + (item.packageText || '') + '</div>';
+                            });
+                        }
+                        html += '</div></div>';
+                    }
+                }
+
+                // Per-product raw data
+                var rawId = 'raw-prod-' + pi;
+                html += '<div style="display:flex;gap:6px;margin-top:6px;">';
+                html += '<button class="product-raw-toggle" onclick="toggleProductRaw(\'' + rawId + '\')">查看原始数据</button>';
+                html += '<button class="product-raw-toggle" id="copyBtn-' + rawId + '" onclick="copyProductRaw(\'' + rawId + '\')">复制原始数据</button>';
+                html += '</div>';
+                html += '<div class="product-raw-data" id="' + rawId + '" data-raw-json="' + pi + '"></div>';
+
+                html += '</div>'; // close product-card inner
+                html += '</div>'; // close product-card
+            });
+
+            document.getElementById('schemeList').innerHTML = html;
+        }
+
+        // Get the short key name for highlighting (strip path and array notation)
+        function getShortKey(fullKey) {
+            if (!fullKey) return '';
+            return fullKey.split('.').pop().replace(/\[\]$/, '');
+        }
+
+        function toggleRaw() {
+            var el = document.getElementById('rawData');
+            var isOpen = el.classList.contains('active');
+            if (!isOpen && _lastFullRawJson) {
+                var html = _lastFullRawJson.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                if (_selectedRespKey) {
+                    html = highlightKeyInJson(html, getShortKey(_selectedRespKey));
+                }
+                el.innerHTML = html;
+            }
+            el.classList.toggle('active');
+        }
+
+        function toggleProductRaw(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var isOpen = el.classList.contains('active');
+            if (!isOpen) {
+                // Render content with optional highlight
+                var idx = el.getAttribute('data-raw-json');
+                var rawJson = _productRawData[idx] || '';
+                var html = rawJson.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                if (_selectedRespKey) {
+                    html = highlightKeyInJson(html, getShortKey(_selectedRespKey));
+                }
+                el.innerHTML = html;
+            }
+            el.classList.toggle('active');
+        }
+
+        function highlightKeyInJson(jsonHtml, key) {
+            // Highlight the key in JSON (matches "key": pattern)
+            var keyPattern = new RegExp('"' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"\\s*:', 'g');
+            return jsonHtml.replace(keyPattern, function(match) {
+                return '<span class="raw-highlight raw-highlight-flash">' + match + '</span>';
+            });
+        }
+
+        function toggleServiceDesc(id) { var el = document.getElementById(id); if (el) el.classList.toggle('active'); }
+
+        function toggleB15Ap(id) {
+            var el = document.getElementById(id);
+            var arrow = document.getElementById(id + '-arrow');
+            if (!el) return;
+            el.classList.toggle('active');
+            if (arrow) arrow.textContent = el.classList.contains('active') ? '▼' : '▶';
+        }
+
+        function copyProductRaw(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var idx = el.getAttribute('data-raw-json');
+            var text = _productRawData[idx] || el.textContent.trim();
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(function() {
+                var btn = document.getElementById('copyBtn-' + id);
+                if (btn) { btn.textContent = '已复制!'; setTimeout(function() { btn.textContent = '复制原始数据'; }, 2000); }
+            });
+        }
+
+        function copySegTag(displayId) {
+            var parts = displayId.split('-');
+            var fullId = 'tagFull-' + parts[1] + '-' + parts[2];
+            var el = document.getElementById(fullId);
+            if (!el || !el.value) return;
+            navigator.clipboard.writeText(el.value).then(function() {
+                var btn = document.getElementById(displayId).parentElement.querySelector('.tag-copy-btn');
+                if (btn) { btn.textContent = '✓'; setTimeout(function() { btn.textContent = '📋'; }, 1500); }
+            });
+        }
+
+        // ---- Response structure dropdown ----
+        function extractKeysFromJson(obj, prefix, visited) {
+            prefix = prefix || '';
+            visited = visited || new WeakSet();
+            var keys = [];
+            if (!obj || typeof obj !== 'object') return keys;
+            // Prevent circular reference
+            if (visited.has(obj)) return keys;
+            visited.add(obj);
+
+            var isArr = Array.isArray(obj);
+            // For arrays, sample first 3 elements to collect all unique keys
+            var items = isArr ? obj.slice(0, 3) : [obj];
+            var seenKeys = {};
+            items.forEach(function(item) {
+                if (!item || typeof item !== 'object') return;
+                Object.keys(item).forEach(function(k) {
+                    if (seenKeys[k]) return;
+                    seenKeys[k] = true;
+                    var fullKey = prefix ? prefix + '.' + k : k;
+                    var val = item[k];
+                    // Add type hint
+                    var typeHint = '';
+                    if (val === null) typeHint = ' (null)';
+                    else if (typeof val === 'string') typeHint = '';
+                    else if (typeof val === 'number') typeHint = '';
+                    else if (typeof val === 'boolean') typeHint = '';
+                    else if (Array.isArray(val)) typeHint = ' []';
+                    else if (typeof val === 'object') typeHint = ' {}';
+                    keys.push(fullKey + typeHint);
+                    // Recurse into nested objects
+                    if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+                        var nested = extractKeysFromJson(val, fullKey, visited);
+                        keys = keys.concat(nested);
+                    } else if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'object') {
+                        var nestedArr = extractKeysFromJson(val, fullKey + '[]', visited);
+                        keys = keys.concat(nestedArr);
+                    }
+                });
+            });
+            return keys;
+        }
+
+        function populateRespStructDropdown(respObj) {
+            var dropdown = document.getElementById('respStructDropdown');
+            if (!respObj || typeof respObj !== 'object') { dropdown.style.display = 'none'; return; }
+            try {
+                var keys = extractKeysFromJson(respObj);
+                if (keys.length === 0) { dropdown.style.display = 'none'; return; }
+                dropdown.style.display = 'inline-block';
+                _respStructKeys = keys;
+                renderRespStructList(keys);
+            } catch(e) { dropdown.style.display = 'none'; }
+        }
+
+        var _respStructKeys = [];
+
+        function renderRespStructList(keys) {
+            var listEl = document.getElementById('respStructList');
+            if (keys.length === 0) {
+                listEl.innerHTML = '<div class="resp-struct-empty">无匹配参数</div>';
+                return;
+            }
+            var html = '';
+            keys.forEach(function(k) {
+                // Strip type hint for display and selection
+                var typeHint = '';
+                var pureKey = k;
+                var typeMatch = k.match(/^(.*?)(\s+\[\]|\s+\{\}|\s+\(null\))$/);
+                if (typeMatch) { pureKey = typeMatch[1]; typeHint = typeMatch[2]; }
+                var parts = pureKey.split('.');
+                var display = parts[parts.length - 1];
+                // Remove array notation from display
+                var displayClean = display.replace(/\[\]$/, '');
+                var path = parts.length > 1 ? parts.slice(0, -1).join('.') : '';
+                var selClass = pureKey === _selectedRespKey ? ' selected' : '';
+                html += '<div class="resp-struct-item' + selClass + '" onclick="selectRespKey(\'' + pureKey.replace(/'/g, "\\'") + '\')" title="' + pureKey + '">';
+                html += displayClean;
+                if (typeHint) html += '<span style="color:#999;font-size:10px;margin-left:2px;">' + typeHint + '</span>';
+                if (path) html += '<span class="key-path">' + path.replace(/\[\]/g, '[]') + '</span>';
+                html += '</div>';
+            });
+            listEl.innerHTML = html;
+        }
+
+        function toggleRespStructPanel() {
+            var panel = document.getElementById('respStructPanel');
+            var btn = document.getElementById('respStructBtn');
+            var isOpen = panel.classList.contains('open');
+            if (isOpen) {
+                panel.classList.remove('open');
+                btn.classList.remove('open');
+            } else {
+                panel.classList.add('open');
+                btn.classList.add('open');
+                document.getElementById('respStructFilter').value = '';
+                renderRespStructList(_respStructKeys);
+                document.getElementById('respStructFilter').focus();
+            }
+        }
+
+        function filterRespStruct() {
+            var filter = document.getElementById('respStructFilter').value.trim().toLowerCase();
+            if (!filter) { renderRespStructList(_respStructKeys); return; }
+            var filtered = _respStructKeys.filter(function(k) {
+                // Strip type hints for matching
+                var pureKey = k.replace(/\s+\[\]$|\s+\{\}$|\s+\(null\)$/g, '');
+                return pureKey.toLowerCase().indexOf(filter) >= 0;
+            });
+            renderRespStructList(filtered);
+        }
+
+        function selectRespKey(key) {
+            // Toggle off if same key selected
+            if (_selectedRespKey === key) {
+                _selectedRespKey = '';
+            } else {
+                _selectedRespKey = key;
+            }
+            // Re-render list to show selection
+            var filter = document.getElementById('respStructFilter').value.trim().toLowerCase();
+            var keys = filter ? _respStructKeys.filter(function(k) {
+                var pureKey = k.replace(/\s+\[\]$|\s+\{\}$|\s+\(null\)$/g, '');
+                return pureKey.toLowerCase().indexOf(filter) >= 0;
+            }) : _respStructKeys;
+            renderRespStructList(keys);
+            // Update button text
+            var btn = document.getElementById('respStructBtn');
+            if (_selectedRespKey) {
+                var shortKey = getShortKey(_selectedRespKey);
+                btn.innerHTML = '返回结构: ' + shortKey + ' <span class="arrow">▼</span>';
+            } else {
+                btn.innerHTML = '返回结构 <span class="arrow">▼</span>';
+            }
+            btn.classList.add('open');
+            // Re-highlight any already-open raw data panels
+            reHighlightOpenRawPanels();
+        }
+
+        function reHighlightOpenRawPanels() {
+            var rawEls = document.querySelectorAll('.product-raw-data.active');
+            rawEls.forEach(function(el) {
+                var idx = el.getAttribute('data-raw-json');
+                var rawJson = _productRawData[idx] || '';
+                var html = rawJson.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                if (_selectedRespKey) {
+                    html = highlightKeyInJson(html, getShortKey(_selectedRespKey));
+                }
+                el.innerHTML = html;
+            });
+            // Also re-highlight the global raw data
+            var globalRaw = document.getElementById('rawData');
+            if (globalRaw && globalRaw.classList.contains('active') && _lastFullRawJson) {
+                var html = _lastFullRawJson.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                if (_selectedRespKey) {
+                    html = highlightKeyInJson(html, getShortKey(_selectedRespKey));
+                }
+                globalRaw.innerHTML = html;
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            var dropdown = document.getElementById('respStructDropdown');
+            if (!dropdown) return;
+            if (!dropdown.contains(e.target)) {
+                var panel = document.getElementById('respStructPanel');
+                var btn = document.getElementById('respStructBtn');
+                if (panel) panel.classList.remove('open');
+                if (btn) btn.classList.remove('open');
+            }
+        });
+
+        function showApmFab(traceId) {
+            _apmTraceId = traceId || '';
+            var fab = document.getElementById('apmFab');
+            if (!fab) return;
+            if (_apmTraceId) {
+                fab.classList.add('visible');
+                document.getElementById('apmFabId').textContent = _apmTraceId;
+                document.getElementById('apmFabId').title = _apmTraceId;
+            } else {
+                fab.classList.remove('visible');
+            }
+        }
+
+        function copyApmTraceId() {
+            if (!_apmTraceId) return;
+            navigator.clipboard.writeText(_apmTraceId).then(function() {
+                var fab = document.getElementById('apmFab');
+                fab.textContent = '已复制!';
+                setTimeout(function() {
+                    fab.innerHTML = '<span class="label">apmTraceId</span><span class="id" id="apmFabId">' + _apmTraceId + '</span>';
+                    document.getElementById('apmFabId').title = _apmTraceId;
+                }, 1500);
+            });
+        }
+
+        // Auto-fill from localStorage (b15param from index/gateway, or b15standardParam)
+        window.onload = function() {
+            loadHistory();
+            var param = '';
+            try {
+                // b15param takes priority — set by index.html and gateway.html's "查看产品列表"
+                param = localStorage.getItem('b15param');
+                if (param) { localStorage.removeItem('b15param'); }
+                else { param = localStorage.getItem('b15standardParam'); if (param) localStorage.removeItem('b15standardParam'); }
+            } catch(e) {}
+            if (!param) {
+                var params = new URLSearchParams(window.location.search);
+                param = params.get('param');
+                if (param) param = decodeURIComponent(param);
+            }
+            if (param) {
+                try {
+                    var obj = JSON.parse(param);
+                    document.getElementById('requestJson').value = JSON.stringify(obj, null, 2);
+                } catch(e) {}
+            }
+        };
+
+        function saveHistory(inputJson, site, plat) {
+            if (!inputJson) return;
+            try {
+                var entry = { input: inputJson, site: site, plat: plat, time: new Date().toLocaleString() };
+                localStorage.setItem('doctor_history_b15_standard', JSON.stringify(entry));
+                loadHistory();
+            } catch(e) {}
+        }
+
+        function loadHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_b15_standard');
+                if (!stored) { document.getElementById('historyBar').classList.remove('active'); return; }
+                var entry = JSON.parse(stored);
+                var bar = document.getElementById('historyBar');
+                bar.classList.add('active');
+                var obj;
+                try { obj = JSON.parse(entry.input); } catch(e) { obj = null; }
+                var summary = (entry.site || '') + ' / ' + (entry.plat || '') + ' ';
+                if (obj) {
+                    if (obj.departureCityCode) summary += obj.departureCityCode + '→';
+                    if (obj.arrivalCityCode) summary += obj.arrivalCityCode;
+                    if (obj.departDate) summary += ' ' + obj.departDate;
+                    if (obj.transferCityCode) summary += ' 经:' + obj.transferCityCode;
+                }
+                if (!summary.trim()) summary = entry.input.substring(0, 80);
+                document.getElementById('historyText').textContent = summary;
+                document.getElementById('historyText').title = entry.input;
+                document.getElementById('historyTime').textContent = entry.time;
+            } catch(e) { document.getElementById('historyBar').classList.remove('active'); }
+        }
+
+        function restoreHistory() {
+            try {
+                var stored = localStorage.getItem('doctor_history_b15_standard');
+                if (!stored) return;
+                var entry = JSON.parse(stored);
+                document.getElementById('requestJson').value = entry.input;
+                if (entry.site) document.getElementById('siteSelect').value = entry.site;
+                if (entry.plat) {
+                    var platOpts = ['852','433','434','518','10212'];
+                    if (platOpts.indexOf(entry.plat) >= 0) {
+                        document.getElementById('platSelect').value = entry.plat;
+                        onPlatChange();
+                    } else {
+                        document.getElementById('platSelect').value = 'custom';
+                        document.getElementById('customPlatWrap').className = 'custom-plat active';
+                        document.getElementById('customPlat').value = entry.plat;
+                    }
+                }
+            } catch(e) {}
+        }
+    </script>
+</body>
+</html>

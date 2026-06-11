@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>真联程最小价查询</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #0d904f, #065f37); color: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .env-select { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 12px; outline: none; }
+        .env-select:hover { background: rgba(255,255,255,0.25); }
+        .env-select option { background: #fff; color: #333; }
+        .nav-bar { display: flex; gap: 2px; align-items: stretch; }
+        .nav-group { position: relative; }
+        .nav-group-btn { color: rgba(255,255,255,0.75); background: none; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .nav-group-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-group.has-active .nav-group-btn { color: #ffeb3b; }
+        .nav-dropdown { display: none; position: absolute; top: 100%; right: 0; background: #065f37; border-radius: 6px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; padding: 4px 0; margin-top: 2px; }
+        .nav-group:hover .nav-dropdown { display: block; }
+        .nav-dropdown a { display: block; color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+        .nav-dropdown a:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-dropdown a.active { color: #ffeb3b; background: rgba(255,255,255,0.1); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .input-section { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .input-section label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #0d904f; }
+        textarea { width: 100%; height: 300px; border: 1px solid #ddd; border-radius: 6px; padding: 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 12px; resize: vertical; outline: none; transition: border-color 0.2s; }
+        textarea:focus { border-color: #0d904f; box-shadow: 0 0 0 2px rgba(13,144,79,0.15); }
+        .btn-row { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+        .btn { padding: 10px 28px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #0d904f; color: white; }
+        .btn-primary:hover { background: #065f37; }
+        .btn-primary:disabled { background: #94c2f5; cursor: not-allowed; }
+        .btn-secondary { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .loading { display: none; align-items: center; gap: 8px; color: #0d904f; font-size: 13px; }
+        .loading.active { display: flex; }
+        .spinner { width: 18px; height: 18px; border: 2px solid #e0e0e0; border-top-color: #0d904f; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .result-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 16px; }
+        .result-card h3 { font-size: 15px; color: #0d904f; margin-bottom: 12px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px; }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .result-item:last-child { border-bottom: none; }
+        .result-label { font-size: 13px; color: #666; min-width: 120px; }
+        .result-value { font-size: 14px; font-weight: 600; color: #333; text-align: right; }
+        .result-value.price { color: #e53935; font-size: 18px; }
+        .result-value.flight { color: #0d904f; }
+        .result-value.route { color: #1a73e8; }
+        .result-value.error { color: #e53935; }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .route-item { background: #f8f9fa; border-radius: 6px; padding: 12px; border: 1px solid #e0e0e0; margin-bottom: 8px; }
+        .route-item .route-header { font-weight: 600; font-size: 13px; color: #0d904f; margin-bottom: 6px; }
+        .route-item .route-detail { font-size: 12px; color: #555; line-height: 1.8; }
+        .route-item .route-detail .label { color: #999; display: inline-block; min-width: 80px; }
+        .error-box { background: #fce8e6; border: 1px solid #f5c6c0; border-radius: 6px; padding: 14px; color: #c62828; font-size: 13px; margin-bottom: 12px; }
+        .empty-result { text-align: center; padding: 30px; color: #999; font-size: 14px; background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .raw-toggle { margin-top: 12px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .raw-toggle:hover { background: #e8e8e8; }
+        .raw-data { display: none; margin-top: 10px; max-height: 400px; overflow: auto; background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 6px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+        .raw-data.active { display: block; }
+        .detail-section { background: #fff; border-radius: 6px; padding: 12px; border: 1px solid #e8f5e9; margin-top: 8px; }
+        .detail-section h4 { font-size: 13px; color: #0d904f; margin-bottom: 8px; }
+        .detail-item { display: flex; padding: 4px 0; font-size: 12px; }
+        .detail-item .dlabel { color: #999; min-width: 100px; }
+        .detail-item .dvalue { color: #333; font-weight: 500; }
+        .cabin-tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; margin-right: 4px; }
+        .cabin-tag.economic { background: #e6f4ea; color: #0d904f; }
+        .cabin-tag.business { background: #e8f0fe; color: #1a73e8; }
+        .cabin-tag.first { background: #fce8e6; color: #e53935; }
+        .selected-flight { background: #fff9c4; border: 1px solid #ffe082; border-radius: 4px; padding: 2px 6px; font-size: 11px; color: #e65100; font-weight: 600; }
+        .combination-card { background: #fff; border-radius: 8px; padding: 16px; border: 1px solid #e0e0e0; margin-bottom: 12px; border-left: 4px solid #0d904f; }
+        .combination-card.lowest { border-left-color: #e53935; background: #fff5f5; }
+        .combination-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .combination-title { font-size: 14px; font-weight: 600; color: #0d904f; }
+        .combination-body { font-size: 12px; color: #555; line-height: 1.8; }
+        .combination-body .cb-label { color: #999; display: inline-block; min-width: 80px; }
+        .combination-body .cb-flight { color: #0d904f; font-weight: 600; }
+        .segment-summary { display: flex; gap: 12px; margin-bottom: 8px; align-items: center; }
+        .segment-badge { background: #e8f5e9; color: #0d904f; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .segment-arrow { color: #999; font-size: 16px; }
+        .cabin-detail { margin-top: 4px; }
+        .cabin-detail-row { display: flex; gap: 8px; padding: 2px 0; font-size: 11px; }
+        .cabin-code { font-weight: 600; color: #333; min-width: 20px; }
+        .cabin-seats { color: #0d904f; }
+        .flight-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 12px; }
+        .flight-table th { background: #f5f5f5; padding: 6px 10px; text-align: left; font-weight: 600; color: #666; border-bottom: 2px solid #e0e0e0; }
+        .flight-table td { padding: 6px 10px; border-bottom: 1px solid #f0f0f0; }
+        .price-row { background: #fafafa; border-left: 3px solid #0d904f; padding: 10px; margin-bottom: 8px; border-radius: 4px; }
+        .price-row.lowest { border-left-color: #e53935; background: #fff5f5; }
+        .price-cabin { font-weight: 600; min-width: 60px; }
+        .price-value { color: #e53935; font-weight: 700; }
+        .dict-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .dict-table td { padding: 3px 8px; border-bottom: 1px solid #f0f0f0; }
+        .dict-table td:first-child { color: #999; width: 40px; }
+        .price-group-tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; margin-left: 6px; }
+        .price-group-tag.economic { background: #e6f4ea; color: #0d904f; }
+        .price-group-tag.business { background: #e8f0fe; color: #1a73e8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>真联程最小价查询</h1>
+            <p>通过粘贴 JSON 参数查询真联程最小价格 — 支持 routes/detail + av 格式</p>
+        </div>
+        <div id="nav-placeholder"></div>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <label>请求参数 (JSON)</label>
+            <textarea id="requestJson" placeholder='粘贴真联程最小价请求 JSON...'></textarea>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">查询</button>
+                <button class="btn btn-secondary" onclick="formatJson()">美化</button>
+                <button class="btn btn-secondary" onclick="clearAll()">清空</button>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <span>正在查询真联程最小价...</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsSection" style="display:none">
+            <div class="result-card" id="summaryCard"></div>
+            <div class="result-card" id="routesCard"></div>
+            <div class="result-card" id="itemsCard"></div>
+            <div class="result-card" id="productsCard"></div>
+            <div class="result-card">
+                <button class="raw-toggle" onclick="toggleRaw()">查看原始数据</button>
+                <div class="raw-data" id="rawData"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/navbar.js"></script>
+<script>
+        function doSearch() {
+            var textarea = document.getElementById('requestJson');
+            var raw = textarea.value.trim();
+            if (!raw) { alert('请输入请求参数 JSON'); return; }
+            var requestObj;
+            try { requestObj = JSON.parse(raw); } catch (e) { alert('JSON 格式错误: ' + e.message); return; }
+            var btn = document.getElementById('searchBtn');
+            var loading = document.getElementById('loading');
+            btn.disabled = true;
+            loading.classList.add('active');
+            document.getElementById('resultsSection').style.display = 'none';
+            fetch('/api/real-interline?' + envQs(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestObj) })
+            .then(function(r) { return r.json(); })
+            .then(function(data) { btn.disabled = false; loading.classList.remove('active'); renderResults(data, requestObj); })
+            .catch(function(err) { btn.disabled = false; loading.classList.remove('active'); alert('请求失败: ' + err.message); });
+        }
+
+        function formatJson() {
+            var textarea = document.getElementById('requestJson');
+            var raw = textarea.value.trim();
+            if (!raw) return;
+            try { textarea.value = JSON.stringify(JSON.parse(raw), null, 2); } catch (e) { alert('JSON 格式错误: ' + e.message); }
+        }
+
+        function clearAll() {
+            document.getElementById('requestJson').value = '';
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+
+        function escHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function resolveDict(dict, key) {
+            if (key == null || key === undefined) return '';
+            var skey = String(key);
+            return (dict && dict[skey] !== undefined) ? dict[skey] : '';
+        }
+
+        function formatTime(ts) {
+            if (!ts) return '-';
+            var d = new Date(ts);
+            var hh = String(d.getHours()).padStart(2, '0');
+            var mm = String(d.getMinutes()).padStart(2, '0');
+            return hh + ':' + mm;
+        }
+
+        function formatDate(dateInt) {
+            if (!dateInt) return '-';
+            var s = String(dateInt);
+            if (s.length !== 8) return s;
+            return s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8);
+        }
+
+        function getCabinGradeLabel(grade) {
+            if (grade === 2) return '公务舱';
+            if (grade === 3) return '头等舱';
+            return '经济舱';
+        }
+
+        function getCabinGradeCss(grade) {
+            if (grade === 2) return 'business';
+            if (grade === 3) return 'first';
+            return 'economic';
+        }
+
+        function getPriceGroupTypeLabel(type) {
+            if (String(type) === '2') return '高舱资源';
+            return '经济舱';
+        }
+
+        function getCabinCodeLabel(baseCabin, saleCabin) {
+            if (saleCabin && baseCabin) return saleCabin + '/' + baseCabin;
+            return saleCabin || baseCabin || '-';
+        }
+
+        function renderResults(data, requestObj) {
+            document.getElementById('resultsSection').style.display = 'block';
+
+            var summaryHtml = '<h3>查询摘要</h3>';
+            if (data.error) {
+                summaryHtml += '<div class="error-box">' + data.error + '</div>';
+            } else {
+                summaryHtml += '<div class="result-grid">';
+                if (requestObj.departurePortCode) summaryHtml += '<div class="result-item"><span class="result-label">出发机场</span><span class="result-value route">' + requestObj.departurePortCode + '</span></div>';
+                if (requestObj.arrivalPortCode) summaryHtml += '<div class="result-item"><span class="result-label">到达机场</span><span class="result-value route">' + requestObj.arrivalPortCode + '</span></div>';
+                if (requestObj.flightDate || requestObj.firstFlightDate) summaryHtml += '<div class="result-item"><span class="result-label">航班日期</span><span class="result-value">' + (requestObj.flightDate || requestObj.firstFlightDate) + '</span></div>';
+                if (requestObj.firstFlightNo) summaryHtml += '<div class="result-item"><span class="result-label">第一程航班</span><span class="result-value flight">' + requestObj.firstFlightNo + '</span></div>';
+                if (requestObj.secondFlightNo) summaryHtml += '<div class="result-item"><span class="result-label">第二程航班</span><span class="result-value flight">' + requestObj.secondFlightNo + '</span></div>';
+                if (requestObj.trasnferPort) summaryHtml += '<div class="result-item"><span class="result-label">中转机场</span><span class="result-value">' + requestObj.trasnferPort + '</span></div>';
+                if (requestObj.channel) summaryHtml += '<div class="result-item"><span class="result-label">渠道</span><span class="result-value">' + requestObj.channel + '</span></div>';
+                if (requestObj.interlineType || requestObj.resourceType) summaryHtml += '<div class="result-item"><span class="result-label">类型</span><span class="result-value">' + (requestObj.interlineType || requestObj.resourceType) + '</span></div>';
+                summaryHtml += '</div>';
+
+                if (data.data && data.data.items !== undefined) {
+                    summaryHtml += '<div class="detail-section" style="margin-top:12px"><h4>API 响应</h4>';
+                    summaryHtml += '<div class="detail-item"><span class="dlabel">结果数量</span><span class="dvalue">' + data.data.items.length + ' 条</span></div>';
+                    if (data.apmTraceId) summaryHtml += '<div class="detail-item"><span class="dlabel">APM TraceId</span><span class="dvalue" style="font-family:monospace;font-size:11px;color:#999">' + escHtml(data.apmTraceId) + '</span></div>';
+                    summaryHtml += '</div>';
+                }
+            }
+            document.getElementById('summaryCard').innerHTML = summaryHtml;
+
+            var routesHtml = '<h3>航段信息</h3>';
+            if (requestObj.routes && requestObj.routes.length > 0) {
+                requestObj.routes.forEach(function(route, idx) {
+                    var seg = route.detail || route.route || {};
+                    routesHtml += '<div class="route-item">';
+                    routesHtml += '<div class="route-header">航段 ' + (idx + 1) + ': ' + (route.departurePortCode || '-') + ' → ' + (route.arrivalPortCode || '-') + '</div>';
+                    routesHtml += '<div class="route-detail">';
+                    routesHtml += '<div><span class="label">出发机场</span>' + (seg.departurePortCode || '-') + '</div>';
+                    routesHtml += '<div><span class="label">到达机场</span>' + (seg.arrivalPortCode || '-') + '</div>';
+                    routesHtml += '<div><span class="label">航班日期</span>' + (route.flightDate || '-') + '</div>';
+                    routesHtml += '</div>';
+                    routesHtml += '</div>';
+                });
+            } else {
+                routesHtml += '<div class="empty-result" style="box-shadow:none">无航段信息</div>';
+            }
+            document.getElementById('routesCard').innerHTML = routesHtml;
+
+            var connectData = data && data.data ? data.data : null;
+            var items = connectData && Array.isArray(connectData.items) ? connectData.items : [];
+            if (!connectData || items.length === 0) {
+                var emptyMsg = data.error ? data.error : '响应中无可展示 items';
+                document.getElementById('itemsCard').innerHTML = '<h3>响应结果概览</h3><div class="empty-result" style="box-shadow:none">' + escHtml(emptyMsg) + '</div>';
+                document.getElementById('productsCard').innerHTML = '<h3>方案明细</h3><div class="empty-result" style="box-shadow:none">' + escHtml(emptyMsg) + '</div>';
+                document.getElementById('rawData').textContent = JSON.stringify(data, null, 2);
+                return;
+            }
+
+            var itemsHtml = '<h3>响应结果概览</h3>';
+            var productsHtml = '<h3>方案明细</h3>';
+
+            items.forEach(function(item, itemIdx) {
+                var detail = item.detail || {};
+                var stringDict = detail.stringDictionary || {};
+                var baseCabinDict = detail.BaseCabinInfoDictionary || {};
+                var cabinPriceDict = detail.CabinPriceDictionary || {};
+                var flightPairs = Array.isArray(detail.flightPairs) ? detail.flightPairs : [];
+                var resources = Array.isArray(detail.resources) ? detail.resources : [];
+
+                itemsHtml += '<div class="result-card" style="padding:14px;margin:12px 0 0;border:1px solid #e8f5e9;box-shadow:none">';
+                itemsHtml += '<div class="result-item"><span class="result-label">中转停留地</span><span class="result-value route">' + escHtml(item.trasferPortCode || '-') + '</span></div>';
+                itemsHtml += '<div class="result-item"><span class="result-label">第一程出发日期</span><span class="result-value">' + escHtml(formatDate(item.firstTripDepatureDate)) + '</span></div>';
+                itemsHtml += '<div class="result-item"><span class="result-label">第二程出发日期</span><span class="result-value">' + escHtml(formatDate(item.secondTripDepatureDate)) + '</span></div>';
+                itemsHtml += '<div class="detail-section" style="margin-top:10px"><div class="detail-item"><span class="dlabel">方案数</span><span class="dvalue">' + flightPairs.length + '</span></div>';
+                itemsHtml += '<div class="detail-item"><span class="dlabel">字符串字典</span><span class="dvalue">' + Object.keys(stringDict).length + '</span></div>';
+                itemsHtml += '<div class="detail-item"><span class="dlabel">基础舱位字典</span><span class="dvalue">' + Object.keys(baseCabinDict).length + '</span></div>';
+                itemsHtml += '<div class="detail-item"><span class="dlabel">舱位价格字典</span><span class="dvalue">' + Object.keys(cabinPriceDict).length + '</span></div>';
+                itemsHtml += '<div class="detail-item"><span class="dlabel">资源数</span><span class="dvalue">' + resources.length + '</span></div></div>';
+                var itemRawId = 'itemRaw_' + itemIdx;
+                itemsHtml += '<button class="raw-toggle" onclick="document.getElementById(\'' + itemRawId + '\').classList.toggle(\'active\')">查看原始数据</button>';
+                itemsHtml += '<div class="raw-data" id="' + itemRawId + '">' + escHtml(JSON.stringify(item, null, 2)) + '</div>';
+                itemsHtml += '</div>';
+
+                productsHtml += '<div class="detail-section" style="margin-bottom:14px">';
+                productsHtml += '<h4>中转停留地 ' + escHtml(item.trasferPortCode || '-') + ' · ' + escHtml(formatDate(item.firstTripDepatureDate)) + ' → ' + escHtml(formatDate(item.secondTripDepatureDate)) + '</h4>';
+
+                if (flightPairs.length === 0) {
+                    productsHtml += '<div class="empty-result" style="box-shadow:none">无 flightPairs 数据</div>';
+                }
+
+                flightPairs.forEach(function(fp, fpIdx) {
+                    var flights = Array.isArray(fp.flights) ? fp.flights : [];
+                    var prices = Array.isArray(fp.prices) ? fp.prices : [];
+                    var firstNo = resolveDict(stringDict, fp.firstTripFlightNo) || String(fp.firstTripFlightNo || '');
+                    var secondNo = resolveDict(stringDict, fp.secondTripFlightNo) || String(fp.secondTripFlightNo || '');
+                    var lowest = prices.some(function(p) { return !!p.isLowest; });
+
+                    productsHtml += '<div class="combination-card' + (lowest ? ' lowest' : '') + '">';
+                    productsHtml += '<div class="combination-header">';
+                    productsHtml += '<div class="combination-title">方案 ' + (itemIdx + 1) + '-' + (fpIdx + 1) + '</div>';
+                    productsHtml += '<div class="result-value route">' + escHtml(firstNo || '-') + ' → ' + escHtml(secondNo || '-') + '</div>';
+                    productsHtml += '</div>';
+
+                    if (flights.length > 0) {
+                        productsHtml += '<table class="flight-table"><tr><th>航班号</th><th>起点</th><th>终点</th><th>起飞</th><th>到达</th></tr>';
+                        flights.forEach(function(f) {
+                            productsHtml += '<tr>';
+                            productsHtml += '<td>' + escHtml(f.flightNo || resolveDict(stringDict, f.id) || '-') + '</td>';
+                            productsHtml += '<td>' + escHtml(f.departureCode || '-') + '</td>';
+                            productsHtml += '<td>' + escHtml(f.arriveCode || '-') + '</td>';
+                            productsHtml += '<td>' + escHtml(formatTime(f.departureTime)) + '</td>';
+                            productsHtml += '<td>' + escHtml(formatTime(f.arrivalTime)) + '</td>';
+                            productsHtml += '</tr>';
+                        });
+                        productsHtml += '</table>';
+                    }
+
+                    if (prices.length > 0) {
+                        prices.forEach(function(p, pIdx) {
+                            var firstCabin = cabinPriceDict[String(p.firstTripCabinCode)] || {};
+                            var secondCabin = cabinPriceDict[String(p.secondTripCabinCode)] || {};
+                            var firstBase = baseCabinDict[String(p.firstTripBaseCabinInfo)] || {};
+                            var secondBase = baseCabinDict[String(p.secondTripBaseCabinInfo)] || {};
+                            var priceRawId = 'priceRaw_' + itemIdx + '_' + fpIdx + '_' + pIdx;
+
+                            productsHtml += '<div class="price-row' + (p.isLowest ? ' lowest' : '') + '">';
+                            productsHtml += '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px">';
+                            productsHtml += '<div><span class="price-cabin">价格组合 ' + (pIdx + 1) + '</span>';
+                            productsHtml += '<span class="price-group-tag ' + getCabinGradeCss(p.priceGroupType === '2' ? 2 : 1) + '">' + escHtml(getPriceGroupTypeLabel(p.priceGroupType)) + '</span>';
+                            if (p.isLowest) productsHtml += '<span class="price-group-tag business">最低价</span>';
+                            productsHtml += '</div>';
+                            productsHtml += '<div class="price-value">¥' + escHtml(p.totalSystemTicketPrice !== undefined ? p.totalSystemTicketPrice : '-') + '</div>';
+                            productsHtml += '</div>';
+
+                            productsHtml += '<div class="detail-item"><span class="dlabel">第一程</span><span class="dvalue">舱位 ' + escHtml(getCabinCodeLabel(firstBase.baseCabinCode, firstCabin.saleCabinCode)) + ' / FD ' + escHtml(p.firstTripFd !== undefined ? p.firstTripFd : '-') + ' / 库存 ' + escHtml(p.firstTripCabinInventory !== undefined ? p.firstTripCabinInventory : '-') + ' / 裸价 ' + escHtml(firstCabin.barePrice !== undefined ? firstCabin.barePrice : '-') + '</span></div>';
+                            productsHtml += '<div class="detail-item"><span class="dlabel">第二程</span><span class="dvalue">舱位 ' + escHtml(getCabinCodeLabel(secondBase.baseCabinCode, secondCabin.saleCabinCode)) + ' / FD ' + escHtml(p.secondTripFd !== undefined ? p.secondTripFd : '-') + ' / 库存 ' + escHtml(p.secondTripCabinInventory !== undefined ? p.secondTripCabinInventory : '-') + ' / 裸价 ' + escHtml(secondCabin.barePrice !== undefined ? secondCabin.barePrice : '-') + '</span></div>';
+                            productsHtml += '<div class="detail-item"><span class="dlabel">政策/规则</span><span class="dvalue">policyId ' + escHtml(p.firstTripPolicyId || '-') + ' / secondPolicyId ' + escHtml(p.secondPolicyId || '-') + ' / ruleCode ' + escHtml(p.ruleCode || '-') + '</span></div>';
+                            productsHtml += '<div class="detail-item"><span class="dlabel">留钱/拆分</span><span class="dvalue">firstKeep ' + escHtml(p.firstTripKeepMoney !== undefined ? p.firstTripKeepMoney : '-') + ' / secondKeep ' + escHtml(p.secondTripKeepMoney !== undefined ? p.secondTripKeepMoney : '-') + ' / splitRule ' + escHtml(p.priceSplitRule !== undefined ? p.priceSplitRule : '-') + '</span></div>';
+
+                            productsHtml += '<button class="raw-toggle" onclick="document.getElementById(\'' + priceRawId + '\').classList.toggle(\'active\')">查看原始数据</button>';
+                            productsHtml += '<div class="raw-data" id="' + priceRawId + '">' + escHtml(JSON.stringify(p, null, 2)) + '</div>';
+                            productsHtml += '</div>';
+                        });
+                    }
+
+                    var fpRawId = 'flightPairRaw_' + itemIdx + '_' + fpIdx;
+                    productsHtml += '<button class="raw-toggle" onclick="document.getElementById(\'' + fpRawId + '\').classList.toggle(\'active\')">查看原始数据</button>';
+                    productsHtml += '<div class="raw-data" id="' + fpRawId + '">' + escHtml(JSON.stringify(fp, null, 2)) + '</div>';
+                    productsHtml += '</div>';
+                });
+
+                productsHtml += '</div>';
+            });
+
+            document.getElementById('itemsCard').innerHTML = itemsHtml;
+            document.getElementById('productsCard').innerHTML = productsHtml;
+            document.getElementById('rawData').textContent = JSON.stringify(data, null, 2);
+        }
+
+        function envQs() {
+            var sel = document.getElementById('envSelect');
+            if (!sel) return '';
+            return 'env=' + encodeURIComponent(sel.value);
+        }
+
+        function toggleRaw() {
+            document.getElementById('rawData').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1495 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - heading "慧行方案查询" [level=1] [ref=e4]
+      - paragraph [ref=e5]: 直接输入慧行请求参数，查询并展示方案列表 — 空空 / 通程 / 空铁 / 云上公交
+    - navigation [ref=e6]:
+      - combobox "切换环境" [ref=e7] [cursor=pointer]:
+        - option "线上"
+        - option "QA"
+        - option "UAT"
+        - option "T环境" [selected]
+        - option "T2环境"
+        - option "Lane环境"
+      - button "网关站 ▾" [ref=e9] [cursor=pointer]
+      - button "产品站 ▾" [ref=e11] [cursor=pointer]
+      - button "联程最小价 ▾" [ref=e13] [cursor=pointer]
+      - button "联程最低价 ▾" [ref=e15] [cursor=pointer]
+      - button "日志追踪 ▾" [ref=e17] [cursor=pointer]
+  - generic [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - button "接口查询" [ref=e21] [cursor=pointer]
+        - button "粘贴解析" [ref=e22] [cursor=pointer]
+      - generic [ref=e23]:
+        - generic [ref=e24]: 慧行请求参数 JSON
+        - 'textbox "粘贴慧行请求参数 JSON，如: {\"depCityCode\":\"SHA\",\"arrCityCode\":\"BHY\",\"depDate\":20260613,\"psgType\":1,\"cabinClass\":1,\"channel\":174}" [ref=e25]': "{ \"depCityCode\": \"TAO\", \"arrCityCode\": \"KHG\", \"depPorts\": \"TAO\", \"arrPorts\": \"KHG\", \"psgType\": 1, \"depDate\": 20260615, \"cabinClass\": 1, \"channel\": 174, \"traceId\": \"642acf2fd46e4366f50fe797cefed395\", \"memberInfo\": { \"riskType\": \"\", \"userTags\": [ \"no_match_location\", \"user_group_testab\", \"user_tag_365days_gnjppay\", \"user_tag_365days_gnjpyused\", \"user_tag_HOnewusers\", \"user_tag_MF_first\", \"user_tag_MU_GNZDY\", \"user_tag_Y8newuesers\", \"user_tag_all_90days_usemore1\", \"user_tag_all_usemore3\", \"user_tag_cz0othermore1\", \"user_tag_cznewuser\", \"user_tag_gn_365_used2\", \"user_tag_gn_jd_morethan3\", \"user_tag_qw_180use0\", \"user_tag_ryshoucheng\", \"user_tag_user_tag_mu_365_used1\", \"user_tag_zh_more2\", \"user_tag_zh_szren\", \"user_tag_zh_zbyl\", \"ut_30day_wf\", \"ut_365d_gxwf\", \"ut_3u_DTmember\", \"ut_9D_use0\", \"ut_9h_6mnewuser\", \"ut_A6_QYDT2\", \"ut_A6_nocity_KHNLHW\", \"ut_A6_nocity_KMG\", \"ut_A6_nocity_NKG\", \"ut_A6_nocity_WUXCSX\", \"ut_A6_nocity_WUXCTU\", \"ut_ALL_payed30\", \"ut_CA_ordernum\", \"ut_CA_payed2\", \"ut_DZ_orderpay0\", \"ut_DZ_use0\", \"ut_FCshow\", \"ut_FCshow_less7\", \"ut_FFCXWXD_M\", \"ut_G5_orderuse0\", \"ut_GJ_pushbackdiscount\", \"ut_GX_QYDT13\", \"ut_GX_QYDT14\", \"ut_GX_city_CNNWEF\", \"ut_GX_use0\", \"ut_HO_use0\", \"ut_HU_orderuse0\", \"ut_QW_orderuse0\", \"ut_QYDT_all\", \"ut_ZH_newuser\", \"ut_ZH_use0\", \"ut_age_30_45\", \"ut_airway\", \"ut_all_1yearsolduser\", \"ut_all_pay2\", \"ut_all_pushbackdiscount\", \"ut_all_use0\", \"ut_all_usemore3\", \"ut_aq_newusers\", \"ut_cz_newuser\", \"ut_cz_usemore2andretunless1\", \"ut_cz_usemore4\", \"ut_cz_usemore5\", \"ut_cz_whitelistmember\", \"ut_djljunshow\", \"ut_dz_newuser\", \"ut_flighttogetherusertypecn\", \"ut_gj_wenzhou\", \"ut_gn_pay2\", \"ut_gn_petrolstationproject\", \"ut_gn_refuelbrandproject\", \"ut_gn_refuelproject\", \"ut_gwbase\", \"ut_gx_gnnewuser\", \"ut_gx_luotou\", \"ut_gx_newusers\", \"ut_hj_new\", \"ut_hu_newuser\", \"ut_member_notshanghai\", \"ut_membergrade_unshow\", \"ut_nanCA_orderuse3\", \"ut_newMFunhn\", \"ut_noselect\", \"ut_nouse_GS\", \"ut_payed2\", \"ut_payed3\", \"ut_payed5_ky1\", \"ut_qw_newuser\", \"ut_risk_airlineotahg\", \"ut_risk_xcqnfzandairway\", \"ut_targeted_hiddenresouces2\", \"ut_targeted_hiddenresouces34\", \"ut_use1_unhn\", \"ut_used1\", \"ut_used1_safe\", \"ut_used3\", \"ut_usedmember\", \"ut_whitelist_zhkq3\", \"ut_whitelistmember\", \"ut_y23_sc_use\", \"ut_user_old\" ], \"openId\": \"o498X0fDO2-NEHWTUOuXDwnKCfVs\", \"unionId\": \"ohmdTt6xKLABjKGuCPkw7T63UhAk\", \"memberId\": \"406956443\" }, \"directFlight\": { \"directFlightPrice\": 1522, \"directLowestTripTime\": 465, \"directLowestFlightNo\": \"GS7540\", \"directFlightNums\": 1 }, \"marketingTransitPoint\": null, \"channelScene\": null, \"refId\": \"2000368728\" }"
+        - generic [ref=e26]:
+          - button "查询" [ref=e27] [cursor=pointer]
+          - button "美化" [ref=e28] [cursor=pointer]
+          - button "清空" [ref=e29] [cursor=pointer]
+          - combobox [ref=e30] [cursor=pointer]:
+            - option "HX接口" [selected]
+            - option "V7接口"
+    - generic [ref=e31]:
+      - generic [ref=e32]: 上次查询
+      - generic [ref=e33] [cursor=pointer]: TAO→KHG 20260615
+      - generic [ref=e34]: 2026/6/10 18:05:57
+      - button "恢复" [ref=e35] [cursor=pointer]
+    - generic [ref=e1412]:
+      - generic [ref=e1413]:
+        - heading "对比视图：天网日志 vs 实时查询" [level=3] [ref=e1414]
+        - button "关闭对比" [ref=e1415] [cursor=pointer]
+      - generic [ref=e1416]:
+        - generic [ref=e1417]: 对比摘要
+        - generic [ref=e1418]:
+          - generic [ref=e1419]: 空空
+          - generic [ref=e1420]: 日志:40
+          - generic [ref=e1421]: 实时:29
+          - generic [ref=e1422]: 差异:-11
+        - generic [ref=e1423]:
+          - generic [ref=e1424]: 通程
+          - generic [ref=e1425]: 日志:0
+          - generic [ref=e1426]: 实时:1
+          - generic [ref=e1427]: 差异:+1
+        - generic [ref=e1428]:
+          - generic [ref=e1429]: 空铁
+          - generic [ref=e1430]: 日志:0
+          - generic [ref=e1431]: 实时:2
+          - generic [ref=e1432]: 差异:+2
+        - generic [ref=e1433]:
+          - generic [ref=e1434]: 云上公交
+          - generic [ref=e1435]: 日志:0
+          - generic [ref=e1436]: 实时:0
+          - generic [ref=e1437]: 差异:±0
+        - generic [ref=e1438]:
+          - generic [ref=e1439]: 总计
+          - generic [ref=e1440]: 日志:40
+          - generic [ref=e1441]: 实时:32
+          - generic [ref=e1442]: 差异:-8
+      - generic [ref=e1443]:
+        - generic [ref=e1444]:
+          - generic [ref=e1445] [cursor=pointer]:
+            - generic [ref=e1446]:
+              - text: 天网日志结果
+              - generic [ref=e1447]: (共40个)
+            - generic [ref=e1448]: ▼
+          - generic [ref=e1450]:
+            - generic [ref=e1451]: 空空 (40)
+            - generic [ref=e1452]:
+              - generic [ref=e1454]: 方案 1 — 政策真联程 (T-P) ECONOMIC
+              - generic [ref=e1455]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1456]:
+                - text: "适用资源:"
+                - generic [ref=e1457]: 假联程
+                - generic [ref=e1458]: 拼接假联程
+                - generic [ref=e1459]: 官网真联程
+                - generic [ref=e1460]: 政策真联程
+                - generic [ref=e1461]: 通程
+              - generic [ref=e1462]: 3U3298 TAO→XIY 2026-06-15 22:10 [航班] 2026-06-15
+              - generic [ref=e1463]: ↓ 中转 ↓
+              - generic [ref=e1464]: 3U3265 XIY→KHG 2026-06-16 08:15 [航班] 2026-06-16
+              - generic [ref=e1465]: "ID: 3U3298-3U3265-20260615-20260616"
+              - generic [ref=e1466]:
+                - text: "中转服务:"
+                - generic [ref=e1467]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1468]:
+                - button "查看原始数据" [ref=e1469] [cursor=pointer]
+                - button "复制原始数据" [ref=e1470] [cursor=pointer]
+            - generic [ref=e1471]:
+              - generic [ref=e1473]: 方案 2 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1474]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1475]:
+                - text: "适用资源:"
+                - generic [ref=e1476]: 假联程
+                - generic [ref=e1477]: 拼接假联程
+                - generic [ref=e1478]: 官网真联程
+                - generic [ref=e1479]: 政策真联程
+                - generic [ref=e1480]: 通程
+              - generic [ref=e1481]: SC4961 TAO→XIY 2026-06-15 06:35 [航班] 2026-06-15
+              - generic [ref=e1482]: ↓ 中转 ↓
+              - generic [ref=e1483]: 9C6381 XIY→KHG 2026-06-15 13:50 [航班] 2026-06-15
+              - generic [ref=e1484]: "ID: SC4961-9C6381-20260615-20260615"
+              - generic [ref=e1485]:
+                - text: "中转服务:"
+                - generic [ref=e1486]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1487]:
+                - button "查看原始数据" [ref=e1488] [cursor=pointer]
+                - button "复制原始数据" [ref=e1489] [cursor=pointer]
+            - generic [ref=e1490]:
+              - generic [ref=e1492]: 方案 3 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1493]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1494]:
+                - text: "适用资源:"
+                - generic [ref=e1495]: 假联程
+                - generic [ref=e1496]: 拼接假联程
+                - generic [ref=e1497]: 官网真联程
+                - generic [ref=e1498]: 政策真联程
+                - generic [ref=e1499]: 通程
+              - generic [ref=e1500]: SC4961 TAO→XIY 2026-06-15 06:35 [航班] 2026-06-15
+              - generic [ref=e1501]: ↓ 中转 ↓
+              - generic [ref=e1502]: GJ8153 XIY→KHG 2026-06-15 10:40 [航班] 2026-06-15
+              - generic [ref=e1503]: "ID: SC4961-GJ8153-20260615-20260615"
+              - generic [ref=e1504]:
+                - text: "中转服务:"
+                - generic [ref=e1505]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1506]:
+                - button "查看原始数据" [ref=e1507] [cursor=pointer]
+                - button "复制原始数据" [ref=e1508] [cursor=pointer]
+            - generic [ref=e1509]:
+              - generic [ref=e1511]: 方案 4 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1512]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1513]:
+                - text: "适用资源:"
+                - generic [ref=e1514]: 假联程
+                - generic [ref=e1515]: 拼接假联程
+                - generic [ref=e1516]: 官网真联程
+                - generic [ref=e1517]: 政策真联程
+                - generic [ref=e1518]: 通程
+              - generic [ref=e1519]: 9C7332 TAO→TFU 2026-06-15 21:45 [航班] 2026-06-15
+              - generic [ref=e1520]: ↓ 中转 ↓
+              - generic [ref=e1521]: CA2525 TFU→KHG 2026-06-16 06:55 [航班] 2026-06-16
+              - generic [ref=e1522]: "ID: 9C7332-CA2525-20260615-20260616"
+              - generic [ref=e1523]: 无中转服务
+              - generic [ref=e1524]:
+                - button "查看原始数据" [ref=e1525] [cursor=pointer]
+                - button "复制原始数据" [ref=e1526] [cursor=pointer]
+            - generic [ref=e1527]:
+              - generic [ref=e1529]: 方案 5 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1530]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1531]:
+                - text: "适用资源:"
+                - generic [ref=e1532]: 假联程
+                - generic [ref=e1533]: 拼接假联程
+                - generic [ref=e1534]: 官网真联程
+                - generic [ref=e1535]: 政策真联程
+                - generic [ref=e1536]: 通程
+              - generic [ref=e1537]: SC4961 TAO→XIY 2026-06-15 06:35 [航班] 2026-06-15
+              - generic [ref=e1538]: ↓ 中转 ↓
+              - generic [ref=e1539]: FU6765 XIY→KHG 2026-06-15 11:20 [航班] 2026-06-15
+              - generic [ref=e1540]: "ID: SC4961-FU6765-20260615-20260615"
+              - generic [ref=e1541]:
+                - text: "中转服务:"
+                - generic [ref=e1542]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1543]:
+                - button "查看原始数据" [ref=e1544] [cursor=pointer]
+                - button "复制原始数据" [ref=e1545] [cursor=pointer]
+            - generic [ref=e1546]:
+              - generic [ref=e1548]: 方案 6 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1549]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1550]:
+                - text: "适用资源:"
+                - generic [ref=e1551]: 假联程
+                - generic [ref=e1552]: 拼接假联程
+                - generic [ref=e1553]: 官网真联程
+                - generic [ref=e1554]: 政策真联程
+                - generic [ref=e1555]: 通程
+              - generic [ref=e1556]: 9H8388 TAO→XIY 2026-06-15 09:30 [航班] 2026-06-15
+              - generic [ref=e1557]: ↓ 中转 ↓
+              - generic [ref=e1558]: 9C6381 XIY→KHG 2026-06-15 13:50 [航班] 2026-06-15
+              - generic [ref=e1559]: "ID: 9H8388-9C6381-20260615-20260615"
+              - generic [ref=e1560]:
+                - text: "中转服务:"
+                - generic [ref=e1561]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1562]:
+                - button "查看原始数据" [ref=e1563] [cursor=pointer]
+                - button "复制原始数据" [ref=e1564] [cursor=pointer]
+            - generic [ref=e1565]:
+              - generic [ref=e1567]: 方案 7 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1568]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1569]:
+                - text: "适用资源:"
+                - generic [ref=e1570]: 假联程
+                - generic [ref=e1571]: 拼接假联程
+                - generic [ref=e1572]: 官网真联程
+                - generic [ref=e1573]: 政策真联程
+                - generic [ref=e1574]: 通程
+              - generic [ref=e1575]: MU2413 TAO→XIY 2026-06-15 07:15 [航班] 2026-06-15
+              - generic [ref=e1576]: ↓ 中转 ↓
+              - generic [ref=e1577]: 9C6381 XIY→KHG 2026-06-15 13:50 [航班] 2026-06-15
+              - generic [ref=e1578]: "ID: MU2413-9C6381-20260615-20260615"
+              - generic [ref=e1579]:
+                - text: "中转服务:"
+                - generic [ref=e1580]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1581]:
+                - button "查看原始数据" [ref=e1582] [cursor=pointer]
+                - button "复制原始数据" [ref=e1583] [cursor=pointer]
+            - generic [ref=e1584]:
+              - generic [ref=e1586]: 方案 8 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1587]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1588]:
+                - text: "适用资源:"
+                - generic [ref=e1589]: 假联程
+                - generic [ref=e1590]: 拼接假联程
+                - generic [ref=e1591]: 官网真联程
+                - generic [ref=e1592]: 政策真联程
+                - generic [ref=e1593]: 通程
+              - generic [ref=e1594]: MU6712 TAO→LHW 2026-06-15 10:00 [航班] 2026-06-15
+              - generic [ref=e1595]: ↓ 中转 ↓
+              - generic [ref=e1596]: 9C6789 LHW→KHG 2026-06-15 16:20 [航班] 2026-06-15
+              - generic [ref=e1597]: "ID: MU6712-9C6789-20260615-20260615"
+              - generic [ref=e1598]:
+                - text: "中转服务:"
+                - generic [ref=e1599]: 经兰飞·如意行
+                - generic [ref=e1600]: 尊享中转·首段起飞前预约
+                - generic [ref=e1601]: 极速中转·首段起飞前预约
+              - generic [ref=e1602]:
+                - button "查看原始数据" [ref=e1603] [cursor=pointer]
+                - button "复制原始数据" [ref=e1604] [cursor=pointer]
+            - generic [ref=e1605]:
+              - generic [ref=e1607]: 方案 9 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1608]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1609]:
+                - text: "适用资源:"
+                - generic [ref=e1610]: 假联程
+                - generic [ref=e1611]: 拼接假联程
+              - generic [ref=e1612]: MU2413 TAO→XIY 2026-06-15 07:15 [航班] 2026-06-15
+              - generic [ref=e1613]: ↓ 中转 ↓
+              - generic [ref=e1614]: GJ8153 XIY→KHG 2026-06-15 10:40 [航班] 2026-06-15
+              - generic [ref=e1615]: "ID: MU2413-GJ8153-20260615-20260615"
+              - generic [ref=e1616]:
+                - text: "中转服务:"
+                - generic [ref=e1617]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1618]:
+                - button "查看原始数据" [ref=e1619] [cursor=pointer]
+                - button "复制原始数据" [ref=e1620] [cursor=pointer]
+            - generic [ref=e1621]:
+              - generic [ref=e1623]: 方案 10 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1624]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1625]:
+                - text: "适用资源:"
+                - generic [ref=e1626]: 假联程
+                - generic [ref=e1627]: 拼接假联程
+                - generic [ref=e1628]: 官网真联程
+                - generic [ref=e1629]: 政策真联程
+                - generic [ref=e1630]: 通程
+              - generic [ref=e1631]: MU6712 TAO→LHW 2026-06-15 10:00 [航班] 2026-06-15
+              - generic [ref=e1632]: ↓ 中转 ↓
+              - generic [ref=e1633]: 9C6845 LHW→KHG 2026-06-16 08:00 [航班] 2026-06-16
+              - generic [ref=e1634]: "ID: MU6712-9C6845-20260615-20260616"
+              - generic [ref=e1635]:
+                - text: "中转服务:"
+                - generic [ref=e1636]: 经兰飞·如意行
+                - generic [ref=e1637]: 尊享中转·首段起飞前预约
+                - generic [ref=e1638]: 住宿无忧·首段起飞前预约
+                - generic [ref=e1639]: 极速中转·首段起飞前预约
+              - generic [ref=e1640]:
+                - button "查看原始数据" [ref=e1641] [cursor=pointer]
+                - button "复制原始数据" [ref=e1642] [cursor=pointer]
+            - generic [ref=e1643]:
+              - generic [ref=e1645]: 方案 11 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1646]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1647]:
+                - text: "适用资源:"
+                - generic [ref=e1648]: 假联程
+                - generic [ref=e1649]: 拼接假联程
+                - generic [ref=e1650]: 官网真联程
+                - generic [ref=e1651]: 政策真联程
+                - generic [ref=e1652]: 通程
+              - generic [ref=e1653]: 9C7330 TAO→TFU 2026-06-15 15:45 [航班] 2026-06-15
+              - generic [ref=e1654]: ↓ 中转 ↓
+              - generic [ref=e1655]: UQ3575 TFU→KHG 2026-06-15 20:55 [航班] 2026-06-15
+              - generic [ref=e1656]: "ID: 9C7330-UQ3575-20260615-20260615"
+              - generic [ref=e1657]: 无中转服务
+              - generic [ref=e1658]:
+                - button "查看原始数据" [ref=e1659] [cursor=pointer]
+                - button "复制原始数据" [ref=e1660] [cursor=pointer]
+            - generic [ref=e1661]:
+              - generic [ref=e1663]: 方案 12 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1664]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1665]:
+                - text: "适用资源:"
+                - generic [ref=e1666]: 假联程
+                - generic [ref=e1667]: 拼接假联程
+              - generic [ref=e1668]: MU5022 TAO→XIY 2026-06-15 16:25 [航班] 2026-06-15
+              - generic [ref=e1669]: ↓ 中转 ↓
+              - generic [ref=e1670]: 3U5493 XIY→KHG 2026-06-15 19:45 [航班] 2026-06-15
+              - generic [ref=e1671]: "ID: MU5022-3U5493-20260615-20260615"
+              - generic [ref=e1672]:
+                - text: "中转服务:"
+                - generic [ref=e1673]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1674]:
+                - button "查看原始数据" [ref=e1675] [cursor=pointer]
+                - button "复制原始数据" [ref=e1676] [cursor=pointer]
+            - generic [ref=e1677]:
+              - generic [ref=e1679]: 方案 13 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1680]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1681]:
+                - text: "适用资源:"
+                - generic [ref=e1682]: 假联程
+                - generic [ref=e1683]: 拼接假联程
+                - generic [ref=e1684]: 官网真联程
+                - generic [ref=e1685]: 政策真联程
+                - generic [ref=e1686]: 通程
+              - generic [ref=e1687]: SC4963 TAO→XIY 2026-06-15 13:20 [航班] 2026-06-15
+              - generic [ref=e1688]: ↓ 中转 ↓
+              - generic [ref=e1689]: 3U5493 XIY→KHG 2026-06-15 19:45 [航班] 2026-06-15
+              - generic [ref=e1690]: "ID: SC4963-3U5493-20260615-20260615"
+              - generic [ref=e1691]:
+                - text: "中转服务:"
+                - generic [ref=e1692]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1693]:
+                - button "查看原始数据" [ref=e1694] [cursor=pointer]
+                - button "复制原始数据" [ref=e1695] [cursor=pointer]
+            - generic [ref=e1696]:
+              - generic [ref=e1698]: 方案 14 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1699]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1700]:
+                - text: "适用资源:"
+                - generic [ref=e1701]: 假联程
+                - generic [ref=e1702]: 拼接假联程
+                - generic [ref=e1703]: 官网真联程
+                - generic [ref=e1704]: 政策真联程
+                - generic [ref=e1705]: 通程
+              - generic [ref=e1706]: JD5160 TAO→XIY 2026-06-15 11:00 [航班] 2026-06-15
+              - generic [ref=e1707]: ↓ 中转 ↓
+              - generic [ref=e1708]: 3U5493 XIY→KHG 2026-06-15 19:45 [航班] 2026-06-15
+              - generic [ref=e1709]: "ID: JD5160-3U5493-20260615-20260615"
+              - generic [ref=e1710]:
+                - text: "中转服务:"
+                - generic [ref=e1711]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1712]:
+                - button "查看原始数据" [ref=e1713] [cursor=pointer]
+                - button "复制原始数据" [ref=e1714] [cursor=pointer]
+            - generic [ref=e1715]:
+              - generic [ref=e1717]: 方案 15 — 政策真联程 (T-P) ECONOMIC
+              - generic [ref=e1718]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1719]:
+                - text: "适用资源:"
+                - generic [ref=e1720]: 假联程
+                - generic [ref=e1721]: 拼接假联程
+                - generic [ref=e1722]: 官网真联程
+                - generic [ref=e1723]: 政策真联程
+                - generic [ref=e1724]: 通程
+              - generic [ref=e1725]: GS7540 TAO→URC 2026-06-15 16:10 [航班] 2026-06-15
+              - generic [ref=e1726]: ↓ 中转 ↓
+              - generic [ref=e1727]: GS6477 URC→KHG 2026-06-16 18:55 [航班] 2026-06-16
+              - generic [ref=e1728]: "ID: GS7540-GS6477-20260615-20260616"
+              - generic [ref=e1729]: 无中转服务
+              - generic [ref=e1730]:
+                - button "查看原始数据" [ref=e1731] [cursor=pointer]
+                - button "复制原始数据" [ref=e1732] [cursor=pointer]
+            - generic [ref=e1733]:
+              - generic [ref=e1735]: 方案 16 — 政策真联程 (T-P) ECONOMIC
+              - generic [ref=e1736]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1737]:
+                - text: "适用资源:"
+                - generic [ref=e1738]: 假联程
+                - generic [ref=e1739]: 拼接假联程
+                - generic [ref=e1740]: 官网真联程
+                - generic [ref=e1741]: 政策真联程
+                - generic [ref=e1742]: 通程
+              - generic [ref=e1743]: GS7540 TAO→URC 2026-06-15 16:10 [航班] 2026-06-15
+              - generic [ref=e1744]: ↓ 中转 ↓
+              - generic [ref=e1745]: GS7563 URC→KHG 2026-06-16 14:40 [航班] 2026-06-16
+              - generic [ref=e1746]: "ID: GS7540-GS7563-20260615-20260616"
+              - generic [ref=e1747]: 无中转服务
+              - generic [ref=e1748]:
+                - button "查看原始数据" [ref=e1749] [cursor=pointer]
+                - button "复制原始数据" [ref=e1750] [cursor=pointer]
+            - generic [ref=e1751]:
+              - generic [ref=e1753]: 方案 17 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e1754]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e1755]:
+                - text: "适用资源:"
+                - generic [ref=e1756]: 假联程
+                - generic [ref=e1757]: 拼接假联程
+                - generic [ref=e1758]: 官网真联程
+                - generic [ref=e1759]: 政策真联程
+                - generic [ref=e1760]: 通程
+              - generic [ref=e1761]: SC4718 TAO→URC 2026-06-15 19:05 [航班] 2026-06-15
+              - generic [ref=e1762]: ↓ 中转 ↓
+              - generic [ref=e1763]: EU2931 URC→KHG 2026-06-16 07:45 [航班] 2026-06-16
+              - generic [ref=e1764]: "ID: SC4718-EU2931-20260615-20260616"
+              - generic [ref=e1765]: 无中转服务
+              - generic [ref=e1766]:
+                - button "查看原始数据" [ref=e1767] [cursor=pointer]
+                - button "复制原始数据" [ref=e1768] [cursor=pointer]
+            - generic [ref=e1769]:
+              - generic [ref=e1771]: 方案 18 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1772]: "来源: TransitTravel | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1773]:
+                - text: "适用资源:"
+                - generic [ref=e1774]: 假联程
+                - generic [ref=e1775]: 拼接假联程
+                - generic [ref=e1776]: 官网真联程
+                - generic [ref=e1777]: 政策真联程
+                - generic [ref=e1778]: 通程
+              - generic [ref=e1779]: SC4718 TAO→URC 2026-06-15 19:05 [航班] 2026-06-15
+              - generic [ref=e1780]: ↓ 中转 ↓
+              - generic [ref=e1781]: CZ6803 URC→KHG 2026-06-16 08:25 [航班] 2026-06-16
+              - generic [ref=e1782]: "ID: SC4718-CZ6803-20260615-20260616"
+              - generic [ref=e1783]: 无中转服务
+              - generic [ref=e1784]:
+                - button "查看原始数据" [ref=e1785] [cursor=pointer]
+                - button "复制原始数据" [ref=e1786] [cursor=pointer]
+            - generic [ref=e1787]:
+              - generic [ref=e1789]: 方案 19 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1790]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1791]:
+                - text: "适用资源:"
+                - generic [ref=e1792]: 假联程
+                - generic [ref=e1793]: 拼接假联程
+              - generic [ref=e1794]: MU5022 TAO→XIY 2026-06-15 16:25 [航班] 2026-06-15
+              - generic [ref=e1795]: ↓ 中转 ↓
+              - generic [ref=e1796]: MU9931 XIY→KHG 2026-06-15 19:45 [航班] 2026-06-15
+              - generic [ref=e1797]: "ID: MU5022-MU9931-20260615-20260615"
+              - generic [ref=e1798]:
+                - text: "中转服务:"
+                - generic [ref=e1799]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1800]:
+                - button "查看原始数据" [ref=e1801] [cursor=pointer]
+                - button "复制原始数据" [ref=e1802] [cursor=pointer]
+            - generic [ref=e1803]:
+              - generic [ref=e1805]: 方案 20 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1806]: "来源: TransitTravel | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1807]:
+                - text: "适用资源:"
+                - generic [ref=e1808]: 假联程
+                - generic [ref=e1809]: 拼接假联程
+                - generic [ref=e1810]: 官网真联程
+                - generic [ref=e1811]: 政策真联程
+                - generic [ref=e1812]: 通程
+              - generic [ref=e1813]: MU2413 TAO→XIY 2026-06-15 07:15 [航班] 2026-06-15
+              - generic [ref=e1814]: ↓ 中转 ↓
+              - generic [ref=e1815]: MU9931 XIY→KHG 2026-06-15 19:45 [航班] 2026-06-15
+              - generic [ref=e1816]: "ID: MU2413-MU9931-20260615-20260615"
+              - generic [ref=e1817]:
+                - text: "中转服务:"
+                - generic [ref=e1818]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1819]:
+                - button "查看原始数据" [ref=e1820] [cursor=pointer]
+                - button "复制原始数据" [ref=e1821] [cursor=pointer]
+            - generic [ref=e1822]:
+              - generic [ref=e1824]: 方案 21 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1825]: "来源: TransitTravel | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1826]:
+                - text: "适用资源:"
+                - generic [ref=e1827]: 假联程
+                - generic [ref=e1828]: 拼接假联程
+                - generic [ref=e1829]: 官网真联程
+                - generic [ref=e1830]: 政策真联程
+                - generic [ref=e1831]: 通程
+              - generic [ref=e1832]: MU6531 TAO→XIY 2026-06-15 20:10 [航班] 2026-06-15
+              - generic [ref=e1833]: ↓ 中转 ↓
+              - generic [ref=e1834]: MU2293 XIY→KHG 2026-06-16 08:50 [航班] 2026-06-16
+              - generic [ref=e1835]: "ID: MU6531-MU2293-20260615-20260616"
+              - generic [ref=e1836]:
+                - text: "中转服务:"
+                - generic [ref=e1837]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1838]:
+                - button "查看原始数据" [ref=e1839] [cursor=pointer]
+                - button "复制原始数据" [ref=e1840] [cursor=pointer]
+            - generic [ref=e1841]:
+              - generic [ref=e1843]: 方案 22 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1844]: "来源: TransitTravel | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1845]:
+                - text: "适用资源:"
+                - generic [ref=e1846]: 假联程
+                - generic [ref=e1847]: 拼接假联程
+                - generic [ref=e1848]: 官网真联程
+                - generic [ref=e1849]: 政策真联程
+                - generic [ref=e1850]: 通程
+              - generic [ref=e1851]: JD5160 TAO→XIY 2026-06-15 11:00 [航班] 2026-06-15
+              - generic [ref=e1852]: ↓ 中转 ↓
+              - generic [ref=e1853]: MU9931 XIY→KHG 2026-06-15 19:45 [航班] 2026-06-15
+              - generic [ref=e1854]: "ID: JD5160-MU9931-20260615-20260615"
+              - generic [ref=e1855]:
+                - text: "中转服务:"
+                - generic [ref=e1856]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1857]:
+                - button "查看原始数据" [ref=e1858] [cursor=pointer]
+                - button "复制原始数据" [ref=e1859] [cursor=pointer]
+            - generic [ref=e1860]:
+              - generic [ref=e1862]: 方案 23 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1863]: "来源: TransitTravel | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1864]:
+                - text: "适用资源:"
+                - generic [ref=e1865]: 假联程
+                - generic [ref=e1866]: 拼接假联程
+                - generic [ref=e1867]: 官网真联程
+                - generic [ref=e1868]: 政策真联程
+                - generic [ref=e1869]: 通程
+              - generic [ref=e1870]: 3U3298 TAO→XIY 2026-06-15 22:10 [航班] 2026-06-15
+              - generic [ref=e1871]: ↓ 中转 ↓
+              - generic [ref=e1872]: MU2293 XIY→KHG 2026-06-16 08:50 [航班] 2026-06-16
+              - generic [ref=e1873]: "ID: 3U3298-MU2293-20260615-20260616"
+              - generic [ref=e1874]:
+                - text: "中转服务:"
+                - generic [ref=e1875]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1876]:
+                - button "查看原始数据" [ref=e1877] [cursor=pointer]
+                - button "复制原始数据" [ref=e1878] [cursor=pointer]
+            - generic [ref=e1879]:
+              - generic [ref=e1881]: 方案 24 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1882]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1883]:
+                - text: "适用资源:"
+                - generic [ref=e1884]: 假联程
+                - generic [ref=e1885]: 拼接假联程
+                - generic [ref=e1886]: 官网真联程
+                - generic [ref=e1887]: 政策真联程
+                - generic [ref=e1888]: 通程
+              - generic [ref=e1889]: SC4811 TAO→XIY 2026-06-15 18:10 [航班] 2026-06-15
+              - generic [ref=e1890]: ↓ 中转 ↓
+              - generic [ref=e1891]: MU2293 XIY→KHG 2026-06-16 08:50 [航班] 2026-06-16
+              - generic [ref=e1892]: "ID: SC4811-MU2293-20260615-20260616"
+              - generic [ref=e1893]:
+                - text: "中转服务:"
+                - generic [ref=e1894]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1895]:
+                - button "查看原始数据" [ref=e1896] [cursor=pointer]
+                - button "复制原始数据" [ref=e1897] [cursor=pointer]
+            - generic [ref=e1898]:
+              - generic [ref=e1900]: 方案 25 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1901]: "来源: TransitTravel | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1902]:
+                - text: "适用资源:"
+                - generic [ref=e1903]: 假联程
+                - generic [ref=e1904]: 拼接假联程
+                - generic [ref=e1905]: 官网真联程
+                - generic [ref=e1906]: 政策真联程
+                - generic [ref=e1907]: 通程
+              - generic [ref=e1908]: MU2413 TAO→XIY 2026-06-15 07:15 [航班] 2026-06-15
+              - generic [ref=e1909]: ↓ 中转 ↓
+              - generic [ref=e1910]: MU2203 XIY→KHG 2026-06-15 13:45 [航班] 2026-06-15
+              - generic [ref=e1911]: "ID: MU2413-MU2203-20260615-20260615"
+              - generic [ref=e1912]:
+                - text: "中转服务:"
+                - generic [ref=e1913]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e1914]:
+                - button "查看原始数据" [ref=e1915] [cursor=pointer]
+                - button "复制原始数据" [ref=e1916] [cursor=pointer]
+            - generic [ref=e1917]:
+              - generic [ref=e1919]: 方案 26 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1920]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1921]:
+                - text: "适用资源:"
+                - generic [ref=e1922]: 假联程
+                - generic [ref=e1923]: 拼接假联程
+                - generic [ref=e1924]: 官网真联程
+                - generic [ref=e1925]: 政策真联程
+                - generic [ref=e1926]: 通程
+              - generic [ref=e1927]: SC4718 TAO→URC 2026-06-15 19:05 [航班] 2026-06-15
+              - generic [ref=e1928]: ↓ 中转 ↓
+              - generic [ref=e1929]: UQ3631 URC→KHG 2026-06-16 09:25 [航班] 2026-06-16
+              - generic [ref=e1930]: "ID: SC4718-UQ3631-20260615-20260616"
+              - generic [ref=e1931]: 无中转服务
+              - generic [ref=e1932]:
+                - button "查看原始数据" [ref=e1933] [cursor=pointer]
+                - button "复制原始数据" [ref=e1934] [cursor=pointer]
+            - generic [ref=e1935]:
+              - generic [ref=e1937]: 方案 27 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1938]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1939]:
+                - text: "适用资源:"
+                - generic [ref=e1940]: 假联程
+                - generic [ref=e1941]: 拼接假联程
+                - generic [ref=e1942]: 官网真联程
+                - generic [ref=e1943]: 政策真联程
+                - generic [ref=e1944]: 通程
+              - generic [ref=e1945]: QW9799 TAO→URC 2026-06-15 10:00 [航班] 2026-06-15
+              - generic [ref=e1946]: ↓ 中转 ↓
+              - generic [ref=e1947]: CZ6809 URC→KHG 2026-06-15 22:00 [航班] 2026-06-15
+              - generic [ref=e1948]: "ID: QW9799-CZ6809-20260615-20260615"
+              - generic [ref=e1949]: 无中转服务
+              - generic [ref=e1950]:
+                - button "查看原始数据" [ref=e1951] [cursor=pointer]
+                - button "复制原始数据" [ref=e1952] [cursor=pointer]
+            - generic [ref=e1953]:
+              - generic [ref=e1955]: 方案 28 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1956]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1957]:
+                - text: "适用资源:"
+                - generic [ref=e1958]: 假联程
+                - generic [ref=e1959]: 拼接假联程
+                - generic [ref=e1960]: 官网真联程
+                - generic [ref=e1961]: 政策真联程
+                - generic [ref=e1962]: 通程
+              - generic [ref=e1963]: QW9799 TAO→URC 2026-06-15 10:00 [航班] 2026-06-15
+              - generic [ref=e1964]: ↓ 中转 ↓
+              - generic [ref=e1965]: CZ6807 URC→KHG 2026-06-15 18:55 [航班] 2026-06-15
+              - generic [ref=e1966]: "ID: QW9799-CZ6807-20260615-20260615"
+              - generic [ref=e1967]: 无中转服务
+              - generic [ref=e1968]:
+                - button "查看原始数据" [ref=e1969] [cursor=pointer]
+                - button "复制原始数据" [ref=e1970] [cursor=pointer]
+            - generic [ref=e1971]:
+              - generic [ref=e1973]: 方案 29 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1974]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1975]:
+                - text: "适用资源:"
+                - generic [ref=e1976]: 假联程
+                - generic [ref=e1977]: 拼接假联程
+                - generic [ref=e1978]: 官网真联程
+                - generic [ref=e1979]: 政策真联程
+                - generic [ref=e1980]: 通程
+              - generic [ref=e1981]: QW9799 TAO→URC 2026-06-15 10:00 [航班] 2026-06-15
+              - generic [ref=e1982]: ↓ 中转 ↓
+              - generic [ref=e1983]: CZ6803 URC→KHG 2026-06-16 08:25 [航班] 2026-06-16
+              - generic [ref=e1984]: "ID: QW9799-CZ6803-20260615-20260616"
+              - generic [ref=e1985]: 无中转服务
+              - generic [ref=e1986]:
+                - button "查看原始数据" [ref=e1987] [cursor=pointer]
+                - button "复制原始数据" [ref=e1988] [cursor=pointer]
+            - generic [ref=e1989]:
+              - generic [ref=e1991]: 方案 30 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e1992]: "来源: TransitTravel | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e1993]:
+                - text: "适用资源:"
+                - generic [ref=e1994]: 假联程
+                - generic [ref=e1995]: 拼接假联程
+                - generic [ref=e1996]: 官网真联程
+                - generic [ref=e1997]: 政策真联程
+                - generic [ref=e1998]: 通程
+              - generic [ref=e1999]: SC4963 TAO→XIY 2026-06-15 13:20 [航班] 2026-06-15
+              - generic [ref=e2000]: ↓ 中转 ↓
+              - generic [ref=e2001]: MU9931 XIY→KHG 2026-06-15 19:45 [航班] 2026-06-15
+              - generic [ref=e2002]: "ID: SC4963-MU9931-20260615-20260615"
+              - generic [ref=e2003]:
+                - text: "中转服务:"
+                - generic [ref=e2004]: 中转服务：免费住宿·休息·餐食·巴士
+              - generic [ref=e2005]:
+                - button "查看原始数据" [ref=e2006] [cursor=pointer]
+                - button "复制原始数据" [ref=e2007] [cursor=pointer]
+            - generic [ref=e2008]:
+              - generic [ref=e2010]: 方案 31 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2011]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2012]:
+                - text: "适用资源:"
+                - generic [ref=e2013]: 假联程
+                - generic [ref=e2014]: 拼接假联程
+                - generic [ref=e2015]: 官网真联程
+                - generic [ref=e2016]: 政策真联程
+                - generic [ref=e2017]: 通程
+              - generic [ref=e2018]: SC4718 TAO→URC 2026-06-15 19:05 [航班] 2026-06-15
+              - generic [ref=e2019]: ↓ 中转 ↓
+              - generic [ref=e2020]: CZ6805 URC→KHG 2026-06-16 09:50 [航班] 2026-06-16
+              - generic [ref=e2021]: "ID: SC4718-CZ6805-20260615-20260616"
+              - generic [ref=e2022]: 无中转服务
+              - generic [ref=e2023]:
+                - button "查看原始数据" [ref=e2024] [cursor=pointer]
+                - button "复制原始数据" [ref=e2025] [cursor=pointer]
+            - generic [ref=e2026]:
+              - generic [ref=e2028]: 方案 32 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2029]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2030]:
+                - text: "适用资源:"
+                - generic [ref=e2031]: 假联程
+                - generic [ref=e2032]: 拼接假联程
+                - generic [ref=e2033]: 官网真联程
+                - generic [ref=e2034]: 政策真联程
+                - generic [ref=e2035]: 通程
+              - generic [ref=e2036]: SC4925 TAO→URC 2026-06-15 08:30 [航班] 2026-06-15
+              - generic [ref=e2037]: ↓ 中转 ↓
+              - generic [ref=e2038]: CZ6809 URC→KHG 2026-06-15 22:00 [航班] 2026-06-15
+              - generic [ref=e2039]: "ID: SC4925-CZ6809-20260615-20260615"
+              - generic [ref=e2040]: 无中转服务
+              - generic [ref=e2041]:
+                - button "查看原始数据" [ref=e2042] [cursor=pointer]
+                - button "复制原始数据" [ref=e2043] [cursor=pointer]
+            - generic [ref=e2044]:
+              - generic [ref=e2046]: 方案 33 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2047]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2048]:
+                - text: "适用资源:"
+                - generic [ref=e2049]: 假联程
+                - generic [ref=e2050]: 拼接假联程
+                - generic [ref=e2051]: 官网真联程
+                - generic [ref=e2052]: 政策真联程
+                - generic [ref=e2053]: 通程
+              - generic [ref=e2054]: HU7836 TAO→URC 2026-06-15 18:00 [航班] 2026-06-15
+              - generic [ref=e2055]: ↓ 中转 ↓
+              - generic [ref=e2056]: CZ6805 URC→KHG 2026-06-16 09:50 [航班] 2026-06-16
+              - generic [ref=e2057]: "ID: HU7836-CZ6805-20260615-20260616"
+              - generic [ref=e2058]: 无中转服务
+              - generic [ref=e2059]:
+                - button "查看原始数据" [ref=e2060] [cursor=pointer]
+                - button "复制原始数据" [ref=e2061] [cursor=pointer]
+            - generic [ref=e2062]:
+              - generic [ref=e2064]: 方案 34 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2065]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2066]:
+                - text: "适用资源:"
+                - generic [ref=e2067]: 假联程
+                - generic [ref=e2068]: 拼接假联程
+                - generic [ref=e2069]: 官网真联程
+                - generic [ref=e2070]: 政策真联程
+                - generic [ref=e2071]: 通程
+              - generic [ref=e2072]: SC4925 TAO→URC 2026-06-15 08:30 [航班] 2026-06-15
+              - generic [ref=e2073]: ↓ 中转 ↓
+              - generic [ref=e2074]: CZ6807 URC→KHG 2026-06-15 18:55 [航班] 2026-06-15
+              - generic [ref=e2075]: "ID: SC4925-CZ6807-20260615-20260615"
+              - generic [ref=e2076]: 无中转服务
+              - generic [ref=e2077]:
+                - button "查看原始数据" [ref=e2078] [cursor=pointer]
+                - button "复制原始数据" [ref=e2079] [cursor=pointer]
+            - generic [ref=e2080]:
+              - generic [ref=e2082]: 方案 35 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2083]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2084]:
+                - text: "适用资源:"
+                - generic [ref=e2085]: 假联程
+                - generic [ref=e2086]: 拼接假联程
+                - generic [ref=e2087]: 官网真联程
+                - generic [ref=e2088]: 政策真联程
+                - generic [ref=e2089]: 通程
+              - generic [ref=e2090]: SC4925 TAO→URC 2026-06-15 08:30 [航班] 2026-06-15
+              - generic [ref=e2091]: ↓ 中转 ↓
+              - generic [ref=e2092]: CA1275 URC→KHG 2026-06-16 12:00 [航班] 2026-06-16
+              - generic [ref=e2093]: "ID: SC4925-CA1275-20260615-20260616"
+              - generic [ref=e2094]: 无中转服务
+              - generic [ref=e2095]:
+                - button "查看原始数据" [ref=e2096] [cursor=pointer]
+                - button "复制原始数据" [ref=e2097] [cursor=pointer]
+            - generic [ref=e2098]:
+              - generic [ref=e2100]: 方案 36 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2101]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2102]:
+                - text: "适用资源:"
+                - generic [ref=e2103]: 假联程
+                - generic [ref=e2104]: 拼接假联程
+                - generic [ref=e2105]: 官网真联程
+                - generic [ref=e2106]: 政策真联程
+                - generic [ref=e2107]: 通程
+              - generic [ref=e2108]: SC4718 TAO→URC 2026-06-15 19:05 [航班] 2026-06-15
+              - generic [ref=e2109]: ↓ 中转 ↓
+              - generic [ref=e2110]: CZ6809 URC→KHG 2026-06-16 22:00 [航班] 2026-06-16
+              - generic [ref=e2111]: "ID: SC4718-CZ6809-20260615-20260616"
+              - generic [ref=e2112]: 无中转服务
+              - generic [ref=e2113]:
+                - button "查看原始数据" [ref=e2114] [cursor=pointer]
+                - button "复制原始数据" [ref=e2115] [cursor=pointer]
+            - generic [ref=e2116]:
+              - generic [ref=e2118]: 方案 37 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2119]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2120]:
+                - text: "适用资源:"
+                - generic [ref=e2121]: 假联程
+                - generic [ref=e2122]: 拼接假联程
+                - generic [ref=e2123]: 官网真联程
+                - generic [ref=e2124]: 政策真联程
+                - generic [ref=e2125]: 通程
+              - generic [ref=e2126]: SC4718 TAO→URC 2026-06-15 19:05 [航班] 2026-06-15
+              - generic [ref=e2127]: ↓ 中转 ↓
+              - generic [ref=e2128]: CZ6692 URC→KHG 2026-06-16 12:40 [航班] 2026-06-16
+              - generic [ref=e2129]: "ID: SC4718-CZ6692-20260615-20260616"
+              - generic [ref=e2130]: 无中转服务
+              - generic [ref=e2131]:
+                - button "查看原始数据" [ref=e2132] [cursor=pointer]
+                - button "复制原始数据" [ref=e2133] [cursor=pointer]
+            - generic [ref=e2134]:
+              - generic [ref=e2136]: 方案 38 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2137]: "来源: HuiXing | 舱等: ECONOMIC"
+              - generic [ref=e2138]:
+                - text: "适用资源:"
+                - generic [ref=e2139]: 假联程
+                - generic [ref=e2140]: 拼接假联程
+                - generic [ref=e2141]: 官网真联程
+                - generic [ref=e2142]: 政策真联程
+                - generic [ref=e2143]: 通程
+              - generic [ref=e2144]: SC4641 TAO→PEK 2026-06-15 07:10 [航班] 2026-06-15
+              - generic [ref=e2145]: ↓ 中转 ↓
+              - generic [ref=e2146]: CA1249 PEK→KHG 2026-06-15 14:20 [航班] 2026-06-15
+              - generic [ref=e2147]: "ID: SC4641-CA1249-20260615-20260615"
+              - generic [ref=e2148]: 无中转服务
+              - generic [ref=e2149]:
+                - button "查看原始数据" [ref=e2150] [cursor=pointer]
+                - button "复制原始数据" [ref=e2151] [cursor=pointer]
+            - generic [ref=e2152]:
+              - generic [ref=e2154]: 方案 39 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2155]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2156]:
+                - text: "适用资源:"
+                - generic [ref=e2157]: 假联程
+                - generic [ref=e2158]: 拼接假联程
+                - generic [ref=e2159]: 官网真联程
+                - generic [ref=e2160]: 政策真联程
+                - generic [ref=e2161]: 通程
+              - generic [ref=e2162]: CZ6934 TAO→URC 2026-06-15 17:05 [航班] 2026-06-15
+              - generic [ref=e2163]: ↓ 中转 ↓
+              - generic [ref=e2164]: CZ6805 URC→KHG 2026-06-16 09:50 [航班] 2026-06-16
+              - generic [ref=e2165]: "ID: CZ6934-CZ6805-20260615-20260616"
+              - generic [ref=e2166]: 无中转服务
+              - generic [ref=e2167]:
+                - button "查看原始数据" [ref=e2168] [cursor=pointer]
+                - button "复制原始数据" [ref=e2169] [cursor=pointer]
+            - generic [ref=e2170]:
+              - generic [ref=e2172]: 方案 40 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2173]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2174]:
+                - text: "适用资源:"
+                - generic [ref=e2175]: 假联程
+                - generic [ref=e2176]: 拼接假联程
+                - generic [ref=e2177]: 官网真联程
+                - generic [ref=e2178]: 政策真联程
+                - generic [ref=e2179]: 通程
+              - generic [ref=e2180]: CZ6934 TAO→URC 2026-06-15 17:05 [航班] 2026-06-15
+              - generic [ref=e2181]: ↓ 中转 ↓
+              - generic [ref=e2182]: CZ6692 URC→KHG 2026-06-16 12:40 [航班] 2026-06-16
+              - generic [ref=e2183]: "ID: CZ6934-CZ6692-20260615-20260616"
+              - generic [ref=e2184]: 无中转服务
+              - generic [ref=e2185]:
+                - button "查看原始数据" [ref=e2186] [cursor=pointer]
+                - button "复制原始数据" [ref=e2187] [cursor=pointer]
+        - generic [ref=e2188]:
+          - generic [ref=e2189] [cursor=pointer]:
+            - generic [ref=e2190]:
+              - text: 实时查询结果
+              - generic [ref=e2191]: (共32个)
+            - generic [ref=e2192]: ▼
+          - generic [ref=e2194]:
+            - generic [ref=e2195]: 空空 (29)
+            - generic [ref=e2196]:
+              - generic [ref=e2198]: 方案 1 — 官网真联程 (T-C) ECONOMIC/SUPERIOR
+              - generic [ref=e2199]: "来源: TransitTravel | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2200]:
+                - text: "适用资源:"
+                - generic [ref=e2201]: 假联程
+                - generic [ref=e2202]: 拼接假联程
+                - generic [ref=e2203]: 官网真联程
+                - generic [ref=e2204]: 政策真联程
+                - generic [ref=e2205]: 通程
+              - generic [ref=e2206]: MU6531 TAO→XIY 2026-06-15 20:10 [航班] 2026-06-15
+              - generic [ref=e2207]: ↓ 中转 ↓
+              - generic [ref=e2208]: MU2293 XIY→KHG 2026-06-16 08:50 [航班] 2026-06-16
+              - generic [ref=e2209]: "ID: MU6531-MU2293-20260615-20260616"
+              - generic [ref=e2210]:
+                - text: "中转服务:"
+                - generic [ref=e2211]: 畅游长安城
+                - generic [ref=e2212]: 行李免提
+              - generic [ref=e2213]:
+                - button "查看原始数据" [ref=e2214] [cursor=pointer]
+                - button "复制原始数据" [ref=e2215] [cursor=pointer]
+            - generic [ref=e2216]:
+              - generic [ref=e2218]: 方案 2 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2219]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2220]:
+                - text: "适用资源:"
+                - generic [ref=e2221]: 假联程
+                - generic [ref=e2222]: 拼接假联程
+                - generic [ref=e2223]: 官网真联程
+                - generic [ref=e2224]: 政策真联程
+                - generic [ref=e2225]: 通程
+              - generic [ref=e2226]: SC4961 TAO→XIY 2026-06-15 06:35 [航班] 2026-06-15
+              - generic [ref=e2227]: ↓ 中转 ↓
+              - generic [ref=e2228]: 9C6381 XIY→KHG 2026-06-15 13:50 [航班] 2026-06-15
+              - generic [ref=e2229]: "ID: SC4961-9C6381-20260615-20260615"
+              - generic [ref=e2230]:
+                - text: "中转服务:"
+                - generic [ref=e2231]: 畅游长安城
+                - generic [ref=e2232]: 行李免提
+              - generic [ref=e2233]:
+                - button "查看原始数据" [ref=e2234] [cursor=pointer]
+                - button "复制原始数据" [ref=e2235] [cursor=pointer]
+            - generic [ref=e2236]:
+              - generic [ref=e2238]: 方案 3 — 政策真联程 (T-P) ECONOMIC
+              - generic [ref=e2239]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2240]:
+                - text: "适用资源:"
+                - generic [ref=e2241]: 假联程
+                - generic [ref=e2242]: 拼接假联程
+                - generic [ref=e2243]: 官网真联程
+                - generic [ref=e2244]: 政策真联程
+                - generic [ref=e2245]: 通程
+              - generic [ref=e2246]: JD5160 TAO→XIY 2026-06-15 11:00 [航班] 2026-06-15
+              - generic [ref=e2247]: ↓ 中转 ↓
+              - generic [ref=e2248]: 3U3265 XIY→KHG 2026-06-16 08:15 [航班] 2026-06-16
+              - generic [ref=e2249]: "ID: JD5160-3U3265-20260615-20260616"
+              - generic [ref=e2250]:
+                - text: "中转服务:"
+                - generic [ref=e2251]: 畅游长安城
+                - generic [ref=e2252]: 行李免提
+              - generic [ref=e2253]:
+                - button "查看原始数据" [ref=e2254] [cursor=pointer]
+                - button "复制原始数据" [ref=e2255] [cursor=pointer]
+            - generic [ref=e2256]:
+              - generic [ref=e2258]: 方案 4 — 政策真联程 (T-P) ECONOMIC
+              - generic [ref=e2259]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2260]:
+                - text: "适用资源:"
+                - generic [ref=e2261]: 假联程
+                - generic [ref=e2262]: 拼接假联程
+                - generic [ref=e2263]: 官网真联程
+                - generic [ref=e2264]: 政策真联程
+                - generic [ref=e2265]: 通程
+              - generic [ref=e2266]: 9H8388 TAO→XIY 2026-06-15 09:30 [航班] 2026-06-15
+              - generic [ref=e2267]: ↓ 中转 ↓
+              - generic [ref=e2268]: 3U3265 XIY→KHG 2026-06-16 08:15 [航班] 2026-06-16
+              - generic [ref=e2269]: "ID: 9H8388-3U3265-20260615-20260616"
+              - generic [ref=e2270]:
+                - text: "中转服务:"
+                - generic [ref=e2271]: 畅游长安城
+                - generic [ref=e2272]: 行李免提
+              - generic [ref=e2273]:
+                - button "查看原始数据" [ref=e2274] [cursor=pointer]
+                - button "复制原始数据" [ref=e2275] [cursor=pointer]
+            - generic [ref=e2276]:
+              - generic [ref=e2278]: 方案 5 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2279]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2280]:
+                - text: "适用资源:"
+                - generic [ref=e2281]: 假联程
+                - generic [ref=e2282]: 拼接假联程
+                - generic [ref=e2283]: 官网真联程
+                - generic [ref=e2284]: 政策真联程
+                - generic [ref=e2285]: 通程
+              - generic [ref=e2286]: 3U3298 TAO→XIY 2026-06-15 22:10 [航班] 2026-06-15
+              - generic [ref=e2287]: ↓ 中转 ↓
+              - generic [ref=e2288]: 3U3265 XIY→KHG 2026-06-16 08:15 [航班] 2026-06-16
+              - generic [ref=e2289]: "ID: 3U3298-3U3265-20260615-20260616"
+              - generic [ref=e2290]:
+                - text: "中转服务:"
+                - generic [ref=e2291]: 畅游长安城
+                - generic [ref=e2292]: 行李免提
+                - generic [ref=e2293]: 统一快速中转
+              - generic [ref=e2294]:
+                - button "查看原始数据" [ref=e2295] [cursor=pointer]
+                - button "复制原始数据" [ref=e2296] [cursor=pointer]
+            - generic [ref=e2297]:
+              - generic [ref=e2299]: 方案 6 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2300]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2301]:
+                - text: "适用资源:"
+                - generic [ref=e2302]: 假联程
+                - generic [ref=e2303]: 拼接假联程
+                - generic [ref=e2304]: 官网真联程
+                - generic [ref=e2305]: 政策真联程
+                - generic [ref=e2306]: 通程
+              - generic [ref=e2307]: 3U3298 TAO→XIY 2026-06-15 22:10 [航班] 2026-06-15
+              - generic [ref=e2308]: ↓ 中转 ↓
+              - generic [ref=e2309]: 9C6381 XIY→KHG 2026-06-16 13:55 [航班] 2026-06-16
+              - generic [ref=e2310]: "ID: 3U3298-9C6381-20260615-20260616"
+              - generic [ref=e2311]:
+                - text: "中转服务:"
+                - generic [ref=e2312]: 畅游长安城
+                - generic [ref=e2313]: 行李免提
+                - generic [ref=e2314]: 统一快速中转
+              - generic [ref=e2315]:
+                - button "查看原始数据" [ref=e2316] [cursor=pointer]
+                - button "复制原始数据" [ref=e2317] [cursor=pointer]
+            - generic [ref=e2318]:
+              - generic [ref=e2320]: 方案 7 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2321]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2322]:
+                - text: "适用资源:"
+                - generic [ref=e2323]: 假联程
+                - generic [ref=e2324]: 官网真联程
+                - generic [ref=e2325]: 政策真联程
+                - generic [ref=e2326]: 通程
+              - generic [ref=e2327]: SC4961 TAO→XIY 2026-06-15 06:35 [航班] 2026-06-15
+              - generic [ref=e2328]: ↓ 中转 ↓
+              - generic [ref=e2329]: GJ8153 XIY→KHG 2026-06-15 10:40 [航班] 2026-06-15
+              - generic [ref=e2330]: "ID: SC4961-GJ8153-20260615-20260615"
+              - generic [ref=e2331]:
+                - text: "中转服务:"
+                - generic [ref=e2332]: 畅游长安城
+                - generic [ref=e2333]: 行李免提
+              - generic [ref=e2334]:
+                - button "查看原始数据" [ref=e2335] [cursor=pointer]
+                - button "复制原始数据" [ref=e2336] [cursor=pointer]
+            - generic [ref=e2337]:
+              - generic [ref=e2339]: 方案 8 — 官网真联程 (T-C) ECONOMIC
+              - generic [ref=e2340]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2341]:
+                - text: "适用资源:"
+                - generic [ref=e2342]: 假联程
+                - generic [ref=e2343]: 官网真联程
+                - generic [ref=e2344]: 政策真联程
+                - generic [ref=e2345]: 通程
+              - generic [ref=e2346]: MU5022 TAO→XIY 2026-06-15 16:25 [航班] 2026-06-15
+              - generic [ref=e2347]: ↓ 中转 ↓
+              - generic [ref=e2348]: MU9931 XIY→KHG 2026-06-15 19:45 [航班] 2026-06-15
+              - generic [ref=e2349]: "ID: MU5022-MU9931-20260615-20260615"
+              - generic [ref=e2350]:
+                - text: "中转服务:"
+                - generic [ref=e2351]: 畅游长安城
+                - generic [ref=e2352]: 行李免提
+              - generic [ref=e2353]:
+                - button "查看原始数据" [ref=e2354] [cursor=pointer]
+                - button "复制原始数据" [ref=e2355] [cursor=pointer]
+            - generic [ref=e2356]:
+              - generic [ref=e2358]: 方案 9 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2359]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2360]:
+                - text: "适用资源:"
+                - generic [ref=e2361]: 假联程
+                - generic [ref=e2362]: 拼接假联程
+                - generic [ref=e2363]: 官网真联程
+                - generic [ref=e2364]: 政策真联程
+                - generic [ref=e2365]: 通程
+              - generic [ref=e2366]: 9C7332 TAO→TFU 2026-06-15 21:45 [航班] 2026-06-15
+              - generic [ref=e2367]: ↓ 中转 ↓
+              - generic [ref=e2368]: CA2525 TFU→KHG 2026-06-16 06:55 [航班] 2026-06-16
+              - generic [ref=e2369]: "ID: 9C7332-CA2525-20260615-20260616"
+              - generic [ref=e2370]:
+                - text: "中转服务:"
+                - generic [ref=e2371]: 国航快线
+                - generic [ref=e2372]: 国航快速中转
+                - generic [ref=e2373]: 天府酒店券
+                - generic [ref=e2374]: 天府地铁券
+                - generic [ref=e2375]: 天府景区券
+                - generic [ref=e2376]: 天府机场国内200元礼包
+              - generic [ref=e2377]:
+                - button "查看原始数据" [ref=e2378] [cursor=pointer]
+                - button "复制原始数据" [ref=e2379] [cursor=pointer]
+            - generic [ref=e2380]:
+              - generic [ref=e2382]: 方案 10 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2383]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2384]:
+                - text: "适用资源:"
+                - generic [ref=e2385]: 假联程
+                - generic [ref=e2386]: 拼接假联程
+                - generic [ref=e2387]: 官网真联程
+                - generic [ref=e2388]: 政策真联程
+                - generic [ref=e2389]: 通程
+              - generic [ref=e2390]: 3U3298 TAO→XIY 2026-06-15 22:10 [航班] 2026-06-15
+              - generic [ref=e2391]: ↓ 中转 ↓
+              - generic [ref=e2392]: GJ8153 XIY→KHG 2026-06-16 10:40 [航班] 2026-06-16
+              - generic [ref=e2393]: "ID: 3U3298-GJ8153-20260615-20260616"
+              - generic [ref=e2394]:
+                - text: "中转服务:"
+                - generic [ref=e2395]: 畅游长安城
+                - generic [ref=e2396]: 行李免提
+                - generic [ref=e2397]: 统一快速中转
+              - generic [ref=e2398]:
+                - button "查看原始数据" [ref=e2399] [cursor=pointer]
+                - button "复制原始数据" [ref=e2400] [cursor=pointer]
+            - generic [ref=e2401]:
+              - generic [ref=e2403]: 方案 11 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2404]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2405]:
+                - text: "适用资源:"
+                - generic [ref=e2406]: 假联程
+                - generic [ref=e2407]: 拼接假联程
+                - generic [ref=e2408]: 官网真联程
+                - generic [ref=e2409]: 政策真联程
+                - generic [ref=e2410]: 通程
+              - generic [ref=e2411]: 9H8388 TAO→XIY 2026-06-15 09:30 [航班] 2026-06-15
+              - generic [ref=e2412]: ↓ 中转 ↓
+              - generic [ref=e2413]: 9C6381 XIY→KHG 2026-06-15 13:50 [航班] 2026-06-15
+              - generic [ref=e2414]: "ID: 9H8388-9C6381-20260615-20260615"
+              - generic [ref=e2415]:
+                - text: "中转服务:"
+                - generic [ref=e2416]: 畅游长安城
+                - generic [ref=e2417]: 行李免提
+              - generic [ref=e2418]:
+                - button "查看原始数据" [ref=e2419] [cursor=pointer]
+                - button "复制原始数据" [ref=e2420] [cursor=pointer]
+            - generic [ref=e2421]:
+              - generic [ref=e2423]: 方案 12 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2424]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2425]:
+                - text: "适用资源:"
+                - generic [ref=e2426]: 假联程
+                - generic [ref=e2427]: 拼接假联程
+                - generic [ref=e2428]: 官网真联程
+                - generic [ref=e2429]: 政策真联程
+                - generic [ref=e2430]: 通程
+              - generic [ref=e2431]: MU2413 TAO→XIY 2026-06-15 07:15 [航班] 2026-06-15
+              - generic [ref=e2432]: ↓ 中转 ↓
+              - generic [ref=e2433]: 9C6381 XIY→KHG 2026-06-15 13:50 [航班] 2026-06-15
+              - generic [ref=e2434]: "ID: MU2413-9C6381-20260615-20260615"
+              - generic [ref=e2435]:
+                - text: "中转服务:"
+                - generic [ref=e2436]: 畅游长安城
+                - generic [ref=e2437]: 行李免提
+              - generic [ref=e2438]:
+                - button "查看原始数据" [ref=e2439] [cursor=pointer]
+                - button "复制原始数据" [ref=e2440] [cursor=pointer]
+            - generic [ref=e2441]:
+              - generic [ref=e2443]: 方案 13 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2444]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2445]:
+                - text: "适用资源:"
+                - generic [ref=e2446]: 假联程
+                - generic [ref=e2447]: 拼接假联程
+                - generic [ref=e2448]: 官网真联程
+                - generic [ref=e2449]: 政策真联程
+                - generic [ref=e2450]: 通程
+              - generic [ref=e2451]: SC4961 TAO→XIY 2026-06-15 06:35 [航班] 2026-06-15
+              - generic [ref=e2452]: ↓ 中转 ↓
+              - generic [ref=e2453]: FU6765 XIY→KHG 2026-06-15 11:20 [航班] 2026-06-15
+              - generic [ref=e2454]: "ID: SC4961-FU6765-20260615-20260615"
+              - generic [ref=e2455]:
+                - text: "中转服务:"
+                - generic [ref=e2456]: 畅游长安城
+                - generic [ref=e2457]: 行李免提
+              - generic [ref=e2458]:
+                - button "查看原始数据" [ref=e2459] [cursor=pointer]
+                - button "复制原始数据" [ref=e2460] [cursor=pointer]
+            - generic [ref=e2461]:
+              - generic [ref=e2463]: 方案 14 — 官网真联程 (T-C) ECONOMIC/SUPERIOR
+              - generic [ref=e2464]: "来源: TransitTravel | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2465]:
+                - text: "适用资源:"
+                - generic [ref=e2466]: 假联程
+                - generic [ref=e2467]: 拼接假联程
+                - generic [ref=e2468]: 官网真联程
+                - generic [ref=e2469]: 政策真联程
+                - generic [ref=e2470]: 通程
+              - generic [ref=e2471]: MU2413 TAO→XIY 2026-06-15 07:15 [航班] 2026-06-15
+              - generic [ref=e2472]: ↓ 中转 ↓
+              - generic [ref=e2473]: MU9931 XIY→KHG 2026-06-15 19:45 [航班] 2026-06-15
+              - generic [ref=e2474]: "ID: MU2413-MU9931-20260615-20260615"
+              - generic [ref=e2475]:
+                - text: "中转服务:"
+                - generic [ref=e2476]: 畅游长安城
+                - generic [ref=e2477]: 行李免提
+              - generic [ref=e2478]:
+                - button "查看原始数据" [ref=e2479] [cursor=pointer]
+                - button "复制原始数据" [ref=e2480] [cursor=pointer]
+            - generic [ref=e2481]:
+              - generic [ref=e2483]: 方案 15 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2484]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2485]:
+                - text: "适用资源:"
+                - generic [ref=e2486]: 假联程
+              - generic [ref=e2487]: MU2413 TAO→XIY 2026-06-15 07:15 [航班] 2026-06-15
+              - generic [ref=e2488]: ↓ 中转 ↓
+              - generic [ref=e2489]: GJ8153 XIY→KHG 2026-06-15 10:40 [航班] 2026-06-15
+              - generic [ref=e2490]: "ID: MU2413-GJ8153-20260615-20260615"
+              - generic [ref=e2491]:
+                - text: "中转服务:"
+                - generic [ref=e2492]: 畅游长安城
+                - generic [ref=e2493]: 行李免提
+              - generic [ref=e2494]:
+                - button "查看原始数据" [ref=e2495] [cursor=pointer]
+                - button "复制原始数据" [ref=e2496] [cursor=pointer]
+            - generic [ref=e2497]:
+              - generic [ref=e2499]: 方案 16 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2500]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2501]:
+                - text: "适用资源:"
+                - generic [ref=e2502]: 假联程
+                - generic [ref=e2503]: 官网真联程
+                - generic [ref=e2504]: 政策真联程
+                - generic [ref=e2505]: 通程
+              - generic [ref=e2506]: MU2413 TAO→XIY 2026-06-15 07:15 [航班] 2026-06-15
+              - generic [ref=e2507]: ↓ 中转 ↓
+              - generic [ref=e2508]: FU6765 XIY→KHG 2026-06-15 11:20 [航班] 2026-06-15
+              - generic [ref=e2509]: "ID: MU2413-FU6765-20260615-20260615"
+              - generic [ref=e2510]:
+                - text: "中转服务:"
+                - generic [ref=e2511]: 畅游长安城
+                - generic [ref=e2512]: 行李免提
+              - generic [ref=e2513]:
+                - button "查看原始数据" [ref=e2514] [cursor=pointer]
+                - button "复制原始数据" [ref=e2515] [cursor=pointer]
+            - generic [ref=e2516]:
+              - generic [ref=e2518]: 方案 17 — 政策真联程 (T-P) ECONOMIC
+              - generic [ref=e2519]: "来源: HuiXing | 舱等: ECONOMIC"
+              - generic [ref=e2520]:
+                - text: "适用资源:"
+                - generic [ref=e2521]: 官网真联程
+                - generic [ref=e2522]: 政策真联程
+                - generic [ref=e2523]: 通程
+              - generic [ref=e2524]: MU5537 TAO→HGH 2026-06-15 07:25 [航班] 2026-06-15
+              - generic [ref=e2525]: ↓ 中转 ↓
+              - generic [ref=e2526]: MU5207 HGH→KHG 2026-06-15 10:50 [航班] 2026-06-15
+              - generic [ref=e2527]: "ID: MU5537-MU5207-20260615-20260615"
+              - generic [ref=e2528]: 无中转服务
+              - generic [ref=e2529]:
+                - button "查看原始数据" [ref=e2530] [cursor=pointer]
+                - button "复制原始数据" [ref=e2531] [cursor=pointer]
+            - generic [ref=e2532]:
+              - generic [ref=e2534]: 方案 18 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2535]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2536]:
+                - text: "适用资源:"
+                - generic [ref=e2537]: 假联程
+                - generic [ref=e2538]: 拼接假联程
+                - generic [ref=e2539]: 官网真联程
+                - generic [ref=e2540]: 政策真联程
+                - generic [ref=e2541]: 通程
+              - generic [ref=e2542]: MU2413 TAO→XIY 2026-06-15 07:15 [航班] 2026-06-15
+              - generic [ref=e2543]: ↓ 中转 ↓
+              - generic [ref=e2544]: MU2203 XIY→KHG 2026-06-15 13:45 [航班] 2026-06-15
+              - generic [ref=e2545]: "ID: MU2413-MU2203-20260615-20260615"
+              - generic [ref=e2546]:
+                - text: "中转服务:"
+                - generic [ref=e2547]: 畅游长安城
+                - generic [ref=e2548]: 行李免提
+              - generic [ref=e2549]:
+                - button "查看原始数据" [ref=e2550] [cursor=pointer]
+                - button "复制原始数据" [ref=e2551] [cursor=pointer]
+            - generic [ref=e2552]:
+              - generic [ref=e2554]: 方案 19 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2555]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2556]:
+                - text: "适用资源:"
+                - generic [ref=e2557]: 假联程
+                - generic [ref=e2558]: 拼接假联程
+                - generic [ref=e2559]: 官网真联程
+                - generic [ref=e2560]: 政策真联程
+                - generic [ref=e2561]: 通程
+              - generic [ref=e2562]: QW9799 TAO→URC 2026-06-15 10:00 [航班] 2026-06-15
+              - generic [ref=e2563]: ↓ 中转 ↓
+              - generic [ref=e2564]: CZ6809 URC→KHG 2026-06-15 22:00 [航班] 2026-06-15
+              - generic [ref=e2565]: "ID: QW9799-CZ6809-20260615-20260615"
+              - generic [ref=e2566]: 无中转服务
+              - generic [ref=e2567]:
+                - button "查看原始数据" [ref=e2568] [cursor=pointer]
+                - button "复制原始数据" [ref=e2569] [cursor=pointer]
+            - generic [ref=e2570]:
+              - generic [ref=e2572]: 方案 20 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2573]: "来源: TransitTravel | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2574]:
+                - text: "适用资源:"
+                - generic [ref=e2575]: 假联程
+                - generic [ref=e2576]: 拼接假联程
+                - generic [ref=e2577]: 官网真联程
+                - generic [ref=e2578]: 政策真联程
+                - generic [ref=e2579]: 通程
+              - generic [ref=e2580]: QW9799 TAO→URC 2026-06-15 10:00 [航班] 2026-06-15
+              - generic [ref=e2581]: ↓ 中转 ↓
+              - generic [ref=e2582]: CZ6807 URC→KHG 2026-06-15 18:55 [航班] 2026-06-15
+              - generic [ref=e2583]: "ID: QW9799-CZ6807-20260615-20260615"
+              - generic [ref=e2584]: 无中转服务
+              - generic [ref=e2585]:
+                - button "查看原始数据" [ref=e2586] [cursor=pointer]
+                - button "复制原始数据" [ref=e2587] [cursor=pointer]
+            - generic [ref=e2588]:
+              - generic [ref=e2590]: 方案 21 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2591]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2592]:
+                - text: "适用资源:"
+                - generic [ref=e2593]: 假联程
+                - generic [ref=e2594]: 拼接假联程
+                - generic [ref=e2595]: 官网真联程
+                - generic [ref=e2596]: 政策真联程
+                - generic [ref=e2597]: 通程
+              - generic [ref=e2598]: SC4718 TAO→URC 2026-06-15 19:05 [航班] 2026-06-15
+              - generic [ref=e2599]: ↓ 中转 ↓
+              - generic [ref=e2600]: CZ6803 URC→KHG 2026-06-16 08:25 [航班] 2026-06-16
+              - generic [ref=e2601]: "ID: SC4718-CZ6803-20260615-20260616"
+              - generic [ref=e2602]: 无中转服务
+              - generic [ref=e2603]:
+                - button "查看原始数据" [ref=e2604] [cursor=pointer]
+                - button "复制原始数据" [ref=e2605] [cursor=pointer]
+            - generic [ref=e2606]:
+              - generic [ref=e2608]: 方案 22 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2609]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2610]:
+                - text: "适用资源:"
+                - generic [ref=e2611]: 假联程
+                - generic [ref=e2612]: 拼接假联程
+                - generic [ref=e2613]: 官网真联程
+                - generic [ref=e2614]: 政策真联程
+                - generic [ref=e2615]: 通程
+              - generic [ref=e2616]: SC4963 TAO→XIY 2026-06-15 13:20 [航班] 2026-06-15
+              - generic [ref=e2617]: ↓ 中转 ↓
+              - generic [ref=e2618]: MU9931 XIY→KHG 2026-06-15 19:45 [航班] 2026-06-15
+              - generic [ref=e2619]: "ID: SC4963-MU9931-20260615-20260615"
+              - generic [ref=e2620]:
+                - text: "中转服务:"
+                - generic [ref=e2621]: 畅游长安城
+                - generic [ref=e2622]: 行李免提
+              - generic [ref=e2623]:
+                - button "查看原始数据" [ref=e2624] [cursor=pointer]
+                - button "复制原始数据" [ref=e2625] [cursor=pointer]
+            - generic [ref=e2626]:
+              - generic [ref=e2628]: 方案 23 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2629]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2630]:
+                - text: "适用资源:"
+                - generic [ref=e2631]: 假联程
+                - generic [ref=e2632]: 拼接假联程
+                - generic [ref=e2633]: 官网真联程
+                - generic [ref=e2634]: 政策真联程
+                - generic [ref=e2635]: 通程
+              - generic [ref=e2636]: SC4718 TAO→URC 2026-06-15 19:05 [航班] 2026-06-15
+              - generic [ref=e2637]: ↓ 中转 ↓
+              - generic [ref=e2638]: CZ6805 URC→KHG 2026-06-16 09:50 [航班] 2026-06-16
+              - generic [ref=e2639]: "ID: SC4718-CZ6805-20260615-20260616"
+              - generic [ref=e2640]: 无中转服务
+              - generic [ref=e2641]:
+                - button "查看原始数据" [ref=e2642] [cursor=pointer]
+                - button "复制原始数据" [ref=e2643] [cursor=pointer]
+            - generic [ref=e2644]:
+              - generic [ref=e2646]: 方案 24 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2647]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2648]:
+                - text: "适用资源:"
+                - generic [ref=e2649]: 假联程
+                - generic [ref=e2650]: 拼接假联程
+                - generic [ref=e2651]: 官网真联程
+                - generic [ref=e2652]: 政策真联程
+                - generic [ref=e2653]: 通程
+              - generic [ref=e2654]: SC4925 TAO→URC 2026-06-15 08:30 [航班] 2026-06-15
+              - generic [ref=e2655]: ↓ 中转 ↓
+              - generic [ref=e2656]: CZ6809 URC→KHG 2026-06-15 22:00 [航班] 2026-06-15
+              - generic [ref=e2657]: "ID: SC4925-CZ6809-20260615-20260615"
+              - generic [ref=e2658]: 无中转服务
+              - generic [ref=e2659]:
+                - button "查看原始数据" [ref=e2660] [cursor=pointer]
+                - button "复制原始数据" [ref=e2661] [cursor=pointer]
+            - generic [ref=e2662]:
+              - generic [ref=e2664]: 方案 25 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2665]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2666]:
+                - text: "适用资源:"
+                - generic [ref=e2667]: 假联程
+                - generic [ref=e2668]: 拼接假联程
+                - generic [ref=e2669]: 官网真联程
+                - generic [ref=e2670]: 政策真联程
+                - generic [ref=e2671]: 通程
+              - generic [ref=e2672]: SC4925 TAO→URC 2026-06-15 08:30 [航班] 2026-06-15
+              - generic [ref=e2673]: ↓ 中转 ↓
+              - generic [ref=e2674]: CZ6807 URC→KHG 2026-06-15 18:55 [航班] 2026-06-15
+              - generic [ref=e2675]: "ID: SC4925-CZ6807-20260615-20260615"
+              - generic [ref=e2676]: 无中转服务
+              - generic [ref=e2677]:
+                - button "查看原始数据" [ref=e2678] [cursor=pointer]
+                - button "复制原始数据" [ref=e2679] [cursor=pointer]
+            - generic [ref=e2680]:
+              - generic [ref=e2682]: 方案 26 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2683]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2684]:
+                - text: "适用资源:"
+                - generic [ref=e2685]: 假联程
+                - generic [ref=e2686]: 拼接假联程
+                - generic [ref=e2687]: 官网真联程
+                - generic [ref=e2688]: 政策真联程
+                - generic [ref=e2689]: 通程
+              - generic [ref=e2690]: SC4718 TAO→URC 2026-06-15 19:05 [航班] 2026-06-15
+              - generic [ref=e2691]: ↓ 中转 ↓
+              - generic [ref=e2692]: CZ6809 URC→KHG 2026-06-16 22:00 [航班] 2026-06-16
+              - generic [ref=e2693]: "ID: SC4718-CZ6809-20260615-20260616"
+              - generic [ref=e2694]: 无中转服务
+              - generic [ref=e2695]:
+                - button "查看原始数据" [ref=e2696] [cursor=pointer]
+                - button "复制原始数据" [ref=e2697] [cursor=pointer]
+            - generic [ref=e2698]:
+              - generic [ref=e2700]: 方案 27 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2701]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2702]:
+                - text: "适用资源:"
+                - generic [ref=e2703]: 假联程
+                - generic [ref=e2704]: 拼接假联程
+                - generic [ref=e2705]: 官网真联程
+                - generic [ref=e2706]: 政策真联程
+                - generic [ref=e2707]: 通程
+              - generic [ref=e2708]: SC4718 TAO→URC 2026-06-15 19:05 [航班] 2026-06-15
+              - generic [ref=e2709]: ↓ 中转 ↓
+              - generic [ref=e2710]: CZ6692 URC→KHG 2026-06-16 12:40 [航班] 2026-06-16
+              - generic [ref=e2711]: "ID: SC4718-CZ6692-20260615-20260616"
+              - generic [ref=e2712]: 无中转服务
+              - generic [ref=e2713]:
+                - button "查看原始数据" [ref=e2714] [cursor=pointer]
+                - button "复制原始数据" [ref=e2715] [cursor=pointer]
+            - generic [ref=e2716]:
+              - generic [ref=e2718]: 方案 28 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2719]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2720]:
+                - text: "适用资源:"
+                - generic [ref=e2721]: 假联程
+                - generic [ref=e2722]: 拼接假联程
+                - generic [ref=e2723]: 官网真联程
+                - generic [ref=e2724]: 政策真联程
+                - generic [ref=e2725]: 通程
+              - generic [ref=e2726]: 3U6926 TAO→TFU 2026-06-15 14:10 [航班] 2026-06-15
+              - generic [ref=e2727]: ↓ 中转 ↓
+              - generic [ref=e2728]: CZ5704 TFU→KHG 2026-06-16 16:35 [航班] 2026-06-16
+              - generic [ref=e2729]: "ID: 3U6926-CZ5704-20260615-20260616"
+              - generic [ref=e2730]:
+                - text: "中转服务:"
+                - generic [ref=e2731]: 天府酒店券
+                - generic [ref=e2732]: 天府地铁券
+                - generic [ref=e2733]: 天府景区券
+                - generic [ref=e2734]: 天府机场国内200元礼包
+              - generic [ref=e2735]:
+                - button "查看原始数据" [ref=e2736] [cursor=pointer]
+                - button "复制原始数据" [ref=e2737] [cursor=pointer]
+            - generic [ref=e2738]:
+              - generic [ref=e2740]: 方案 29 — 假联程 (T-O) ECONOMIC/SUPERIOR
+              - generic [ref=e2741]: "来源: HuiXing | 舱等: ECONOMIC/SUPERIOR"
+              - generic [ref=e2742]:
+                - text: "适用资源:"
+                - generic [ref=e2743]: 假联程
+                - generic [ref=e2744]: 拼接假联程
+                - generic [ref=e2745]: 官网真联程
+                - generic [ref=e2746]: 政策真联程
+                - generic [ref=e2747]: 通程
+              - generic [ref=e2748]: SC4849 TAO→TFU 2026-06-15 08:50 [航班] 2026-06-15
+              - generic [ref=e2749]: ↓ 中转 ↓
+              - generic [ref=e2750]: CZ5704 TFU→KHG 2026-06-15 16:35 [航班] 2026-06-15
+              - generic [ref=e2751]: "ID: SC4849-CZ5704-20260615-20260615"
+              - generic [ref=e2752]:
+                - text: "中转服务:"
+                - generic [ref=e2753]: 天府酒店券
+                - generic [ref=e2754]: 天府地铁券
+                - generic [ref=e2755]: 天府景区券
+                - generic [ref=e2756]: 天府机场国内200元礼包
+              - generic [ref=e2757]:
+                - button "查看原始数据" [ref=e2758] [cursor=pointer]
+                - button "复制原始数据" [ref=e2759] [cursor=pointer]
+            - generic [ref=e2760]: 通程 (1)
+            - generic [ref=e2761]:
+              - generic [ref=e2763]: 方案 1 — 假联程 (T-O) ECONOMIC
+              - generic [ref=e2764]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2765]:
+                - text: "适用资源:"
+                - generic [ref=e2766]: 假联程
+                - generic [ref=e2767]: 拼接假联程
+                - generic [ref=e2768]: 官网真联程
+                - generic [ref=e2769]: 政策真联程
+                - generic [ref=e2770]: 通程
+              - generic [ref=e2771]: 3U3298 TAO→XIY 2026-06-15 22:10 [航班] 2026-06-15
+              - generic [ref=e2772]: ↓ 中转 ↓
+              - generic [ref=e2773]: 3U3265 XIY→KHG 2026-06-16 08:15 [航班] 2026-06-16
+              - generic [ref=e2774]: "ID: 3U3298-3U3265-20260615-20260616"
+              - generic [ref=e2775]:
+                - text: "中转服务:"
+                - generic [ref=e2776]: 一次支付
+                - generic [ref=e2777]: 一次安检
+              - generic [ref=e2778]:
+                - button "查看原始数据" [ref=e2779] [cursor=pointer]
+                - button "复制原始数据" [ref=e2780] [cursor=pointer]
+            - generic [ref=e2781]: 空铁 (2)
+            - generic [ref=e2782]:
+              - generic [ref=e2784]:
+                - text: 方案 1 — 假联程 (T-O) ECONOMIC
+                - generic [ref=e2785]: 机场补贴
+              - generic [ref=e2786]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2787]:
+                - text: "适用资源:"
+                - generic [ref=e2788]: 假联程
+              - generic [ref=e2789]: "郑州预发: 第1程 -¥0 第2程 -¥0 (郑州预发郑州预发郑州预发郑州预发郑州预发)"
+              - generic [ref=e2790]:
+                - text: G1833 qingdaobei→zhengzhoudong
+                - text: "[火车] 2026-06-15"
+              - generic [ref=e2791]: ↓ 中转 ↓
+              - generic [ref=e2792]: GJ8583 CGO→KHG 2026-06-16 09:55 [航班] 2026-06-16
+              - generic [ref=e2793]: "ID: G1833-GJ8583-20260615-20260616"
+              - generic [ref=e2794]: 无中转服务
+              - generic [ref=e2795]:
+                - button "查看原始数据" [ref=e2796] [cursor=pointer]
+                - button "复制原始数据" [ref=e2797] [cursor=pointer]
+            - generic [ref=e2798]:
+              - generic [ref=e2800]:
+                - text: 方案 2 — 假联程 (T-O) ECONOMIC
+                - generic [ref=e2801]: 机场补贴
+              - generic [ref=e2802]: "来源: TransitTravel | 舱等: ECONOMIC"
+              - generic [ref=e2803]:
+                - text: "适用资源:"
+                - generic [ref=e2804]: 假联程
+              - generic [ref=e2805]: "郑州预发: 第1程 -¥0 第2程 -¥0 (郑州预发郑州预发郑州预发郑州预发郑州预发)"
+              - generic [ref=e2806]:
+                - text: G1323 qingdaobei→zhengzhoudong
+                - text: "[火车] 2026-06-15"
+              - generic [ref=e2807]: ↓ 中转 ↓
+              - generic [ref=e2808]: CZ6694 CGO→KHG 2026-06-15 17:10 [航班] 2026-06-15
+              - generic [ref=e2809]: "ID: G1323-CZ6694-20260615-20260615"
+              - generic [ref=e2810]: 无中转服务
+              - generic [ref=e2811]:
+                - button "查看原始数据" [ref=e2812] [cursor=pointer]
+                - button "复制原始数据" [ref=e2813] [cursor=pointer]
+    - generic [ref=e36]:
+      - heading "天网日志查询（通过 traceId）" [level=3] [ref=e37]
+      - generic [ref=e38]:
+        - textbox "输入 traceId，如 apm-traceid 值" [ref=e39]: 642acf2fd46e4366f50fe797cefed395
+        - button "查询日志" [ref=e40] [cursor=pointer]
+    - generic [ref=e811] [cursor=pointer]:
+      - generic [ref=e812]: 查询结果
+      - generic [ref=e813]: ▼
