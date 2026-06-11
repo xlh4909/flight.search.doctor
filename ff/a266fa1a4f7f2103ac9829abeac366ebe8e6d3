@@ -1,0 +1,41 @@
+.gitignore
+  s_6b6dd5b90f76d5::t_a2e1813fe142a0 1-20
+public/b15-standard.html
+  s_708ad96e97865c::t_3e42cf746c5b33 130,133,136,139,146,159,163
+  s_6b6dd5b90f76d5::t_f38b516376bcf8 179
+  s_708ad96e97865c::t_b72472feb1a909 180-202,205-214,216
+  s_6b6dd5b90f76d5::t_c30f076e9a3a27 165
+  s_708ad96e97865c::t_384e1001bbbee0 854-855
+  s_708ad96e97865c::t_0481b1629de538 314-315
+  s_708ad96e97865c::t_c407acd7a57a2e 901,908-913,917-945
+  s_708ad96e97865c::t_8db5c006ca14b1 1018-1025,1031-1046
+  s_708ad96e97865c::t_5bd8314c78a6bc 252-265
+  s_708ad96e97865c::t_d00f8f670f1bb7 164
+  s_708ad96e97865c::t_89a694c4313219 342
+  s_708ad96e97865c::t_ed1bb51d70aa66 880-900,902-907,914-916,946-1017,1026-1030,1047-1068
+  s_708ad96e97865c::t_48854c9077827f 131-132,134-135,137-138,140-145,147-158,160-162
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "ffa266fa1a4f7f2103ac9829abeac366ebe8e6d3",
+  "prompts": {},
+  "sessions": {
+    "s_6b6dd5b90f76d5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_14a50e804ffePAUW0v231BZL1G",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    },
+    "s_708ad96e97865c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_14a9b70a8ffeG23UfCAO5bIRKw",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
