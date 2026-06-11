@@ -78,11 +78,14 @@
         .raw-data.active { display: block; }
         .empty-result { text-align: center; padding: 30px; color: #999; font-size: 14px; }
         .error-box { background: #fce8e6; border: 1px solid #f5c6c0; border-radius: 6px; padding: 14px; color: #c62828; font-size: 13px; margin-bottom: 12px; }
-        .apm-fab { position: fixed; bottom: 24px; right: 24px; background: #333; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-size: 12px; cursor: pointer; z-index: 999; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: background 0.2s; }
+        .apm-fab { position: fixed; bottom: 72px; right: 24px; background: #333; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-size: 12px; cursor: pointer; z-index: 999; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: background 0.2s; }
         .apm-fab:hover { background: #555; }
         .apm-fab.visible { display: block; }
         .apm-fab .label { margin-right: 6px; }
         .apm-fab .id { font-family: monospace; font-size: 11px; color: #ffeb3b; max-width: 200px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+        .scroll-top-fab { position: fixed; bottom: 24px; right: 24px; background: #1565c0; color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; z-index: 998; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .scroll-top-fab:hover { background: #0d47a1; }
+        .scroll-top-fab.visible { display: flex; }
         .history-bar { background: white; border-radius: 8px; padding: 12px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 13px; }
         .history-bar.active { display: flex; }
         .history-bar .history-label { color: #999; font-weight: 600; white-space: nowrap; }
@@ -248,6 +251,7 @@
     </div>
 
     <button class="apm-fab" id="apmFab" onclick="copyApmTraceId()" title="点击复制 apmTraceId"><span class="label">apmTraceId</span><span class="id" id="apmFabId"></span></button>
+    <button class="scroll-top-fab" id="scrollTopFab" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
     <!-- Highlight floating panel -->
     <div class="hl-panel collapsed" id="hlPanel">
@@ -1178,6 +1182,9 @@
                 }
             } catch(e) {}
         }
+
+        // Scroll-to-top FAB visibility
+        window.addEventListener('scroll', function() { var btn = document.getElementById('scrollTopFab'); if (!btn) return; btn.classList.toggle('visible', window.scrollY > 300); });
     </script>
 </body>
 </html>
