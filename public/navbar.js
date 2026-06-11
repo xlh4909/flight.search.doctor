@@ -46,7 +46,6 @@
         {
             name: '日志追踪',
             links: [
-                { href: '/huixing.html',    text: '慧行天网日志' },
                 { href: '/proxy-log.html',  text: '站点代理日志' }
             ]
         }

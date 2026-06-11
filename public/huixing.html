@@ -121,13 +121,6 @@
         .compare-legend .legend-dot.match { background: #4caf50; }
         .compare-legend .legend-dot.log-only { background: #ff9800; }
         .compare-legend .legend-dot.new { background: #2196f3; }
-        .compare-cat-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f0faf5; border: 1px solid #b2dfdb; border-radius: 6px; cursor: pointer; margin-bottom: 8px; user-select: none; }
-        .compare-cat-header:hover { background: #e0f5ec; }
-        .compare-cat-header .cat-title { font-size: 14px; font-weight: 700; color: #0d904f; display: flex; align-items: center; gap: 8px; }
-        .compare-cat-header .cat-arrow { font-size: 12px; color: #999; transition: transform 0.2s; }
-        .compare-cat-header.collapsed .cat-arrow { transform: rotate(-90deg); }
-        .compare-cat-body { margin-bottom: 12px; }
-        .compare-cat-body.collapsed { display: none; }
         .scheme-card.compare-match { border-left: 4px solid #4caf50; }
         .scheme-card.compare-log-only { border-left: 4px solid #ff9800; }
         .scheme-card.compare-new { border-left: 4px solid #2196f3; }
@@ -203,6 +196,19 @@
         .skyeye-req-summary { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px 12px; margin-bottom: 8px; font-size: 12px; color: #555; }
         .skyeye-req-summary .req-url { color: #0d904f; font-weight: 600; word-break: break-all; }
         .skyeye-req-summary .req-params { margin-top: 4px; color: #666; }
+        .time-row { display: flex; gap: 8px; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0f0e8; flex-wrap: wrap; }
+        .time-row-label { font-size: 12px; font-weight: 600; color: #0d904f; white-space: nowrap; letter-spacing: 0.3px; }
+        .time-presets { display: flex; gap: 4px; align-items: center; }
+        .time-preset-btn { padding: 4px 10px; background: #e8f5e9; color: #0d904f; border: 1px solid transparent; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.15s; line-height: 1.4; }
+        .time-preset-btn:hover { background: #c8e6c9; border-color: #a5d6a7; }
+        .time-preset-btn:active { background: #a5d6a7; }
+        .time-preset-btn.active { background: #0d904f; color: white; border-color: #0d904f; }
+        .time-separator { display: flex; align-items: center; gap: 6px; }
+        .time-input { padding: 6px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 13px; outline: none; color: #333; transition: border-color 0.2s, box-shadow 0.2s; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        .time-input:focus { border-color: #0d904f; box-shadow: 0 0 0 2px rgba(13,144,79,0.10); }
+        .time-range-sep { font-size: 12px; color: #999; font-weight: 500; }
+        .btn-time-reset { padding: 6px 12px; background: #f5f5f5; color: #666; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+        .btn-time-reset:hover { background: #eee; color: #333; border-color: #ccc; }
     </style>
 </head>
 <body>
@@ -256,12 +262,30 @@
         </div>
 
         <div id="skyeyeCompareBar" style="display:none; margin-bottom:16px;"></div>
+        <div id="compareResultSection" style="display:none; margin-bottom:16px;"></div>
 
         <div class="skyeye-section">
             <h3>天网日志查询（通过 traceId）</h3>
             <div class="skyeye-row">
                 <input type="text" id="skyeyeTraceId" placeholder="输入 traceId，如 apm-traceid 值">
                 <button class="skyeye-btn" id="skyeyeBtn" onclick="doSkyeyeQuery()">查询日志</button>
+            </div>
+            <div class="time-row">
+                <span class="time-row-label">时间</span>
+                <div class="time-presets">
+                    <button class="time-preset-btn" onclick="setSkyeyeTimePreset(10, this)">10分钟</button>
+                    <button class="time-preset-btn" onclick="setSkyeyeTimePreset(30, this)">30分钟</button>
+                    <button class="time-preset-btn" onclick="setSkyeyeTimePreset(60, this)">1小时</button>
+                    <button class="time-preset-btn active" onclick="setSkyeyeTimePreset(120, this)">2小时</button>
+                    <button class="time-preset-btn" onclick="setSkyeyeTimePreset(360, this)">6小时</button>
+                    <button class="time-preset-btn" onclick="setSkyeyeTimePreset(1440, this)">24小时</button>
+                </div>
+                <div class="time-separator">
+                    <input type="datetime-local" id="skyeyeBeginTime" class="time-input">
+                    <span class="time-range-sep">至</span>
+                    <input type="datetime-local" id="skyeyeEndTime" class="time-input">
+                </div>
+                <button class="btn-time-reset" onclick="resetSkyeyeTimeRange()">默认</button>
             </div>
             <div class="skyeye-result" id="skyeyeResult"></div>
         </div>
@@ -287,6 +311,7 @@
             <div id="tabContents"></div>
             <div class="comparison-summary" style="margin-top:20px">
                 <button class="raw-toggle" onclick="toggleRaw()">查看原始数据</button>
+                <button class="raw-toggle" onclick="copyRawData()" id="copyRawBtn">复制原始数据</button>
                 <div class="raw-data" id="rawData"></div>
             </div>
             </div>
@@ -348,6 +373,47 @@
             renderHuixingResults(data);
         }
 
+        // ── Skyeye time helpers ──
+        function formatDateTimeLocal(d) {
+            var pad = function(n) { return String(n).padStart(2, '0'); };
+            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        }
+        function formatToBackend(d) {
+            var pad = function(n) { return String(n).padStart(2, '0'); };
+            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.000';
+        }
+        function getSkyeyeBeginTime() {
+            var val = document.getElementById('skyeyeBeginTime').value;
+            if (val) return formatToBackend(new Date(val));
+            return '';
+        }
+        function getSkyeyeEndTime() {
+            var val = document.getElementById('skyeyeEndTime').value;
+            if (val) return formatToBackend(new Date(val));
+            return '';
+        }
+        function setSkyeyeDefaultTimeRange() {
+            var now = new Date();
+            var twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+            document.getElementById('skyeyeBeginTime').value = formatDateTimeLocal(twoHoursAgo);
+            document.getElementById('skyeyeEndTime').value = formatDateTimeLocal(now);
+            highlightSkyeyePresetBtn(120);
+        }
+        function highlightSkyeyePresetBtn(minutes) {
+            document.querySelectorAll('.time-preset-btn').forEach(function(b) { b.classList.remove('active'); });
+            var btn = document.querySelector('.time-preset-btn[onclick*="setSkyeyeTimePreset(' + minutes + '"]');
+            if (btn) btn.classList.add('active');
+        }
+        function setSkyeyeTimePreset(minutes, btn) {
+            var now = new Date();
+            var begin = new Date(now.getTime() - minutes * 60 * 1000);
+            document.getElementById('skyeyeBeginTime').value = formatDateTimeLocal(begin);
+            document.getElementById('skyeyeEndTime').value = formatDateTimeLocal(now);
+            document.querySelectorAll('.time-preset-btn').forEach(function(b) { b.classList.remove('active'); });
+            if (btn) btn.classList.add('active');
+        }
+        function resetSkyeyeTimeRange() { setSkyeyeDefaultTimeRange(); }
+
         // ── Skyeye log query ──
         function doSkyeyeQuery() {
             var traceId = document.getElementById('skyeyeTraceId').value.trim();
@@ -357,7 +423,7 @@
             fetch('/api/skyeye/log', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ traceId: traceId })
+                body: JSON.stringify({ traceId: traceId, beginTime: getSkyeyeBeginTime(), endTime: getSkyeyeEndTime() })
             }).then(function(r) { return r.json(); }).then(function(data) {
                 btn.disabled = false;
                 renderSkyeyeResults(data);
@@ -400,6 +466,16 @@
         // ── Raw data toggle ──
         function toggleRaw() {
             document.getElementById('rawData').classList.toggle('active');
+        }
+        function copyRawData() {
+            var el = document.getElementById('rawData');
+            if (!el) return;
+            var text = el.textContent || '';
+            if (!text) { alert('无原始数据'); return; }
+            navigator.clipboard.writeText(text).then(function() {
+                var btn = document.getElementById('copyRawBtn');
+                if (btn) { btn.textContent = '已复制!'; setTimeout(function() { btn.textContent = '复制原始数据'; }, 1500); }
+            });
         }
         function toggleSchemeRaw(rawId) {
             var el = document.getElementById(rawId);
@@ -569,12 +645,14 @@
             if (!hasSkyeye || !hasQuery) {
                 bar.style.display = 'none';
                 _compareActive = false;
+                var resultSection = document.getElementById('compareResultSection');
+                if (resultSection) resultSection.style.display = 'none';
                 var qh = document.getElementById('queryHeader');
                 var qb = document.getElementById('queryBody');
                 if (qh) qh.classList.remove('collapsed');
                 if (qb) qb.classList.remove('collapsed');
                 var sr = document.getElementById('skyeyeResult');
-                if (sr) sr.style.display = '';
+                if (sr) { sr.style.display = ''; sr.classList.remove('collapsed'); }
                 return;
             }
 
@@ -592,7 +670,7 @@
                 if (qh) qh.classList.remove('collapsed');
                 if (qb) qb.classList.remove('collapsed');
                 var sr = document.getElementById('skyeyeResult');
-                if (sr) sr.style.display = '';
+                if (sr) { sr.style.display = ''; sr.classList.remove('collapsed'); }
                 return;
             }
 
@@ -632,6 +710,11 @@
                 });
 
                 merged[cat] = list;
+                // Sort: inconsistent (log-only, new) first, consistent (match) last
+                list.sort(function(a, b) {
+                    var order = { 'log-only': 0, 'new': 1, 'match': 2 };
+                    return (order[a.type] || 2) - (order[b.type] || 2);
+                });
                 counts[cat] = { match: match, logOnly: logOnly, new: newCnt };
                 totalMatch += match;
                 totalLogOnly += logOnly;
@@ -639,13 +722,20 @@
             });
 
             bar.style.display = 'block';
+            var resultSection = document.getElementById('compareResultSection');
             var seTotal = CATEGORIES.reduce(function(sum, cat) { return sum + (_skyeyeCategorized[cat] || []).length; }, 0);
             var qTotal = CATEGORIES.reduce(function(sum, cat) { return sum + (_allHx[cat] || []).length; }, 0);
+
+            // ── Keep trigger bar, make it toggle the result section ──
+            bar.innerHTML = '<div style="background:#fff;border-radius:8px;padding:14px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);display:flex;align-items:center;gap:16px;cursor:pointer;user-select:none;" onclick="toggleCompareResult()">' +
+                '<span style="font-size:14px;font-weight:600;color:#0d904f;">天网日志(' + seTotal + '个方案) vs 实时查询(' + qTotal + '个方案) — 对比结果</span>' +
+                '<span id="compareToggleArrow" style="font-size:12px;color:#999;transition:transform 0.2s;">▼</span>' +
+                '</div>';
 
             // ── Summary table ──
             var summaryHtml = '<div class="compare-summary">';
             summaryHtml += '<table>';
-            summaryHtml += '<tr><th>分类</th><th class="num">一致</th><th class="num">日志独有</th><th class="num">查询新增</th><th class="num">合计</th></tr>';
+            summaryHtml += '<tr><th>分类</th><th class="num">一致</th><th class="num">方案过期</th><th class="num">实时新增</th><th class="num">合计</th></tr>';
             CATEGORIES.forEach(function(cat) {
                 var c = counts[cat];
                 var total = c.match + c.logOnly + c.new;
@@ -669,52 +759,66 @@
             // ── Legend ──
             var legendHtml = '<div class="compare-legend">';
             legendHtml += '<div class="legend-item"><div class="legend-dot match"></div><span>一致 (' + totalMatch + ')</span></div>';
-            legendHtml += '<div class="legend-item"><div class="legend-dot log-only"></div><span>日志独有 (' + totalLogOnly + ')</span></div>';
-            legendHtml += '<div class="legend-item"><div class="legend-dot new"></div><span>查询新增 (' + totalNew + ')</span></div>';
+            legendHtml += '<div class="legend-item"><div class="legend-dot log-only"></div><span>方案过期 (' + totalLogOnly + ')</span></div>';
+            legendHtml += '<div class="legend-item"><div class="legend-dot new"></div><span>实时新增 (' + totalNew + ')</span></div>';
             legendHtml += '</div>';
 
             // ── Build unified compare view ──
             var html = '<div class="compare-section">';
-            html += '<div class="compare-header"><h3>对比视图：天网日志 vs 实时查询</h3><button onclick="closeCompare()" style="padding:6px 16px;background:#f5f5f5;border:1px solid #ddd;border-radius:4px;font-size:12px;cursor:pointer;">关闭对比</button></div>';
+            html += '<div class="compare-header"><h3>对比视图：天网日志 vs 实时查询</h3></div>';
             html += summaryHtml;
             html += legendHtml;
 
-            // Render merged schemes per category
-            CATEGORIES.forEach(function(cat) {
+            // Build tab bar (matching query results style)
+            var firstCompareTab = true;
+            var tabBarHtml = '<div class="tab-bar">';
+            CATEGORIES.forEach(function(cat, idx) {
                 var items = merged[cat];
-                if (items.length === 0) return;
                 var c = counts[cat];
-                var catId = 'compare-cat-' + cat;
-                html += '<div class="compare-cat-header" onclick="toggleCompareCat(\'' + catId + '\')">';
-                html += '<span class="cat-title">' + cat;
-                if (c.match > 0) html += ' <span class="compare-badge match">一致 ' + c.match + '</span>';
-                if (c.logOnly > 0) html += ' <span class="compare-badge log-only">日志 ' + c.logOnly + '</span>';
-                if (c.new > 0) html += ' <span class="compare-badge new">新增 ' + c.new + '</span>';
-                html += '</span>';
-                html += '<span class="cat-arrow" id="' + catId + '-arrow">▼</span>';
-                html += '</div>';
-                html += '<div class="compare-cat-body" id="' + catId + '-body">';
-                html += '<div id="' + catId + '-content"></div>';
-                html += '</div>';
+                tabBarHtml += '<button class="tab-btn' + (firstCompareTab ? ' active' : '') + '" onclick="switchCompareTab(event, \'' + cat + '\')">';
+                tabBarHtml += cat + ' (' + items.length + ')';
+                if (c.match > 0) tabBarHtml += ' <span class="compare-badge match">一致 ' + c.match + '</span>';
+                if (c.logOnly > 0) tabBarHtml += ' <span class="compare-badge log-only">过期 ' + c.logOnly + '</span>';
+                if (c.new > 0) tabBarHtml += ' <span class="compare-badge new">实时 ' + c.new + '</span>';
+                tabBarHtml += '</button>';
+                firstCompareTab = false;
+            });
+            tabBarHtml += '</div>';
+
+            // Build tab contents
+            var firstCompareContent = true;
+            var tabContentHtml = '';
+            CATEGORIES.forEach(function(cat, idx) {
+                var items = merged[cat];
+                tabContentHtml += '<div class="tab-content' + (firstCompareContent ? ' active' : '') + '" id="compare-tab-' + cat + '">';
+                if (items.length === 0) {
+                    tabContentHtml += '<div style="text-align:center;padding:30px;color:#999;">该分类无方案数据</div>';
+                } else {
+                    tabContentHtml += '<div id="compare-content-' + cat + '"></div>';
+                }
+                tabContentHtml += '</div>';
+                firstCompareContent = false;
             });
 
-            html += '</div>';
-            bar.innerHTML = html;
+            html += tabBarHtml;
+            html += tabContentHtml;
 
-            // Render scheme cards into each category
+            html += '</div>';
+            resultSection.innerHTML = html;
+            resultSection.style.display = 'block';
+
+            // Render scheme cards into each comparison tab
             CATEGORIES.forEach(function(cat) {
                 var items = merged[cat];
                 if (items.length === 0) return;
-                var catId = 'compare-cat-' + cat;
-                var contentEl = document.getElementById(catId + '-content');
+                var contentEl = document.getElementById('compare-content-' + cat);
                 if (!contentEl) return;
 
                 var shtml = '';
                 items.forEach(function(item, idx) {
                     var rawId = 'compare-' + cat + '-' + item.type + '-' + idx;
-                    var badgeLabel = item.type === 'match' ? '一致' : (item.type === 'log-only' ? '日志独有' : '查询新增');
+                    var badgeLabel = item.type === 'match' ? '一致' : (item.type === 'log-only' ? '方案过期' : '实时新增');
                     var cardClass = 'compare-' + item.type;
-                    // Build card with badge injected
                     shtml += '<div class="scheme-card ' + cardClass + '">';
                     shtml += '<div class="scheme-title"><span class="scheme-type">';
                     shtml += '<span class="compare-badge ' + item.type + '">' + badgeLabel + '</span> ';
@@ -733,13 +837,11 @@
                 });
             });
 
-            // Collapse original sections
+            // Collapse original query sections
             var qh = document.getElementById('queryHeader');
             var qb = document.getElementById('queryBody');
             if (qh) qh.classList.add('collapsed');
             if (qb) qb.classList.add('collapsed');
-            var sr = document.getElementById('skyeyeResult');
-            if (sr) sr.style.display = 'none';
         }
 
         function doCompare() {
@@ -747,18 +849,16 @@
             updateSkyeyeCompareBar();
         }
 
-        function closeCompare() {
-            _compareActive = false;
-            updateSkyeyeCompareBar();
-        }
-
-        function toggleCompareCat(catId) {
-            var body = document.getElementById(catId + '-body');
-            var header = body ? body.previousElementSibling : null;
-            if (!body) return;
-            body.classList.toggle('collapsed');
-            if (header && header.classList.contains('compare-cat-header')) {
-                header.classList.toggle('collapsed');
+        function toggleCompareResult() {
+            var section = document.getElementById('compareResultSection');
+            var arrow = document.getElementById('compareToggleArrow');
+            if (!section) return;
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                if (arrow) arrow.style.transform = '';
+            } else {
+                section.style.display = 'none';
+                if (arrow) arrow.style.transform = 'rotate(-90deg)';
             }
         }
 
@@ -884,7 +984,7 @@
             var apiType = 'hx';
             if (url.indexOf('V7.ws') >= 0) apiType = 'v7';
             else if (url.indexOf('HX.ws') >= 0) apiType = 'hx';
-            var afterUrl = rest.substring(wsIdx + 4); // after ".ws"
+            var afterUrl = rest.substring(wsIdx + 3); // after ".ws"
             if (afterUrl.charAt(0) === ':') afterUrl = afterUrl.substring(1);
             // Strip trailing :NNNN (timeout)
             var lastColon = afterUrl.lastIndexOf(':');
@@ -964,22 +1064,33 @@
                     html += '<div class="skyeye-module-body" id="' + entryPfx + '-body">';
 
                     html += '<div class="skyeye-resp-section">';
-                    // Render categorized tabs inline
                     var pfx = 'skyeye-resp-' + i;
-                    html += '<div style="margin-bottom:8px;">';
-                    CATEGORIES.forEach(function(cat, idx) {
+                    // Build tab bar for switching categories
+                    var firstActiveTab = null;
+                    var firstCatDone = false;
+                    html += '<div class="tab-bar" id="skyeye-tabbar-' + pfx + '">';
+                    CATEGORIES.forEach(function(cat, cidx) {
                         var count = (categorized[cat] || []).length;
-                        html += '<span style="display:inline-block;padding:3px 10px;margin-right:4px;border-radius:4px;font-size:12px;font-weight:600;' + (idx === 0 ? 'background:#0d904f;color:white;' : 'background:#f0f0f0;color:#555;') + '">' + cat + ' (' + count + ')</span>';
+                        if (!firstActiveTab && count > 0) firstActiveTab = cat;
+                        html += '<button class="tab-btn' + (cidx === 0 || !firstCatDone ? ' active' : '') + '" onclick="switchSkyeyeLogTab(\'' + pfx + '\', \'' + cat + '\', this)">' + cat + ' (' + count + ')</button>';
+                        firstCatDone = true;
                     });
                     html += '</div>';
 
+                    // Render tab contents
                     CATEGORIES.forEach(function(cat) {
                         var schemes = categorized[cat] || [];
-                        if (schemes.length === 0) return;
-                        schemes.forEach(function(s, sIdx) {
-                            var cardRawId = pfx + '-' + cat + '-' + sIdx;
-                            html += buildSchemeCardHtml(s, sIdx, cat, cardRawId);
-                        });
+                        var isActive = (firstActiveTab ? firstActiveTab === cat : CATEGORIES.indexOf(cat) === 0);
+                        html += '<div class="tab-content' + (isActive ? ' active' : '') + '" id="skyeye-tab-' + pfx + '-' + cat + '">';
+                        if (schemes.length === 0) {
+                            html += '<div style="text-align:center;padding:30px;color:#999;">该分类无方案数据</div>';
+                        } else {
+                            schemes.forEach(function(s, sIdx) {
+                                var cardRawId = pfx + '-' + cat + '-' + sIdx;
+                                html += buildSchemeCardHtml(s, sIdx, cat, cardRawId);
+                            });
+                        }
+                        html += '</div>';
                     });
                     html += '</div>';
 
@@ -1001,7 +1112,11 @@
                     html += '</div>';
                     html += '<div class="skyeye-module-body" id="' + reqPfx + '-body">';
                     html += '<div class="skyeye-req-card">';
-                    html += '<div class="skyeye-req-url">' + escapeHtml(reqInfo.url) + '</div>';
+                    if (reqInfo.params) {
+                        html += '<div class="skyeye-req-url"><pre style="margin:0;white-space:pre-wrap;word-break:break-all;font-family:monospace;font-size:12px;">' + escapeHtml(JSON.stringify(reqInfo.params, null, 2)) + '</pre></div>';
+                    } else {
+                        html += '<div class="skyeye-req-url">' + escapeHtml(reqInfo.url) + '</div>';
+                    }
                     if (reqInfo.params) {
                         _skyeyeFillRequests[i] = { params: reqInfo.params, apiType: reqInfo.apiType };
                         html += '<button class="skyeye-fill-btn" onclick="fillSkyeyeRequest(' + i + ')">填充到查询参数</button>';
@@ -1075,9 +1190,7 @@
             });
         }
 
-        // ── Existing functions (preserved from original) ──
-
-        function switchSkyeyeTab(pfx, cat, btn) {
+        function switchSkyeyeLogTab(pfx, cat, btn) {
             var bar = document.getElementById('skyeye-tabbar-' + pfx);
             bar.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
             btn.classList.add('active');
@@ -1086,6 +1199,13 @@
                 if (el) el.classList.remove('active');
             });
             document.getElementById('skyeye-tab-' + pfx + '-' + cat).classList.add('active');
+        }
+
+        function switchCompareTab(evt, cat) {
+            document.querySelectorAll('#compareResultSection .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('#compareResultSection .tab-content').forEach(function(c) { c.classList.remove('active'); });
+            evt.currentTarget.classList.add('active');
+            document.getElementById('compare-tab-' + cat).classList.add('active');
         }
 
         function buildSchemeTitleInner(s, idx) {
@@ -1184,8 +1304,16 @@
 
         // ── Init ──
         window.addEventListener('load', function() {
+            setSkyeyeDefaultTimeRange();
             loadHistory();
             updateSkyeyeCompareBar();
+        });
+
+        document.getElementById('skyeyeBeginTime').addEventListener('change', function() {
+            document.querySelectorAll('.time-preset-btn').forEach(function(b) { b.classList.remove('active'); });
+        });
+        document.getElementById('skyeyeEndTime').addEventListener('change', function() {
+            document.querySelectorAll('.time-preset-btn').forEach(function(b) { b.classList.remove('active'); });
         });
     </script>
     <button class="scroll-top-fab" id="scrollTopFab" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
