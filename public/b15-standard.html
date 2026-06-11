@@ -127,6 +127,42 @@
         .raw-highlight { background: #fff176; color: #1e1e1e; border-radius: 2px; padding: 0 2px; font-weight: 700; }
         .raw-highlight-flash { animation: hlFlash 1.5s ease-out; }
         @keyframes hlFlash { 0% { background: #ffeb3b; box-shadow: 0 0 8px #ffeb3b; } 100% { background: #fff176; box-shadow: none; } }
+
+        /* Highlight floating panel — dark terminal theme */
+        .hl-panel { position: fixed; top: 80px; right: 0; width: 400px; max-height: calc(100vh - 100px); background: #1e1e1e; border-left: 2px solid #4ec9b0; box-shadow: -4px 0 20px rgba(0,0,0,0.4); z-index: 1000; display: flex; flex-direction: column; transition: transform 0.3s ease, opacity 0.3s ease; transform: translateX(0); opacity: 1; font-family: "SF Mono","Monaco","Menlo","Consolas","Courier New",monospace; }
+        .hl-panel.collapsed { transform: translateX(100%); opacity: 0; pointer-events: none; }
+        .hl-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #2d2d2d; border-bottom: 1px solid #3d3d3d; color: #d4d4d4; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+        .hl-panel-header .hl-panel-title { display: flex; align-items: center; gap: 6px; overflow: hidden; color: #4ec9b0; }
+        .hl-panel-header .hl-panel-title span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hl-panel-close { background: #3d3d3d; border: none; color: #d4d4d4; width: 26px; height: 26px; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
+        .hl-panel-close:hover { background: #c53535; color: #fff; }
+        .hl-panel-body { flex: 1; overflow-y: auto; padding: 0; }
+        .hl-panel-body::-webkit-scrollbar { width: 6px; }
+        .hl-panel-body::-webkit-scrollbar-track { background: #1e1e1e; }
+        .hl-panel-body::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        .hl-panel-empty { padding: 30px 16px; text-align: center; color: #666; font-size: 13px; }
+        .hl-panel-item { padding: 10px 14px; border-bottom: 1px solid #2d2d2d; transition: background 0.15s; }
+        .hl-panel-item:hover { background: #2d2d2d; }
+        .hl-panel-item:last-child { border-bottom: none; }
+        .hl-panel-item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .hl-panel-prod-no { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 22px; background: #4ec9b0; color: #1e1e1e; border-radius: 3px; font-size: 11px; font-weight: 700; padding: 0 6px; }
+        .hl-panel-prop-name { font-size: 11px; color: #9cdcfe; font-family: "SF Mono","Monaco","Menlo","Consolas",monospace; }
+        .hl-panel-prop-value { font-size: 13px; font-weight: 600; color: #ce9178; background: #2d2d2d; padding: 4px 10px; border-radius: 3px; margin-top: 2px; word-break: break-all; line-height: 1.6; border-left: 3px solid #4ec9b0; }
+        .hl-panel-prop-value.hl-val-null { color: #569cd6; font-style: italic; font-weight: 400; border-left-color: #569cd6; }
+        .hl-panel-prop-value.hl-val-bool { color: #569cd6; border-left-color: #569cd6; }
+        .hl-panel-prop-value.hl-val-number { color: #b5cea8; border-left-color: #b5cea8; }
+        .hl-panel-prop-value.hl-val-string { color: #ce9178; border-left-color: #ce9178; }
+        .hl-panel-prop-value.hl-val-object { color: #dcdcaa; border-left-color: #dcdcaa; font-weight: 400; font-size: 11px; }
+        .hl-panel-prop-value.hl-val-array { color: #4ec9b0; border-left-color: #4ec9b0; font-weight: 400; font-size: 11px; }
+        .hl-panel-prop-value.hl-val-nested-item { margin-left: 8px; margin-top: 4px; border-left-color: #6a9955; font-size: 11px; color: #d4d4d4; }
+        .hl-panel-nested-label { font-size: 10px; color: #6a9955; margin-bottom: 2px; margin-left: 8px; }
+
+        /* Edge float tab — dark theme */
+        .hl-float-tab { position: fixed; top: 50%; right: 0; transform: translateY(-50%); background: #1e1e1e; color: #4ec9b0; border: 1px solid #4ec9b0; border-right: none; border-radius: 8px 0 0 8px; padding: 12px 8px; font-size: 12px; font-weight: 600; cursor: pointer; z-index: 999; writing-mode: vertical-rl; text-orientation: mixed; letter-spacing: 2px; box-shadow: -2px 0 8px rgba(0,0,0,0.4); transition: all 0.2s; display: none; font-family: "SF Mono","Monaco","Menlo","Consolas",monospace; }
+        .hl-float-tab:hover { background: #2d2d2d; padding-right: 12px; }
+        .hl-float-tab.visible { display: block; }
+
+
     </style>
 </head>
 <body>
@@ -140,43 +176,45 @@
 
     <div class="container">
         <div class="input-section">
-            <div class="params-row">
-                <div class="input-group">
-                    <label>站点 (site)</label>
-                    <select id="siteSelect">
-                        <option value="wechatcore">wechatcore</option>
-                        <option value="app">app</option>
-                        <option value="connectgateway" selected>connectgateway</option>
-                        <option value="wechat">wechat</option>
-                    </select>
-                </div>
-                <div class="input-group" style="flex-direction:row;align-items:center;gap:6px;">
-                    <label>渠道 (plat)</label>
-                    <select id="platSelect" onchange="onPlatChange()">
-                        <option value="852" selected>852-小程序</option>
-                        <option value="433">433-IOS</option>
-                        <option value="434">434-Android</option>
-                        <option value="518">518-H5</option>
-                        <option value="10212">10212-Harmony</option>
-                        <option value="custom">自定义...</option>
-                    </select>
-                    <div class="custom-plat" id="customPlatWrap">
-                        <input type="text" id="customPlat" placeholder="输入plat">
+            <div id="modeApi">
+                <div class="params-row">
+                    <div class="input-group">
+                        <label>站点 (site)</label>
+                        <select id="siteSelect">
+                            <option value="wechatcore">wechatcore</option>
+                            <option value="app">app</option>
+                            <option value="connectgateway" selected>connectgateway</option>
+                            <option value="wechat">wechat</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex-direction:row;align-items:center;gap:6px;">
+                        <label>渠道 (plat)</label>
+                        <select id="platSelect" onchange="onPlatChange()">
+                            <option value="852" selected>852-小程序</option>
+                            <option value="433">433-IOS</option>
+                            <option value="434">434-Android</option>
+                            <option value="518">518-H5</option>
+                            <option value="10212">10212-Harmony</option>
+                            <option value="custom">自定义...</option>
+                        </select>
+                        <div class="custom-plat" id="customPlatWrap">
+                            <input type="text" id="customPlat" placeholder="输入plat">
+                        </div>
                     </div>
                 </div>
-            </div>
-            <label>Book1.5 标准版请求参数 JSON</label>
-            <textarea id="requestJson" placeholder='粘贴 Book1.5 标准版请求参数 JSON...'></textarea>
-            <div class="btn-row">
-                <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">查询</button>
-                <button class="btn btn-secondary" onclick="formatJson()">美化</button>
-                <button class="btn btn-secondary" onclick="clearAll()">清空</button>
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <span>正在查询 Book1.5 标准版...</span>
+                <label>Book1.5 标准版请求参数 JSON</label>
+                <textarea id="requestJson" placeholder='粘贴 Book1.5 标准版请求参数 JSON...'></textarea>
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">查询</button>
+                    <button class="btn btn-secondary" onclick="formatJson()">美化</button>
+                    <button class="btn btn-secondary" onclick="clearAll()">清空</button>
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <span>正在查询 Book1.5 标准版...</span>
+                    </div>
                 </div>
+                <a class="wiki-link" href="https://wiki.17u.cn/wiki?fid=22620716dfd243c7ab90af41bea756a7" target="_blank">Book1.5 标准版接口文档 ↗</a>
             </div>
-            <a class="wiki-link" href="https://wiki.17u.cn/wiki?fid=22620716dfd243c7ab90af41bea756a7" target="_blank">Book1.5 标准版接口文档 ↗</a>
         </div>
 
         <div class="history-bar" id="historyBar">
@@ -210,6 +248,20 @@
     </div>
 
     <button class="apm-fab" id="apmFab" onclick="copyApmTraceId()" title="点击复制 apmTraceId"><span class="label">apmTraceId</span><span class="id" id="apmFabId"></span></button>
+
+    <!-- Highlight floating panel -->
+    <div class="hl-panel collapsed" id="hlPanel">
+        <div class="hl-panel-header">
+            <div class="hl-panel-title"><span>🔍</span> <span id="hlPanelTitle">属性对比</span></div>
+            <button class="hl-panel-close" onclick="closeHighlightPanel()" title="关闭">✕</button>
+        </div>
+        <div class="hl-panel-body" id="hlPanelBody">
+            <div class="hl-panel-empty">请先从「返回结构」中选择一个属性</div>
+        </div>
+    </div>
+
+    <!-- Edge float tab (visible when panel is collapsed) -->
+    <button class="hl-float-tab" id="hlFloatTab" onclick="openHighlightPanel()" title="展开属性对比面板">属性对比</button>
 
     <script src="/navbar.js"></script>
 <script>
@@ -259,7 +311,8 @@
 
         function renderResults(data) {
             document.getElementById('resultsSection').classList.add('active');
-            _lastFullRawJson = JSON.stringify(data, null, 2);
+            // Only store the actual response data, not the wrapper (success, apmTraceId, requestParams etc.)
+            _lastFullRawJson = JSON.stringify(data.data || data, null, 2);
             document.getElementById('rawData').textContent = _lastFullRawJson;
             showApmFab(data.apmTraceId);
 
@@ -286,6 +339,7 @@
             }
 
             var resp = data.data || {};
+            _lastRespData = resp; // store for highlight panel
             var trip = resp.trip;
             if (!trip) {
                 document.getElementById('summaryBarContent').innerHTML = '<span style="color:#e53935">响应中无 trip 数据</span>';
@@ -797,6 +851,8 @@
             btn.classList.add('open');
             // Re-highlight any already-open raw data panels
             reHighlightOpenRawPanels();
+            // Update highlight panel (Feature 2)
+            updateHighlightPanel();
         }
 
         function reHighlightOpenRawPanels() {
@@ -819,6 +875,195 @@
                 }
                 globalRaw.innerHTML = html;
             }
+        }
+
+        // ---- Highlight Floating Panel (Feature 2) ----
+        var _hlPanelOpen = false;
+        var _lastRespData = null; // stores the resp object (data.data) from last render
+
+        function openHighlightPanel() {
+            var panel = document.getElementById('hlPanel');
+            var tab = document.getElementById('hlFloatTab');
+            panel.classList.remove('collapsed');
+            tab.classList.remove('visible');
+            _hlPanelOpen = true;
+        }
+
+        function closeHighlightPanel() {
+            var panel = document.getElementById('hlPanel');
+            var tab = document.getElementById('hlFloatTab');
+            panel.classList.add('collapsed');
+            tab.classList.add('visible');
+            _hlPanelOpen = false;
+        }
+
+        // Resolve a dot-separated path on an object, supporting array notation []
+        // When encountering an array, recurse into first element
+        function resolvePath(obj, pathStr) {
+            if (!obj || !pathStr) return undefined;
+            var parts = pathStr.replace(/\[\]/g, '').split('.');
+            var cur = obj;
+            for (var i = 0; i < parts.length; i++) {
+                if (cur === null || cur === undefined) return undefined;
+                if (Array.isArray(cur)) {
+                    // Drill into first element of array for remaining path
+                    var remaining = parts.slice(i).join('.');
+                    if (cur.length === 0) return undefined;
+                    return resolvePath(cur[0], remaining);
+                }
+                cur = cur[parts[i]];
+            }
+            return cur;
+        }
+
+        // Resolve all values from an array-nested path (e.g. trafficSequenceProducts[].policyType)
+        // Returns array of {index, value} for each element in the nested array
+        function resolvePathAll(obj, pathStr) {
+            if (!obj || !pathStr) return [];
+            var parts = pathStr.replace(/\[\]/g, '').split('.');
+            var cur = obj;
+            var firstArrIdx = -1;
+            // Walk until we hit an array
+            for (var i = 0; i < parts.length; i++) {
+                if (cur === null || cur === undefined) return [];
+                if (Array.isArray(cur)) {
+                    firstArrIdx = i;
+                    break;
+                }
+                cur = cur[parts[i]];
+            }
+            if (firstArrIdx === -1) {
+                // No array encountered, return single value
+                return [{ index: 0, value: cur }];
+            }
+            var remaining = parts.slice(firstArrIdx).join('.');
+            var results = [];
+            cur.forEach(function(item, idx) {
+                var val = resolvePath(item, remaining);
+                if (val !== undefined) results.push({ index: idx, value: val });
+            });
+            return results;
+        }
+
+        // Format a value for display in the panel
+        function formatPanelValue(val) {
+            if (val === null || val === undefined) {
+                return { html: '<span class="hl-panel-prop-value hl-val-null">null</span>', text: 'null' };
+            }
+            if (typeof val === 'boolean') {
+                return { html: '<span class="hl-panel-prop-value hl-val-bool">' + val + '</span>', text: String(val) };
+            }
+            if (typeof val === 'number') {
+                return { html: '<span class="hl-panel-prop-value hl-val-number">' + val + '</span>', text: String(val) };
+            }
+            if (typeof val === 'string') {
+                var escaped = val.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                var display = escaped.length > 200 ? escaped.substring(0, 200) + '...' : escaped;
+                return { html: '<span class="hl-panel-prop-value hl-val-string">' + display + '</span>', text: val };
+            }
+            if (Array.isArray(val)) {
+                var arrStr = JSON.stringify(val, null, 1);
+                if (arrStr.length > 300) arrStr = arrStr.substring(0, 300) + '...';
+                var escaped2 = arrStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return { html: '<span class="hl-panel-prop-value hl-val-array">' + escaped2 + '</span>', text: arrStr };
+            }
+            if (typeof val === 'object') {
+                var objStr = JSON.stringify(val, null, 1);
+                if (objStr.length > 300) objStr = objStr.substring(0, 300) + '...';
+                var escaped3 = objStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return { html: '<span class="hl-panel-prop-value hl-val-object">' + escaped3 + '</span>', text: objStr };
+            }
+            return { html: '<span class="hl-panel-prop-value">' + String(val) + '</span>', text: String(val) };
+        }
+
+        function updateHighlightPanel() {
+            var panel = document.getElementById('hlPanel');
+            var body = document.getElementById('hlPanelBody');
+            var titleEl = document.getElementById('hlPanelTitle');
+            var tab = document.getElementById('hlFloatTab');
+
+            if (!_selectedRespKey || !_lastRespData) {
+                // Deselected — hide panel and tab
+                panel.classList.add('collapsed');
+                tab.classList.remove('visible');
+                _hlPanelOpen = false;
+                body.innerHTML = '<div class="hl-panel-empty">请先从「返回结构」中选择一个属性</div>';
+                titleEl.textContent = '属性对比';
+                tab.textContent = '属性对比';
+                return;
+            }
+
+            var key = _selectedRespKey;
+            var shortKey = getShortKey(key);
+            titleEl.textContent = shortKey;
+            tab.textContent = shortKey;
+
+            // Check if this key is under productList
+            var productListPrefix = 'trip.productList[].';
+            var isProductKey = key.indexOf(productListPrefix) === 0;
+
+            var html = '';
+
+            if (isProductKey) {
+                // Key is inside each product — extract suffix path
+                var suffixPath = key.substring(productListPrefix.length);
+                var products = [];
+                if (_lastRespData.trip && _lastRespData.trip.productList) {
+                    products = _lastRespData.trip.productList;
+                }
+                if (products.length === 0) {
+                    html = '<div class="hl-panel-empty">无产品数据</div>';
+                } else {
+                    products.forEach(function(prod, idx) {
+                        // Check if suffix contains array notation (nested array)
+                        var hasNestedArray = suffixPath.indexOf('[]') >= 0 || suffixPath.replace(/\[\]/g, '').split('.').some(function(p) {
+                            return prod[p] !== undefined && Array.isArray(prod[p]);
+                        });
+
+                        // Use resolvePathAll to handle nested arrays
+                        var allVals = resolvePathAll(prod, suffixPath);
+
+                        html += '<div class="hl-panel-item">';
+                        html += '<div class="hl-panel-item-header">';
+                        html += '<span class="hl-panel-prod-no">产品' + (idx + 1) + '</span>';
+                        html += '<span class="hl-panel-prop-name">' + shortKey + '</span>';
+                        html += '</div>';
+
+                        if (allVals.length === 1 && allVals[0].index === 0) {
+                            // Single value (direct property or first element of array)
+                            var formatted = formatPanelValue(allVals[0].value);
+                            html += formatted.html;
+                        } else if (allVals.length > 1) {
+                            // Multiple values from nested array — show each
+                            allVals.forEach(function(item) {
+                                var nestedLabel = '元素' + (item.index + 1);
+                                html += '<div class="hl-panel-nested-label">' + nestedLabel + '</div>';
+                                var formatted = formatPanelValue(item.value);
+                                html += formatted.html.replace('hl-panel-prop-value', 'hl-panel-prop-value hl-val-nested-item');
+                            });
+                        } else {
+                            html += '<span class="hl-panel-prop-value hl-val-null">null</span>';
+                        }
+                        html += '</div>';
+                    });
+                }
+            } else {
+                // Key is at the response level — show single value
+                var val = resolvePath(_lastRespData, key);
+                var formatted = formatPanelValue(val);
+                html += '<div class="hl-panel-item">';
+                html += '<div class="hl-panel-item-header">';
+                html += '<span class="hl-panel-prod-no" style="background:#2e7d32;">全局</span>';
+                html += '<span class="hl-panel-prop-name">' + shortKey + '</span>';
+                html += '</div>';
+                html += formatted.html;
+                html += '</div>';
+            }
+
+            body.innerHTML = html;
+
+            // Auto-show panel
+            openHighlightPanel();
         }
 
         // Close dropdown when clicking outside
