@@ -92,6 +92,61 @@
         .history-bar .history-time { color: #999; font-size: 11px; white-space: nowrap; }
         .history-bar .history-restore { padding: 4px 12px; background: #e65100; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; }
         .history-bar .history-restore:hover { background: #bf360c; }
+
+        /* ── Fare Rule Detail Dialog ── */
+        .fare-dialog-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
+        .fare-dialog-overlay.active { display: flex; }
+        .fare-dialog { background: white; border-radius: 10px; width: 90%; max-width: 900px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+        .fare-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #e0e0e0; background: linear-gradient(135deg, #e65100, #bf360c); border-radius: 10px 10px 0 0; }
+        .fare-dialog-title { font-size: 16px; font-weight: 600; color: white; }
+        .fare-dialog-rule-id { font-size: 13px; color: rgba(255,255,255,0.8); margin-left: 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; }
+        .fare-dialog-close { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 6px; width: 32px; height: 32px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .fare-dialog-close:hover { background: rgba(255,255,255,0.3); }
+        .fare-dialog-body { flex: 1; overflow: auto; padding: 16px 20px; }
+        .fare-dialog-loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; gap: 12px; color: #e65100; font-size: 14px; }
+        .fare-dialog-error { background: #ffebee; border: 1px solid #ef9a9a; border-radius: 8px; padding: 16px 20px; color: #c62828; font-size: 14px; }
+        .fare-dialog-empty { text-align: center; padding: 40px 0; color: #999; font-size: 14px; }
+
+        /* ── Property-structure tree view (for fare dialog) ── */
+        .fare-tree-view { background: white; border-radius: 8px; padding: 4px 0; max-height: 60vh; overflow: auto; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; font-size: 13px; line-height: 1.6; }
+        .fare-prop-row { display: flex; align-items: baseline; padding: 2px 12px; cursor: default; transition: background 0.1s; min-height: 26px; border-left: 3px solid transparent; }
+        .fare-prop-row:hover { background: #fff3e0; }
+        .fare-prop-row.is-branch { cursor: pointer; }
+        .fare-prop-row.is-leaf { cursor: pointer; }
+        .fare-prop-row.depth-0 { border-left-color: #e65100; }
+        .fare-prop-row.depth-1 { border-left-color: #f57c00; }
+        .fare-prop-row.depth-2 { border-left-color: #ff9800; }
+        .fare-prop-row.depth-3 { border-left-color: #ffb74d; }
+        .fare-prop-row.depth-4 { border-left-color: #ffcc80; }
+        .fare-prop-row.depth-5 { border-left-color: #ffe0b2; }
+        .fare-prop-row .indent { flex-shrink: 0; }
+        .fare-prop-row .toggle { width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; color: #888; flex-shrink: 0; cursor: pointer; user-select: none; transition: transform 0.15s; }
+        .fare-prop-row .toggle.open { transform: rotate(90deg); }
+        .fare-prop-row .toggle.blank { visibility: hidden; }
+        .fare-prop-row .p-key { color: #881280; font-weight: 600; white-space: nowrap; }
+        .fare-prop-row .p-colon { color: #999; margin: 0 4px; }
+        .fare-prop-row .p-brace-open { color: #555; font-weight: 600; }
+        .fare-prop-row .p-count { color: #999; font-size: 11px; margin-left: 6px; font-weight: 400; }
+        .fare-prop-row .p-cn { color: #e65100; font-size: 11px; margin-left: 8px; font-weight: 400; font-style: italic; }
+        .fare-prop-row .p-enum { color: #e65100; font-size: 11px; margin-left: 6px; font-weight: 500; background: #fff3e0; padding: 0 4px; border-radius: 3px; }
+        .fare-prop-row .p-val-str { color: #c62828; }
+        .fare-prop-row .p-val-num { color: #1565c0; font-weight: 500; }
+        .fare-prop-row .p-val-bool { color: #2e7d32; font-weight: 600; }
+        .fare-prop-row .p-val-null { color: #999; font-style: italic; }
+        .fare-prop-row .p-copy-hint { opacity: 0; font-size: 10px; color: #e65100; margin-left: 8px; font-weight: 500; transition: opacity 0.15s; }
+        .fare-prop-row.is-leaf:hover .p-copy-hint { opacity: 1; }
+        .fare-prop-children { display: none; }
+        .fare-prop-children.open { display: block; }
+        .fare-prop-close-row { padding: 2px 12px; min-height: 20px; }
+        .fare-prop-close-row .p-brace-close { color: #555; font-weight: 600; }
+
+        /* ruleCode clickable style */
+        .rule-code-link { color: #e65100; text-decoration: underline; cursor: pointer; font-weight: 600; }
+        .rule-code-link:hover { color: #bf360c; }
+
+        /* ── Toast notification ── */
+        .copy-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: #333; color: white; padding: 10px 24px; border-radius: 8px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.3s; z-index: 99999; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
@@ -135,7 +190,30 @@
         </div>
     </div>
 
+    <!-- Toast for copy feedback -->
+    <div class="copy-toast" id="copyToast"></div>
+
+    <!-- Fare Rule Detail Dialog -->
+    <div class="fare-dialog-overlay" id="fareDialogOverlay" onclick="closeFareRuleDialogOnOverlay(event)">
+        <div class="fare-dialog">
+            <div class="fare-dialog-header">
+                <div style="display:flex;align-items:center;">
+                    <span class="fare-dialog-title" id="fareDialogTitle">运价规则详情</span>
+                    <span class="fare-dialog-rule-id" id="fareDialogRuleId"></span>
+                </div>
+                <button class="fare-dialog-close" onclick="closeFareRuleDialog()">✕</button>
+            </div>
+            <div class="fare-dialog-body" id="fareDialogBody">
+                <div class="fare-dialog-loading" id="fareDialogLoading">
+                    <div class="spinner"></div>
+                    <span>正在加载运价规则详情...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="/navbar.js"></script>
+    <script src="/js/fare-rule-helpers.js"></script>
 <script>
         
 
@@ -300,7 +378,8 @@
                         productHtml += '<div class="leg-section">';
                         var fareRule = config.FareRule || {};
                         var ruleCode = fareRule.RuleCode || '00000';
-                        productHtml += '<div class="leg-header">第' + (legIdx + 1) + '程 <span style="font-weight:400;color:#999;font-size:11px;">RuleCode: ' + ruleCode + '</span></div>';
+                        var ruleCodeHtml = ruleCode !== '00000' ? '<span class="rule-code-link" onclick="showFareRuleDialog(\'' + ruleCode.replace(/'/g, "\\'") + '\')" title="点击查看运价规则详情">' + _fareEscHtml(ruleCode) + '</span>' : _fareEscHtml(ruleCode);
+                        productHtml += '<div class="leg-header">第' + (legIdx + 1) + '程 <span style="font-weight:400;color:#999;font-size:11px;">RuleCode: ' + ruleCodeHtml + '</span></div>';
                         productHtml += '<div class="leg-detail">';
                         productHtml += '<span class="label">政策</span><span class="tag tag-policy">' + policyTypeLabel + '</span> ' + (policy.PolicyId || '') + '<br>';
                         var cabinStr = (adultCabin.CabinCode || '') + ' ' + (adultCabin.CabinDiscribe || '');
@@ -448,6 +527,139 @@
                 }, 1500);
             });
         }
+
+        // ═══════════════════════════════════════
+        //  FARE RULE DIALOG (参考 snapshot.html)
+        // ═══════════════════════════════════════
+
+        var _fareKeyLabels = {
+            'RuleId': '规则Id', 'Remark': '辅助名称', 'FBC': '运价基础码',
+            'Pat': '成人特殊指令', 'ChildPat': '儿童特殊指令',
+            'PassengerType': '乘机人类型', 'AuditNum': '乘机人数量(成人)',
+            'ChildNum': '乘机人数量(儿童)', 'ChildFareType': '儿童运价类型',
+            'IsChildAdultSamePnr': '儿童是否与成人同编码', 'IsRefundAlone': '订单是否能单退',
+            'IsSaleBaby': '婴儿是否可售', 'Age': '年龄限制', 'CertNo': '身份证(区域限制)',
+            'Sex': '性别', 'PersonnelLimitType': '人员限制',
+            'MakeOrderPassengerType': '下单乘机人限制', 'MakeOrderUserType': '下单用户限制',
+            'BenefitCardType': '权益卡类型', 'BenefitCardCode': '权益卡Code',
+            'IsRegisteredAirMember': '是否注册航司会员', 'IsAirlineMemberPrice': '是否航司会员价',
+            'IsAddPrice': '是否加价', 'AddPriceAmount': '加价金额',
+            'VoucherType': '抵用券类型', 'VoucherAmount': '抵用券面额',
+            'VoucherId': '包Id', 'ReturnAmount': '返现金金额',
+            'ReturnRedAmount': '返红包金额', 'ReturnRedPercent': '返红包比例',
+            'TagRuleId': '标签规则Id', 'IsMoreVoucher': '是否赠送多张券',
+            'CertificatesLimit': '是否限制证件(已弃用)', 'SameCabinBaseLine': '官网兜底基准',
+            'CertificateRestriction': '证件限制', 'AvaliableStartTime': '适用开始时刻',
+            'AvaliableEndTime': '适用结束时刻', 'IsPackageProduct': '是否适用打包产品',
+            'DepStartTime': '起飞开始日期', 'DepEndTime': '起飞结束日期',
+            'EarliestDaysAhead': '最早提前天数', 'LatestDaysAhead': '最晚提前天数',
+            'IsPremium': '是否溢价', 'DesignatedMember': '指定会员专享',
+            'MemberSegment': '指定会员标签', 'DesignatedMemberRelation': '指定会员关系',
+            'NewSameCabinBaseLine': '官网兜底基准(新)', 'SystemPriceLimitBaseCode': '系统价下限兜底基准',
+            'SystemPriceLimitRate': '系统价格下兜底比例', 'Version': '版本号',
+            'VoucherWXCode': '抵用券微信活动编号', 'VoucherAPPCode': '抵用券APP活动编号',
+            'ReturnWXCode': '后返微信活动编号', 'ReturnAPPCode': '后返APP活动编号',
+            'IsCheckCabinCode': '是否校验与官网同舱', 'AgeSatisfiedNumber': '年龄满足人数',
+            'LimitLogic': '限制逻辑', 'IsExchangeAlone': '订单是否能单改',
+            'Birthday': '年月日限制', 'PassengerSubType': '限制子类型',
+            'AuditMaleNum': '成人男数量', 'AuditFemaleNum': '成人女数量',
+            'IsValid': '是否有效', 'DiscountScenario': '优惠场景',
+            'BirthMonthLimit': '出生月份限制', 'Min': '下限', 'Max': '上限',
+            'Gender': '性别', 'Plat': '订单渠道', 'Data': '数据',
+            'ErrorCode': '错误码', 'ErrorMessage': '错误码描述',
+            'Characteristics': '画像标签', 'ReferenceCabin': '参考舱位',
+            'IsMinorityResource': '是否小众资源', 'RuleAscription': '规则归属',
+            'IsLittleBusinessTrip': '是否参与轻商旅转单', 'SmallResourceCode': '小众资源Code',
+            'MasterRuleId': '主规则Id',
+            'IdentityNoLimit': '是否限定身份证', 'IdentityConfigDetail': '身份证限制详情',
+            'PassengerLimit': '是否限定乘机人', 'PassengerConfigDetail': '乘客限定详情',
+            'IdentityConfig': '身份证配置', 'PassengerConfig': '乘客配置',
+            'AgeRange': '乘客年龄限制', 'AreaRange': '归属省份(身份证前两位/四位)',
+            'GenderLimit': '乘客性别', 'Name': '名称',
+            'PassengerGreatestAllowed': '最多乘客数', 'AdultsLeastAllowed': '最少成人数量',
+            'AdultsMostAllowed': '最大成人人数限制', 'ChildLeastAllowed': '最少儿童数量',
+            'ChildMostAllowed': '最大儿童人数限制', 'ChildFdType': '儿童运价类型',
+            'AuditMaleLeastAllowed': '限制最少成人男', 'AuditMaleMostAllowed': '限制最多成人男',
+            'AuditFemaleLeastAllowed': '限制最少成人女', 'AuditFemaleMostAllowed': '限制最多成人女',
+            'DisclaimerIds': '免责声明IDS',
+            'Value': '值', 'ResourcePortrait': '画像属性'
+        };
+
+        var _fareEnumMaps = {
+            'PassengerType': { 0:'不限制', 1:'成人', 2:'成人+儿童', 3:'成人(可累加儿童)' },
+            'ChildFareType': { 0:'走默认儿童配置', 1:'价格=0', 2:'Y50', 3:'同成人系统价', 4:'同成人FD价' },
+            'ChildFdType': { 0:'走默认儿童配置', 1:'价格=0', 2:'Y50', 3:'同成人' },
+            'Sex': { 0:'不限制', 1:'男', 2:'女' },
+            'GenderLimit': { 0:'不限制', 1:'男', 2:'女' },
+            'Gender': { 0:'不限制', 1:'男', 2:'女' },
+            'PersonnelLimitType': { 0:'不限制', 1:'限制会员本人(将弃用)' },
+            'MakeOrderPassengerType': { 0:'不限制', 7:'需包含下单用户', 8:'权益卡用户' },
+            'MakeOrderUserType': { 0:'不限制', 1:'同程实名认证会员' },
+            'BenefitCardType': { 1:'尾舱权益', 2:'任我飞权益' },
+            'IsRegisteredAirMember': { 0:'不注册', 1:'同步注册', 2:'异步注册' },
+            'SameCabinBaseLine': { 0:'官网运价', 1:'FD' },
+            'NewSameCabinBaseLine': { '0':'普通官网', '1':'FD', '2':'航司旗舰店最低价' },
+            'VoucherType': { 0:'不送抵用券', 1:'接送机券', 2:'酒店券' },
+            'SystemPriceLimitBaseCode': { 1:'基准舱位', 2:'适用舱位' },
+            'LimitLogic': { 0:'不限制', 1:'包含' },
+            'PassengerSubType': { 0:'总数', 1:'按性别分别录入' },
+            'BirthMonthLimit': { 0:'不限制', 1:'同航班月份一致', 2:'同下单月份一致', 3:'同航班月份下单月份都一致' },
+            'IdentityNoLimit': { 0:'不限制', 1:'限制' },
+            'CertificateRestriction': { 0:'不限制', 1:'身份证', 2:'护照', 3:'军官证', 4:'回乡证', 5:'港澳通行证', 6:'台胞证', 7:'出生证', 8:'户口薄', 9:'港澳居民居住证', 10:'台湾居民居住证', 11:'外国人永久居住证', 12:'其他' },
+            'DiscountScenario': { 1:'机场首乘', 2:'挑战赛', 4:'精准定投', 8:'乘机定制专享' },
+            'IsAddPrice': { 0:'否', 1:'是' }, 'IsRefundAlone': { 0:'否', 1:'是' },
+            'IsSaleBaby': { 0:'否', 1:'是' }, 'IsMoreVoucher': { 0:'否', 1:'是' },
+            'IsPremium': { 0:'否', 1:'是' }, 'IsCheckCabinCode': { 0:'否', 1:'是' },
+            'IsExchangeAlone': { 0:'否', 1:'是' }, 'IsAirlineMemberPrice': { 0:'否', 1:'是' },
+            'IsLittleBusinessTrip': { 0:'否', 1:'是' }, 'IsMinorityResource': { 0:'否', 1:'是' },
+            'IsPackageProduct': { 0:'否', 1:'是' }, 'IsValid': { 0:'否', 1:'是' }
+        };
+
+        var _farePortraitLabels = { 1:'航司会员限制', 2:'同程会员限制', 3:'指定人群', 4:'下单人限制', 5:'区域限制', 6:'性别限制', 7:'人数小团', 8:'人数N人起订', 9:'证件限制', 10:'乘机人类型', 11:'年龄限制', 12:'渠道限制', 13:'场景限制', 14:'浏览轨迹', 15:'页面跳转', 16:'退改限制', 17:'加价销售' };
+
+        function _fareGetEnumLabel(key, value) { var map = _fareEnumMaps[key]; if (map && map.hasOwnProperty(value)) return map[value]; return null; }
+        function _fareGetCnLabel(key) { return _fareKeyLabels[key] || ''; }
+        function _fareEscHtml(s) { if (typeof s !== 'string') s = String(s); return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        function _fareEscAttr(s) { if (typeof s !== 'string') s = String(s); return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        var _fareToastTimer = null;
+        function _fareShowToast(msg) { var toast = document.getElementById('copyToast'); toast.textContent = msg; toast.classList.add('show'); if (_fareToastTimer) clearTimeout(_fareToastTimer); _fareToastTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000); }
+        function _fareCopyToClipboard(text, successMsg) { var msg = successMsg || ('已复制: ' + text.substring(0, 80) + (text.length > 80 ? '...' : '')); if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(text).then(function() { _fareShowToast(msg); }).catch(function() { _fareFallbackCopy(text, msg); }); } else { _fareFallbackCopy(text, msg); } }
+        function _fareFallbackCopy(text, msg) { var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); _fareShowToast(msg); } catch(e) { _fareShowToast('复制失败，请手动复制'); } document.body.removeChild(ta); }
+
+        function _buildFarePropNode(data, keyPath, depth) { if (data === null || data === undefined) return _buildFarePropLeaf(keyPath, 'null', depth, 'null'); if (Array.isArray(data)) return _buildFarePropArray(data, keyPath, depth); if (typeof data === 'object') return _buildFarePropObject(data, keyPath, depth); return _buildFarePropLeaf(keyPath, data, depth, typeof data); }
+        function _buildFarePropObject(obj, keyPath, depth) { var keys = Object.keys(obj); if (keys.length === 0) return _buildFarePropLeaf(keyPath, '{}', depth, 'empty'); var depthClass = 'depth-' + Math.min(depth, 5); var indent = depth * 20; var displayName = keyPath ? keyPath.split('.').pop() : ''; var html = '<div class="prop-node">'; html += '<div class="fare-prop-row is-branch ' + depthClass + '" data-key="' + _fareEscAttr(keyPath) + '" data-val="">'; html += '<span class="indent" style="width:' + indent + 'px;"></span>'; html += '<span class="toggle">▶</span>'; if (displayName) html += '<span class="p-key">' + _fareEscHtml(displayName) + '</span><span class="p-colon">:</span>'; html += '<span class="p-brace-open">{</span><span class="p-count">' + keys.length + ' 项</span>'; var cnLabel = _fareGetCnLabel(displayName); if (cnLabel) html += '<span class="p-cn">' + _fareEscHtml(cnLabel) + '</span>'; html += '</div>'; html += '<div class="fare-prop-children">'; for (var i = 0; i < keys.length; i++) { var key = keys[i]; var childPath = keyPath ? (keyPath + '.' + key) : key; var val = obj[key]; if (typeof val === 'object' && val !== null) { html += _buildFarePropNode(val, childPath, depth + 1); } else { html += _buildFarePropLeaf(childPath, val, depth + 1, typeof val); } } html += '</div>'; html += '<div class="fare-prop-close-row" style="display:none;">'; html += '<span class="indent" style="width:' + indent + 'px;"></span>'; html += '<span class="toggle blank">▶</span>'; html += '<span class="p-brace-close">}</span>'; html += '</div></div>'; return html; }
+        function _buildFarePropArray(arr, keyPath, depth) { if (arr.length === 0) return _buildFarePropLeaf(keyPath, '[]', depth, 'empty'); var depthClass = 'depth-' + Math.min(depth, 5); var indent = depth * 20; var displayName = keyPath ? keyPath.split('.').pop() : ''; var html = '<div class="prop-node">'; html += '<div class="fare-prop-row is-branch ' + depthClass + '" data-key="' + _fareEscAttr(keyPath) + '" data-val="">'; html += '<span class="indent" style="width:' + indent + 'px;"></span>'; html += '<span class="toggle">▶</span>'; if (displayName) html += '<span class="p-key">' + _fareEscHtml(displayName) + '</span><span class="p-colon">:</span>'; html += '<span class="p-brace-open">[</span><span class="p-count">' + arr.length + ' 项</span>'; var cnLabel = _fareGetCnLabel(displayName); if (cnLabel) html += '<span class="p-cn">' + _fareEscHtml(cnLabel) + '</span>'; html += '</div>'; html += '<div class="fare-prop-children">'; for (var i = 0; i < arr.length; i++) { var itemPath = keyPath + '[' + i + ']'; var item = arr[i]; if (typeof item === 'object' && item !== null) { html += _buildFarePropNode(item, itemPath, depth + 1); } else { html += _buildFarePropLeaf(itemPath, item, depth + 1, typeof item); } } html += '</div>'; html += '<div class="fare-prop-close-row" style="display:none;">'; html += '<span class="indent" style="width:' + indent + 'px;"></span>'; html += '<span class="toggle blank">▶</span>'; html += '<span class="p-brace-close">]</span>'; html += '</div></div>'; return html; }
+        function _buildFarePropLeaf(keyPath, value, depth, type) { var depthClass = 'depth-' + Math.min(depth, 5); var indent = depth * 20; var displayName = keyPath ? keyPath.split('.').pop() : ''; var valHtml = ''; var valStr = ''; if (value === null || value === undefined) { valHtml = '<span class="p-val-null">null</span>'; valStr = 'null'; } else if (type === 'boolean') { valHtml = '<span class="p-val-bool">' + value + '</span>'; valStr = String(value); } else if (type === 'number') { valHtml = '<span class="p-val-num">' + value + '</span>'; valStr = String(value); } else if (type === 'string') { var display = String(value).length > 200 ? _fareEscHtml(String(value).substring(0, 200)) + '...' : _fareEscHtml(String(value)); valHtml = '<span class="p-val-str">"' + display + '"</span>'; valStr = String(value); } else { valHtml = '<span>' + _fareEscHtml(String(value)) + '</span>'; valStr = String(value); } var enumLabel = ''; if (type === 'number') enumLabel = _fareGetEnumLabel(displayName, value) || ''; if (keyPath && /ResourcePortrait\[\d+\]$/.test(keyPath) && _farePortraitLabels.hasOwnProperty(value)) enumLabel = _farePortraitLabels[value]; var cnLabel = _fareGetCnLabel(displayName); var html = '<div class="prop-node">'; html += '<div class="fare-prop-row is-leaf ' + depthClass + '" data-key="' + _fareEscAttr(keyPath) + '" data-val="' + _fareEscAttr(valStr) + '">'; html += '<span class="indent" style="width:' + indent + 'px;"></span>'; html += '<span class="toggle blank">▶</span>'; html += '<span class="p-key">' + _fareEscHtml(displayName) + '</span><span class="p-colon">:</span>'; html += valHtml; if (cnLabel) html += '<span class="p-cn">' + _fareEscHtml(cnLabel) + '</span>'; if (enumLabel) html += '<span class="p-enum">' + _fareEscHtml(enumLabel) + '</span>'; html += '<span class="p-copy-hint">📋 点击复制</span>'; html += '</div></div>'; return html; }
+
+        function showFareRuleDialog(ruleId) {
+            var type = getFareRuleApiType(ruleId);
+            if (!type) return;
+            var overlay = document.getElementById('fareDialogOverlay');
+            var body = document.getElementById('fareDialogBody');
+            var titleEl = document.getElementById('fareDialogTitle');
+            var ruleIdEl = document.getElementById('fareDialogRuleId');
+            titleEl.textContent = type === 'official' ? '官网运价规则详情' : '运价规则详情';
+            ruleIdEl.textContent = ruleId;
+            body.innerHTML = '<div class="fare-dialog-loading"><div class="spinner"></div><span>正在加载运价规则详情...</span></div>';
+            overlay.classList.add('active');
+            var endpoint = type === 'official' ? '/api/fare-rule/official-detail' : '/api/fare-rule/detail';
+            fetch(endpoint + '?' + envQs(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ruleId: ruleId }) })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    var response = data.data;
+                    if (!response || (typeof response === 'object' && Object.keys(response).length === 0)) { body.innerHTML = '<div class="fare-dialog-empty">无数据</div>'; }
+                    else { body.innerHTML = '<div class="fare-tree-view" id="fareTreeRoot"></div>'; document.getElementById('fareTreeRoot').innerHTML = _buildFarePropNode(response, '', 0); _expandFareTreeAll(); _bindFareTreeClick(); }
+                } else { body.innerHTML = '<div class="fare-dialog-error">' + _fareEscHtml(data.error || '未知错误') + '</div>'; }
+            })
+            .catch(function(err) { body.innerHTML = '<div class="fare-dialog-error">请求失败: ' + _fareEscHtml(err.message) + '</div>'; });
+        }
+        function closeFareRuleDialog() { document.getElementById('fareDialogOverlay').classList.remove('active'); }
+        function closeFareRuleDialogOnOverlay(e) { if (e.target === document.getElementById('fareDialogOverlay')) { closeFareRuleDialog(); } }
+        function _expandFareTreeAll() { var tree = document.getElementById('fareTreeRoot'); if (!tree) return; var allChildren = tree.querySelectorAll('.fare-prop-children'); var allToggles = tree.querySelectorAll('.fare-prop-row.is-branch .toggle'); var allCloseRows = tree.querySelectorAll('.fare-prop-close-row'); for (var i = 0; i < allChildren.length; i++) allChildren[i].classList.add('open'); for (var j = 0; j < allToggles.length; j++) allToggles[j].classList.add('open'); for (var k = 0; k < allCloseRows.length; k++) allCloseRows[k].style.display = ''; }
+        function _bindFareTreeClick() { var treeEl = document.getElementById('fareTreeRoot'); if (!treeEl) return; treeEl.addEventListener('click', function(e) { var row = e.target.closest('.fare-prop-row'); if (!row) return; var node = row.closest('.prop-node'); if (!node) return; if (row.classList.contains('is-branch')) { var children = node.querySelector(':scope > .fare-prop-children'); var toggle = row.querySelector('.toggle'); var closeRow = node.querySelector(':scope > .fare-prop-close-row'); if (!children) return; if (children.classList.contains('open')) { children.classList.remove('open'); if (toggle) toggle.classList.remove('open'); if (closeRow) closeRow.style.display = 'none'; } else { children.classList.add('open'); if (toggle) toggle.classList.add('open'); if (closeRow) closeRow.style.display = ''; } } if (row.classList.contains('is-leaf')) { var key = row.getAttribute('data-key') || ''; var val = row.getAttribute('data-val') || ''; _fareCopyToClipboard(key + ': ' + val); } }); }
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeFareRuleDialog(); } });
 
         // Auto-fill from localStorage (priority) or URL params (fallback)
         window.onload = function() {
