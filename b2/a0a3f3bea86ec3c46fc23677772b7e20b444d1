@@ -1,0 +1,31 @@
+public/b15.html
+  s_11ad577b5905fa::t_63b1c3003fc7dd 95-149
+  s_11ad577b5905fa::t_69ba2a58535574 216
+  s_11ad577b5905fa::t_818ce24319ac39 381-382
+  s_11ad577b5905fa::t_0a388872e1ce42 531-663
+  s_11ad577b5905fa::t_1f598f57a9eecc 193-214
+public/b15-standard.html
+  s_11ad577b5905fa::t_b677dea14daee3 629
+  s_11ad577b5905fa::t_9b6a6053a5c304 168-221
+  s_11ad577b5905fa::t_42ff205fe63765 628,630
+  s_11ad577b5905fa::t_4060b705a8e162 324-345,347
+  s_11ad577b5905fa::t_9ff0bde0dbf942 1189-1527
+public/index.html
+  s_11ad577b5905fa::t_2ba8f78ffc3df6 453
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "b2a0a3f3bea86ec3c46fc23677772b7e20b444d1",
+  "prompts": {},
+  "sessions": {
+    "s_11ad577b5905fa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_1452dabe7ffeeCMzDWJReoau0j",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
