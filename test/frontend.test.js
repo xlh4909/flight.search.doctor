@@ -6,6 +6,8 @@ const {
     extractRouteServicesLabels, compareRouteServices, computeGlobalLowestPrice
 } = require('../public/js/logic');
 
+const { getFareRuleApiType } = require('../public/js/fare-rule-helpers');
+
 describe('normalizeDate', () => {
     it('converts yyyyMMdd int', () => expect(normalizeDate(20260613)).toBe('2026-06-13'));
     it('converts yyyyMMdd string', () => expect(normalizeDate('20260613')).toBe('2026-06-13'));
@@ -276,5 +278,35 @@ describe('generateB15Json', () => {
         expect(result.arrivalAirportCode).toBe('CGQ');
         expect(result.departureCityCode).toBe('SHA');
         expect(result.arrivalCityCode).toBe('CGQ');
+    });
+});
+
+describe('getFareRuleApiType', () => {
+    it('returns "detail" for CFR prefix', () => {
+        expect(getFareRuleApiType('CFR106636')).toBe('detail');
+    });
+    it('returns "detail" for FR prefix', () => {
+        expect(getFareRuleApiType('FR12345')).toBe('detail');
+    });
+    it('returns "detail" for OFR prefix', () => {
+        expect(getFareRuleApiType('OFR78901')).toBe('detail');
+    });
+    it('returns "official" for IFR prefix', () => {
+        expect(getFareRuleApiType('IFR106636')).toBe('official');
+    });
+    it('returns null for empty string', () => {
+        expect(getFareRuleApiType('')).toBeNull();
+    });
+    it('returns null for "00000"', () => {
+        expect(getFareRuleApiType('00000')).toBeNull();
+    });
+    it('returns null for unknown prefix', () => {
+        expect(getFareRuleApiType('OTHER123')).toBeNull();
+    });
+    it('returns null for null input', () => {
+        expect(getFareRuleApiType(null)).toBeNull();
+    });
+    it('returns null for undefined input', () => {
+        expect(getFareRuleApiType(undefined)).toBeNull();
     });
 });

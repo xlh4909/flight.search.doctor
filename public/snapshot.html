@@ -153,6 +153,24 @@
         .history-bar .history-restore:hover { background: #004d40; }
 
         .empty-result { text-align: center; padding: 30px; color: #999; font-size: 14px; }
+
+        /* ── Fare Rule Detail Dialog ── */
+        .fare-dialog-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
+        .fare-dialog-overlay.active { display: flex; }
+        .fare-dialog { background: white; border-radius: 10px; width: 90%; max-width: 900px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+        .fare-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #e0e0e0; background: linear-gradient(135deg, #00695c, #004d40); border-radius: 10px 10px 0 0; }
+        .fare-dialog-title { font-size: 16px; font-weight: 600; color: white; }
+        .fare-dialog-rule-id { font-size: 13px; color: rgba(255,255,255,0.8); margin-left: 12px; font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace; }
+        .fare-dialog-close { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 6px; width: 32px; height: 32px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .fare-dialog-close:hover { background: rgba(255,255,255,0.3); }
+        .fare-dialog-body { flex: 1; overflow: auto; padding: 16px 20px; }
+        .fare-dialog-loading { display: flex; align-items: center; justify-content: center; padding: 60px 0; gap: 12px; color: #00695c; font-size: 14px; }
+        .fare-dialog-error { background: #ffebee; border: 1px solid #ef9a9a; border-radius: 8px; padding: 16px 20px; color: #c62828; font-size: 14px; }
+        .fare-dialog-empty { text-align: center; padding: 40px 0; color: #999; font-size: 14px; }
+
+        /* ruleId clickable style */
+        .p-val-str.is-rule-id { color: #1565c0; text-decoration: underline; cursor: pointer; font-weight: 600; }
+        .p-val-str.is-rule-id:hover { color: #0d47a1; }
     </style>
 </head>
 <body>
@@ -216,7 +234,27 @@
     <!-- Toast for copy feedback -->
     <div class="copy-toast" id="copyToast"></div>
 
+    <!-- Fare Rule Detail Dialog -->
+    <div class="fare-dialog-overlay" id="fareDialogOverlay" onclick="closeFareRuleDialogOnOverlay(event)">
+        <div class="fare-dialog">
+            <div class="fare-dialog-header">
+                <div style="display:flex;align-items:center;">
+                    <span class="fare-dialog-title" id="fareDialogTitle">运价规则详情</span>
+                    <span class="fare-dialog-rule-id" id="fareDialogRuleId"></span>
+                </div>
+                <button class="fare-dialog-close" onclick="closeFareRuleDialog()">✕</button>
+            </div>
+            <div class="fare-dialog-body" id="fareDialogBody">
+                <div class="fare-dialog-loading" id="fareDialogLoading">
+                    <div class="spinner"></div>
+                    <span>正在加载运价规则详情...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="/navbar.js"></script>
+    <script src="/js/fare-rule-helpers.js"></script>
     <script>
         var _rawDetail = null;
         var _genTimeData = null;
@@ -232,17 +270,122 @@
             'flight': '航班+舱位信息', 'train': '火车信息',
             'cityTraffics': '市内交通', 'code': '返回码',
             'Code': '返回码', 'Channel': '渠道', 'Source': '场景',
-            'BatchId': '资源标识', 'BatchCount': '组合资源个数'
+            'BatchId': '资源标识', 'BatchCount': '组合资源个数',
+            // 运价规则详情 (FareRuleDetail)
+            'RuleId': '规则Id', 'Remark': '辅助名称', 'FBC': '运价基础码',
+            'Pat': '成人特殊指令', 'ChildPat': '儿童特殊指令',
+            'PassengerType': '乘机人类型', 'AuditNum': '乘机人数量(成人)',
+            'ChildNum': '乘机人数量(儿童)', 'ChildFareType': '儿童运价类型',
+            'IsChildAdultSamePnr': '儿童是否与成人同编码', 'IsRefundAlone': '订单是否能单退',
+            'IsSaleBaby': '婴儿是否可售', 'Age': '年龄限制', 'CertNo': '身份证(区域限制)',
+            'Sex': '性别', 'PersonnelLimitType': '人员限制',
+            'MakeOrderPassengerType': '下单乘机人限制', 'MakeOrderUserType': '下单用户限制',
+            'BenefitCardType': '权益卡类型', 'BenefitCardCode': '权益卡Code',
+            'IsRegisteredAirMember': '是否注册航司会员', 'IsAirlineMemberPrice': '是否航司会员价',
+            'IsAddPrice': '是否加价', 'AddPriceAmount': '加价金额',
+            'VoucherType': '抵用券类型', 'VoucherAmount': '抵用券面额',
+            'VoucherId': '包Id', 'ReturnAmount': '返现金金额',
+            'ReturnRedAmount': '返红包金额', 'ReturnRedPercent': '返红包比例',
+            'TagRuleId': '标签规则Id', 'IsMoreVoucher': '是否赠送多张券',
+            'CertificatesLimit': '是否限制证件(已弃用)', 'SameCabinBaseLine': '官网兜底基准',
+            'CertificateRestriction': '证件限制', 'AvaliableStartTime': '适用开始时刻',
+            'AvaliableEndTime': '适用结束时刻', 'IsPackageProduct': '是否适用打包产品',
+            'DepStartTime': '起飞开始日期', 'DepEndTime': '起飞结束日期',
+            'EarliestDaysAhead': '最早提前天数', 'LatestDaysAhead': '最晚提前天数',
+            'IsPremium': '是否溢价', 'DesignatedMember': '指定会员专享',
+            'MemberSegment': '指定会员标签', 'DesignatedMemberRelation': '指定会员关系',
+            'NewSameCabinBaseLine': '官网兜底基准(新)', 'SystemPriceLimitBaseCode': '系统价下限兜底基准',
+            'SystemPriceLimitRate': '系统价格下兜底比例', 'Version': '版本号',
+            'VoucherWXCode': '抵用券微信活动编号', 'VoucherAPPCode': '抵用券APP活动编号',
+            'ReturnWXCode': '后返微信活动编号', 'ReturnAPPCode': '后返APP活动编号',
+            'IsCheckCabinCode': '是否校验与官网同舱', 'AgeSatisfiedNumber': '年龄满足人数',
+            'LimitLogic': '限制逻辑', 'IsExchangeAlone': '订单是否能单改',
+            'Birthday': '年月日限制', 'PassengerSubType': '限制子类型',
+            'AuditMaleNum': '成人男数量', 'AuditFemaleNum': '成人女数量',
+            'IsValid': '是否有效', 'DiscountScenario': '优惠场景',
+            'BirthMonthLimit': '出生月份限制', 'Min': '下限', 'Max': '上限',
+            'Gender': '性别', 'Plat': '订单渠道', 'Data': '数据',
+            'ErrorCode': '错误码', 'ErrorMessage': '错误码描述',
+            'Characteristics': '画像标签', 'ReferenceCabin': '参考舱位',
+            'IsMinorityResource': '是否小众资源', 'RuleAscription': '规则归属',
+            'IsLittleBusinessTrip': '是否参与轻商旅转单', 'SmallResourceCode': '小众资源Code',
+            'MasterRuleId': '主规则Id',
+            // 官网运价规则详情 (InterfaceResourceConfigShortDetail)
+            'IdentityNoLimit': '是否限定身份证', 'IdentityConfigDetail': '身份证限制详情',
+            'PassengerLimit': '是否限定乘机人', 'PassengerConfigDetail': '乘客限定详情',
+            'IdentityConfig': '身份证配置', 'PassengerConfig': '乘客配置',
+            'AgeRange': '乘客年龄限制', 'AreaRange': '归属省份(身份证前两位/四位)',
+            'GenderLimit': '乘客性别', 'Name': '名称',
+            'PassengerGreatestAllowed': '最多乘客数', 'AdultsLeastAllowed': '最少成人数量',
+            'AdultsMostAllowed': '最大成人人数限制', 'ChildLeastAllowed': '最少儿童数量',
+            'ChildMostAllowed': '最大儿童人数限制', 'ChildFdType': '儿童运价类型',
+            'AuditMaleLeastAllowed': '限制最少成人男', 'AuditMaleMostAllowed': '限制最多成人男',
+            'AuditFemaleLeastAllowed': '限制最少成人女', 'AuditFemaleMostAllowed': '限制最多成人女',
+            'IsRefundAlone': '订单是否可单独退改', 'DisclaimerIds': '免责声明IDS',
+            'Value': '值', 'ResourcePortrait': '画像属性'
         };
 
         var TRIP_TYPE_LABELS = { 0:'未知', 1:'单程', 2:'往返', 3:'联程', 4:'多程' };
         var SUB_TRIP_TYPE_LABELS = { 0:'单程', 1:'假往返', 2:'假联程', 3:'真往返', 4:'真联程', 5:'往返空空', 6:'空铁', 7:'多程-单程', 8:'多程-真联程', 9:'多程-真缺口程' };
         var SOURCE_LABELS = { 0:'单程book1.5', 1:'假联程', 101:'真联程官网', 102:'真联程政策', 5:'假联程book1.5', 11:'真往返', 12:'假往返', 115:'空铁1.5' };
 
+        // 运价规则详情枚举
+        var PASSENGER_TYPE_LABELS = { 0:'不限制', 1:'成人', 2:'成人+儿童', 3:'成人(可累加儿童)' };
+        var CHILD_FARE_TYPE_LABELS = { 0:'走默认儿童配置', 1:'价格=0', 2:'Y50', 3:'同成人系统价', 4:'同成人FD价' };
+        var SEX_LABELS = { 0:'不限制', 1:'男', 2:'女' };
+        var PERSONNEL_LIMIT_TYPE_LABELS = { 0:'不限制', 1:'限制会员本人(将弃用)' };
+        var MAKE_ORDER_PASSENGER_TYPE_LABELS = { 0:'不限制', 7:'需包含下单用户', 8:'权益卡用户' };
+        var MAKE_ORDER_USER_TYPE_LABELS = { 0:'不限制', 1:'同程实名认证会员' };
+        var BENEFIT_CARD_TYPE_LABELS = { 1:'尾舱权益', 2:'任我飞权益' };
+        var YES_NO_LABELS = { 0:'否', 1:'是' };
+        var IS_REGISTERED_AIR_MEMBER_LABELS = { 0:'不注册', 1:'同步注册', 2:'异步注册' };
+        var VOUCHER_TYPE_LABELS = { 0:'不送抵用券', 1:'接送机券', 2:'酒店券' };
+        var SAME_CABIN_BASE_LINE_LABELS = { 0:'官网运价', 1:'FD' };
+        var NEW_SAME_CABIN_BASE_LINE_LABELS = { '0':'普通官网', '1':'FD', '2':'航司旗舰店最低价' };
+        var CERTIFICATE_RESTRICTION_LABELS = { 0:'不限制', 1:'身份证', 2:'护照', 3:'军官证', 4:'回乡证', 5:'港澳通行证', 6:'台胞证', 7:'出生证', 8:'户口薄', 9:'港澳居民居住证', 10:'台湾居民居住证', 11:'外国人永久居住证', 12:'其他' };
+        var LIMIT_LOGIC_LABELS = { 0:'不限制', 1:'包含' };
+        var PASSENGER_SUB_TYPE_LABELS = { 0:'总数', 1:'按性别分别录入' };
+        var DISCOUNT_SCENARIO_LABELS = { 1:'机场首乘', 2:'挑战赛', 4:'精准定投', 8:'乘机定制专享' };
+        var BIRTH_MONTH_LIMIT_LABELS = { 0:'不限制', 1:'同航班月份一致', 2:'同下单月份一致', 3:'同航班月份下单月份都一致' };
+        var SYSTEM_PRICE_LIMIT_BASE_CODE_LABELS = { 1:'基准舱位', 2:'适用舱位' };
+        // 官网运价规则详情额外枚举
+        var IDENTITY_NO_LIMIT_LABELS = { 0:'不限制', 1:'限制' };
+        var CHILD_FD_TYPE_LABELS = { 0:'走默认儿童配置', 1:'价格=0', 2:'Y50', 3:'同成人' };
+        // 画像属性 ResourcePortrait 枚举 (来自Excel)
+        var RESOURCE_PORTRAIT_LABELS = { 1:'航司会员限制', 2:'同程会员限制', 3:'指定人群', 4:'下单人限制', 5:'区域限制', 6:'性别限制', 7:'人数小团', 8:'人数N人起订', 9:'证件限制', 10:'乘机人类型/年龄限制', 12:'渠道限制', 13:'场景限制', 14:'浏览轨迹', 15:'页面跳转', 16:'退改限制', 17:'加价销售' };
+
         function getEnumLabel(key, value) {
             if (key === 'TripType' && TRIP_TYPE_LABELS.hasOwnProperty(value)) return TRIP_TYPE_LABELS[value];
             if (key === 'SubTripType' && SUB_TRIP_TYPE_LABELS.hasOwnProperty(value)) return SUB_TRIP_TYPE_LABELS[value];
             if ((key === 'source' || key === 'Source') && SOURCE_LABELS.hasOwnProperty(value)) return SOURCE_LABELS[value];
+            // 运价规则详情枚举
+            if (key === 'PassengerType' && PASSENGER_TYPE_LABELS.hasOwnProperty(value)) return PASSENGER_TYPE_LABELS[value];
+            if (key === 'ChildFareType' && CHILD_FARE_TYPE_LABELS.hasOwnProperty(value)) return CHILD_FARE_TYPE_LABELS[value];
+            if (key === 'ChildFdType' && CHILD_FD_TYPE_LABELS.hasOwnProperty(value)) return CHILD_FD_TYPE_LABELS[value];
+            if ((key === 'Sex' || key === 'GenderLimit' || key === 'Gender') && SEX_LABELS.hasOwnProperty(value)) return SEX_LABELS[value];
+            if (key === 'PersonnelLimitType' && PERSONNEL_LIMIT_TYPE_LABELS.hasOwnProperty(value)) return PERSONNEL_LIMIT_TYPE_LABELS[value];
+            if (key === 'MakeOrderPassengerType' && MAKE_ORDER_PASSENGER_TYPE_LABELS.hasOwnProperty(value)) return MAKE_ORDER_PASSENGER_TYPE_LABELS[value];
+            if (key === 'MakeOrderUserType' && MAKE_ORDER_USER_TYPE_LABELS.hasOwnProperty(value)) return MAKE_ORDER_USER_TYPE_LABELS[value];
+            if (key === 'BenefitCardType' && BENEFIT_CARD_TYPE_LABELS.hasOwnProperty(value)) return BENEFIT_CARD_TYPE_LABELS[value];
+            if (key === 'IsRegisteredAirMember' && IS_REGISTERED_AIR_MEMBER_LABELS.hasOwnProperty(value)) return IS_REGISTERED_AIR_MEMBER_LABELS[value];
+            if (key === 'SameCabinBaseLine' && SAME_CABIN_BASE_LINE_LABELS.hasOwnProperty(value)) return SAME_CABIN_BASE_LINE_LABELS[value];
+            if (key === 'NewSameCabinBaseLine' && NEW_SAME_CABIN_BASE_LINE_LABELS.hasOwnProperty(value)) return NEW_SAME_CABIN_BASE_LINE_LABELS[value];
+            if (key === 'VoucherType' && VOUCHER_TYPE_LABELS.hasOwnProperty(value)) return VOUCHER_TYPE_LABELS[value];
+            if (key === 'SystemPriceLimitBaseCode' && SYSTEM_PRICE_LIMIT_BASE_CODE_LABELS.hasOwnProperty(value)) return SYSTEM_PRICE_LIMIT_BASE_CODE_LABELS[value];
+            if (key === 'LimitLogic' && LIMIT_LOGIC_LABELS.hasOwnProperty(value)) return LIMIT_LOGIC_LABELS[value];
+            if (key === 'PassengerSubType' && PASSENGER_SUB_TYPE_LABELS.hasOwnProperty(value)) return PASSENGER_SUB_TYPE_LABELS[value];
+            if (key === 'BirthMonthLimit' && BIRTH_MONTH_LIMIT_LABELS.hasOwnProperty(value)) return BIRTH_MONTH_LIMIT_LABELS[value];
+            if (key === 'IdentityNoLimit' && IDENTITY_NO_LIMIT_LABELS.hasOwnProperty(value)) return IDENTITY_NO_LIMIT_LABELS[value];
+            if (key === 'CertificateRestriction' && CERTIFICATE_RESTRICTION_LABELS.hasOwnProperty(value)) return CERTIFICATE_RESTRICTION_LABELS[value];
+            if (key === 'DiscountScenario' && DISCOUNT_SCENARIO_LABELS.hasOwnProperty(value)) return DISCOUNT_SCENARIO_LABELS[value];
+            // Yes/No int fields
+            var yesNoFields = ['IsAddPrice','IsRefundAlone','IsSaleBaby','IsMoreVoucher','IsPremium','IsCheckCabinCode','IsExchangeAlone','IsAirlineMemberPrice','IsLittleBusinessTrip','IsMinorityResource','IsPackageProduct','IsValid'];
+            if (yesNoFields.indexOf(key) !== -1 && YES_NO_LABELS.hasOwnProperty(value)) return YES_NO_LABELS[value];
+            // 画像属性 ResourcePortrait
+            if (key === 'Value' || key === 'value') {
+                // Check if parent context is ResourcePortrait/Characteristics
+                // We handle this via the Characteristics array's Value field
+            }
             return null;
         }
 
@@ -380,6 +523,17 @@
             var treeEl = document.getElementById('treeRoot');
             treeEl.innerHTML = buildPropNode(rootData, '', 0);
 
+            // Default: expand all nodes
+            _treeExpanded = true;
+            var allChildren = treeEl.querySelectorAll('.prop-children');
+            var allToggles = treeEl.querySelectorAll('.prop-row.is-branch .toggle');
+            var allCloseRows = treeEl.querySelectorAll('.prop-close-row');
+            for (var ci = 0; ci < allChildren.length; ci++) allChildren[ci].classList.add('open');
+            for (var cj = 0; cj < allToggles.length; cj++) allToggles[cj].classList.add('open');
+            for (var ck = 0; ck < allCloseRows.length; ck++) allCloseRows[ck].style.display = '';
+            var toggleAllBtn = document.getElementById('toggleAllBtn');
+            if (toggleAllBtn) { toggleAllBtn.classList.add('is-expanded'); toggleAllBtn.innerHTML = '<span id="toggleAllIcon">▼</span> 折叠全部'; }
+
             // Event delegation
             treeEl.addEventListener('click', function(e) {
                 var row = e.target.closest('.prop-row');
@@ -404,8 +558,16 @@
                     }
                 }
 
-                // If leaf node — copy key + value
+                // If leaf node — check for ruleId first, then copy key + value
                 if (row.classList.contains('is-leaf')) {
+                    var ruleIdSpan = row.querySelector('.is-rule-id');
+                    if (ruleIdSpan) {
+                        var ruleIdVal = ruleIdSpan.getAttribute('data-rule-id') || '';
+                        if (ruleIdVal && ruleIdVal !== '00000') {
+                            showFareRuleDialog(ruleIdVal);
+                            return;
+                        }
+                    }
                     var key = row.getAttribute('data-key') || '';
                     var val = row.getAttribute('data-val') || '';
                     var copyText = key + ': ' + val;
@@ -519,6 +681,8 @@
             return html;
         }
 
+        var _suppressRuleIdClick = false;
+
         function buildPropLeaf(keyPath, value, depth, type) {
             var depthClass = 'depth-' + Math.min(depth, 6);
             var indent = depth * 20;
@@ -553,17 +717,31 @@
             if (type === 'number') {
                 enumLabel = getEnumLabel(displayName, value) || '';
             }
+            // ResourcePortrait / Characteristics 画像类型枚举
+            if (displayName === 'Value' && keyPath && /Characteristics\[\d+\]\.Value$/.test(keyPath) && RESOURCE_PORTRAIT_LABELS.hasOwnProperty(value)) {
+                enumLabel = RESOURCE_PORTRAIT_LABELS[value];
+            }
             var cnLabel = getCnLabel(displayName);
+
+            var isRuleId = !_suppressRuleIdClick && (displayName === 'ruleId' || displayName === 'RuleId' || displayName === 'RuleCode' || displayName === 'ruleCode');
 
             var html = '<div class="prop-node">';
             html += '<div class="prop-row is-leaf ' + depthClass + '" data-key="' + escAttr(keyPath) + '" data-val="' + escAttr(valStr) + '">';
             html += '<span class="indent" style="width:' + indent + 'px;"></span>';
             html += '<span class="toggle blank">▶</span>';
             html += '<span class="p-key">' + escHtml(displayName) + '</span><span class="p-colon">:</span>';
-            html += valHtml;
+            if (isRuleId && type === 'string' && value && value !== '00000') {
+                html += '<span class="p-val-str is-rule-id" data-rule-id="' + escAttr(valStr) + '">"' + display + '"</span>';
+            } else {
+                html += valHtml;
+            }
             if (cnLabel) html += '<span class="p-cn">' + escHtml(cnLabel) + '</span>';
             if (enumLabel) html += '<span class="p-enum">' + escHtml(enumLabel) + '</span>';
-            html += '<span class="p-copy-hint">📋 点击复制</span>';
+            if (!isRuleId || !value || value === '00000') {
+                html += '<span class="p-copy-hint">📋 点击复制</span>';
+            } else {
+                html += '<span class="p-copy-hint">🔍 点击查看详情</span>';
+            }
             html += '</div></div>';
             return html;
         }
@@ -752,6 +930,108 @@
         }
 
         // ═══════════════════════════════════════
+        //  FARE RULE DIALOG
+        // ═══════════════════════════════════════
+
+        function showFareRuleDialog(ruleId) {
+            var type = getFareRuleApiType(ruleId);
+            if (!type) return;
+
+            var overlay = document.getElementById('fareDialogOverlay');
+            var body = document.getElementById('fareDialogBody');
+            var titleEl = document.getElementById('fareDialogTitle');
+            var ruleIdEl = document.getElementById('fareDialogRuleId');
+
+            titleEl.textContent = type === 'official' ? '官网运价规则详情' : '运价规则详情';
+            ruleIdEl.textContent = ruleId;
+            body.innerHTML = '<div class="fare-dialog-loading"><div class="spinner"></div><span>正在加载运价规则详情...</span></div>';
+            overlay.classList.add('active');
+
+            var endpoint = type === 'official' ? '/api/fare-rule/official-detail' : '/api/fare-rule/detail';
+
+            fetch(endpoint + '?' + envQs(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ruleId: ruleId })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    var response = data.data;
+                    if (!response || (typeof response === 'object' && Object.keys(response).length === 0)) {
+                        body.innerHTML = '<div class="fare-dialog-empty">无数据</div>';
+                    } else {
+                        body.innerHTML = '<div class="tree-view" id="fareTreeRoot"></div>';
+                        _suppressRuleIdClick = true;
+                        document.getElementById('fareTreeRoot').innerHTML = buildPropNode(response, '', 0);
+                        _suppressRuleIdClick = false;
+                        expandFareTreeAll();
+                        bindFareTreeClick();
+                    }
+                } else {
+                    body.innerHTML = '<div class="fare-dialog-error">' + escHtml(data.error || '未知错误') + '</div>';
+                }
+            })
+            .catch(function(err) {
+                body.innerHTML = '<div class="fare-dialog-error">请求失败: ' + escHtml(err.message) + '</div>';
+            });
+        }
+
+        function closeFareRuleDialog() {
+            document.getElementById('fareDialogOverlay').classList.remove('active');
+        }
+
+        function closeFareRuleDialogOnOverlay(e) {
+            if (e.target === document.getElementById('fareDialogOverlay')) {
+                closeFareRuleDialog();
+            }
+        }
+
+        function expandFareTreeAll() {
+            var tree = document.getElementById('fareTreeRoot');
+            if (!tree) return;
+            var allChildren = tree.querySelectorAll('.prop-children');
+            var allToggles = tree.querySelectorAll('.prop-row.is-branch .toggle');
+            var allCloseRows = tree.querySelectorAll('.prop-close-row');
+            for (var i = 0; i < allChildren.length; i++) allChildren[i].classList.add('open');
+            for (var j = 0; j < allToggles.length; j++) allToggles[j].classList.add('open');
+            for (var k = 0; k < allCloseRows.length; k++) allCloseRows[k].style.display = '';
+        }
+
+        function bindFareTreeClick() {
+            var treeEl = document.getElementById('fareTreeRoot');
+            if (!treeEl) return;
+            treeEl.addEventListener('click', function(e) {
+                var row = e.target.closest('.prop-row');
+                if (!row) return;
+                var node = row.closest('.prop-node');
+                if (!node) return;
+
+                if (row.classList.contains('is-branch')) {
+                    var children = node.querySelector(':scope > .prop-children');
+                    var toggle = row.querySelector('.toggle');
+                    var closeRow = node.querySelector(':scope > .prop-close-row');
+                    if (!children) return;
+                    if (children.classList.contains('open')) {
+                        children.classList.remove('open');
+                        if (toggle) toggle.classList.remove('open');
+                        if (closeRow) closeRow.style.display = 'none';
+                    } else {
+                        children.classList.add('open');
+                        if (toggle) toggle.classList.add('open');
+                        if (closeRow) closeRow.style.display = '';
+                    }
+                }
+
+                if (row.classList.contains('is-leaf')) {
+                    var key = row.getAttribute('data-key') || '';
+                    var val = row.getAttribute('data-val') || '';
+                    copyToClipboard(key + ': ' + val);
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════
         //  HELPERS
         // ═══════════════════════════════════════
 
@@ -817,6 +1097,9 @@
                     if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
                 });
             }
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') { closeFareRuleDialog(); }
+            });
         });
     </script>
 </body>
