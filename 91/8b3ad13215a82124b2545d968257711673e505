@@ -1,0 +1,51 @@
+test/fare-rule.test.js
+  s_a04eee0099c888::t_e8bd0eb7fcc345 1-169
+server.js
+  s_a04eee0099c888::t_710edb6a0d9cc9 23
+routes/fare-rule.js
+  s_a04eee0099c888::t_7b1fa68e1e88f3 1-65
+public/snapshot.html
+  s_a04eee0099c888::t_aad4b02372cf0b 379-380
+  s_a04eee0099c888::t_27a0152c2bd7a7 237-255
+  s_a04eee0099c888::t_e14e92541d2307 257
+  s_a04eee0099c888::t_0e84cb08a87171 156-173
+  s_a04eee0099c888::t_6bb810c0cc72f8 720-723
+  s_a04eee0099c888::t_26a4a66245764e 684-685
+  s_a04eee0099c888::t_819fdfeb5bb1aa 727,733-737,740-744
+  s_a04eee0099c888::t_beb13f71c14b7d 1001-1033
+  s_a04eee0099c888::t_40e5ad7f0ffea5 933-964,966,970-989
+  s_a04eee0099c888::t_49305e0da4c5a6 726
+  s_a04eee0099c888::t_93be8d96a1053f 968
+  s_a04eee0099c888::t_76ab59450c7239 990-1000
+  s_a04eee0099c888::t_47fd766de9f3ff 526-536
+  s_a04eee0099c888::t_c4e5568f4030b3 1100-1102
+  s_a04eee0099c888::t_1893333680f538 332-356,361-378,381-388
+  s_a04eee0099c888::t_ba5758602006b8 965,967
+  s_a04eee0099c888::t_e80371b62c8d9f 969
+  s_a04eee0099c888::t_2f97fb52084797 561,563-570
+  s_a04eee0099c888::t_f041d545f7098e 273-325
+public/js/fare-rule-helpers.js
+  s_a04eee0099c888::t_5770c663e58e97 1-16
+config.js
+  s_a04eee0099c888::t_042a58183a9df1 100-108
+  s_a04eee0099c888::t_a1ee6a6880f720 115
+test/frontend.test.js
+  s_a04eee0099c888::t_d202b8265454c4 283-312
+  s_a04eee0099c888::t_ee726a3ebf21c5 9-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "918b3ad13215a82124b2545d968257711673e505",
+  "prompts": {},
+  "sessions": {
+    "s_a04eee0099c888": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_1499a122cffeD004WBWgZ0As29",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
