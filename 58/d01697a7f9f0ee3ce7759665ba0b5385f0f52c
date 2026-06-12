@@ -1,0 +1,19 @@
+public/snapshot.html
+  s_3fb20606322233::t_05dda412b81753 355
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "58d01697a7f9f0ee3ce7759665ba0b5385f0f52c",
+  "prompts": {},
+  "sessions": {
+    "s_3fb20606322233": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_1459a1b95ffeJ961QEdYw9Ra3g",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
