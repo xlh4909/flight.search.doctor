@@ -717,8 +717,8 @@
             if (type === 'number') {
                 enumLabel = getEnumLabel(displayName, value) || '';
             }
-            // ResourcePortrait / Characteristics 画像类型枚举
-            if (displayName === 'Value' && keyPath && /Characteristics\[\d+\]\.Value$/.test(keyPath) && RESOURCE_PORTRAIT_LABELS.hasOwnProperty(value)) {
+            // ResourcePortrait 画像属性枚举 - 数组元素直接匹配
+            if (keyPath && /ResourcePortrait\[\d+\]$/.test(keyPath) && RESOURCE_PORTRAIT_LABELS.hasOwnProperty(value)) {
                 enumLabel = RESOURCE_PORTRAIT_LABELS[value];
             }
             var cnLabel = getCnLabel(displayName);
