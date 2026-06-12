@@ -352,7 +352,7 @@
         var IDENTITY_NO_LIMIT_LABELS = { 0:'不限制', 1:'限制' };
         var CHILD_FD_TYPE_LABELS = { 0:'走默认儿童配置', 1:'价格=0', 2:'Y50', 3:'同成人' };
         // 画像属性 ResourcePortrait 枚举 (来自Excel)
-        var RESOURCE_PORTRAIT_LABELS = { 1:'航司会员限制', 2:'同程会员限制', 3:'指定人群', 4:'下单人限制', 5:'区域限制', 6:'性别限制', 7:'人数小团', 8:'人数N人起订', 9:'证件限制', 10:'乘机人类型/年龄限制', 12:'渠道限制', 13:'场景限制', 14:'浏览轨迹', 15:'页面跳转', 16:'退改限制', 17:'加价销售' };
+        var RESOURCE_PORTRAIT_LABELS = { 1:'航司会员限制', 2:'同程会员限制', 3:'指定人群', 4:'下单人限制', 5:'区域限制', 6:'性别限制', 7:'人数小团', 8:'人数N人起订', 9:'证件限制', 10:'乘机人类型', 11:'年龄限制', 12:'渠道限制', 13:'场景限制', 14:'浏览轨迹', 15:'页面跳转', 16:'退改限制', 17:'加价销售' };
 
         function getEnumLabel(key, value) {
             if (key === 'TripType' && TRIP_TYPE_LABELS.hasOwnProperty(value)) return TRIP_TYPE_LABELS[value];
