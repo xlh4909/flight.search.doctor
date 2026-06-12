@@ -1,0 +1,24 @@
+public/snapshot.html
+  s_3fb20606322233::t_5771dcf9998f19 720-721
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "d1870d041cb16f9df58f53ee9b352ba512cf1820",
+  "prompts": {},
+  "humans": {
+    "h_b87a5939e91b97": {
+      "author": "夏礼华 <xlh4909@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_3fb20606322233": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_1459a1b95ffeJ961QEdYw9Ra3g",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
