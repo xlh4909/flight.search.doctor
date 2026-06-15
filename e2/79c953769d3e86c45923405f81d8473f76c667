@@ -1,0 +1,29 @@
+electron/preload.js
+  s_8107d16380c848::t_08b497ead5cf29 1-7
+package.json
+  s_8107d16380c848::t_3512cc2f96d406 5,8-11,18-19,22-29
+electron-builder.yml
+  s_8107d16380c848::t_3576c23f11743b 1-25,27-28,30,33-43
+  s_8107d16380c848::t_7519230489f6e4 26,29,32
+  s_8107d16380c848::t_e834bce0d07e61 31
+electron/main.js
+  s_8107d16380c848::t_8e0261526ee2e6 1-77
+.gitignore
+  s_8107d16380c848::t_71d9ae37160694 18-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "e279c953769d3e86c45923405f81d8473f76c667",
+  "prompts": {},
+  "sessions": {
+    "s_8107d16380c848": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_144e25a4fffe0fXjTg1YbmfjHa",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
