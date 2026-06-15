@@ -2,16 +2,30 @@
   "name": "doctor",
   "version": "1.0.0",
   "description": "Transit flight scheme comparison diagnostic tool",
+  "main": "electron/main.js",
   "scripts": {
     "start": "node server.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "electron:dev": "electron .",
+    "electron:build": "electron-builder",
+    "electron:build:mac": "electron-builder --mac"
   },
   "dependencies": {
     "axios": "^1.7.0",
     "express": "^4.21.0"
   },
   "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.0",
     "supertest": "^7.2.2",
     "vitest": "^2.0.0"
+  },
+  "build": {
+    "extends": null,
+    "appId": "com.doctor.flight-search",
+    "productName": "联程航班诊断工具",
+    "directories": {
+      "output": "dist"
+    }
   }
 }

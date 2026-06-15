@@ -1,0 +1,43 @@
+appId: com.doctor.flight-search
+productName: 联程航班诊断工具
+copyright: Copyright © 2024
+
+directories:
+  output: dist
+  buildResources: electron/resources
+
+files:
+  - server.js
+  - config.js
+  - utils.js
+  - routes/**/*
+  - public/**/*
+  - electron/**/*
+  - package.json
+  - node_modules/**/*
+
+extraMetadata:
+  main: electron/main.js
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+    - target: zip
+      arch:
+        - x64
+  category: public.app-category.developer-tools
+  icon: electron/resources/icon.icns
+  artifactName: "${productName}-${version}-mac-x64.${ext}"
+
+dmg:
+  title: "${productName} ${version}"
+  artifactName: "${productName}-${version}-mac.${ext}"
+
+linux:
+  target: AppImage
+  category: Development
+
+win:
+  target: nsis
