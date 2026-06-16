@@ -1,11 +1,11 @@
-const { getEnvConfig, getEnvFromRequest, API_TIMEOUT } = require('../config');
+const { getEnvConfigWithFallback, getEnvFromRequest, API_TIMEOUT } = require('../config');
 const { extractApmTraceId } = require('../utils');
 
 module.exports = function(app, httpClient) {
     app.post('/api/real-interline', async (req, res) => {
         try {
             const requestBody = req.body;
-            const envConfig = getEnvConfig(getEnvFromRequest(req));
+            const envConfig = getEnvConfigWithFallback(getEnvFromRequest(req));
 
             if (!requestBody || typeof requestBody !== 'object' || Object.keys(requestBody).length === 0) {
                 return res.status(400).json({ success: false, error: 'Invalid request body' });

@@ -1,4 +1,4 @@
-const { GATEWAY_URLS, API_TIMEOUT } = require('../config');
+const { getGatewayUrl, API_TIMEOUT } = require('../config');
 
 async function postWithRetry(httpClient, url, jsonBody, retries = 2) {
     for (let i = 0; i <= retries; i++) {
@@ -27,7 +27,8 @@ module.exports = function(app, httpClient) {
         try {
             const { site, plat, queryParams } = req.body;
             const env = req.query.env || 'prod';
-            const baseUrl = GATEWAY_URLS[env] || GATEWAY_URLS.prod;
+            const customDomain = req.query.customDomain || '';
+            const baseUrl = getGatewayUrl(env, customDomain);
             const s = site || 'connectgateway';
             const p = plat || '852';
 
@@ -57,7 +58,8 @@ module.exports = function(app, httpClient) {
             const s = req.body.site || 'connectgateway';
             const p = req.body.plat || '852';
             const env = req.query.env || 'prod';
-            const baseUrl = GATEWAY_URLS[env] || GATEWAY_URLS.prod;
+            const customDomain = req.query.customDomain || '';
+            const baseUrl = getGatewayUrl(env, customDomain);
             const url = `${baseUrl}/${s}/interline/structured/searchcabins/${p}`;
             res.json({
                 success: false,

@@ -1,4 +1,4 @@
-const { getEnvConfig, getEnvFromRequest, getHuixingUrl, API_TIMEOUT } = require('../config');
+const { getEnvConfigWithFallback, getEnvFromRequest, getHuixingUrl, API_TIMEOUT } = require('../config');
 const { transformToHuixingRequest, formatResult, extractApmTraceId } = require('../utils');
 
 module.exports = function(app, httpClient) {
@@ -6,7 +6,7 @@ module.exports = function(app, httpClient) {
         try {
             const requestBody = req.body;
             const hxApi = req.query.hxApi || 'hx';
-            const envConfig = getEnvConfig(getEnvFromRequest(req));
+            const envConfig = getEnvConfigWithFallback(getEnvFromRequest(req));
 
             if (!requestBody || typeof requestBody !== 'object' || Object.keys(requestBody).length === 0) {
                 return res.status(400).json({

@@ -1,11 +1,12 @@
-const { GATEWAY_URLS, API_TIMEOUT } = require('../config');
+const { getGatewayUrl, API_TIMEOUT } = require('../config');
 
 module.exports = function(app, httpClient) {
     app.post('/api/gateway/search', async (req, res) => {
         try {
             const { site, plat, queryParams } = req.body;
             const env = req.query.env || 'prod';
-            const baseUrl = GATEWAY_URLS[env] || GATEWAY_URLS.prod;
+            const customDomain = req.query.customDomain || '';
+            const baseUrl = getGatewayUrl(env, customDomain);
             const s = site || 'wechatcore';
             const p = plat || '852';
 

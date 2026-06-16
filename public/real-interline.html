@@ -370,12 +370,6 @@
             document.getElementById('rawData').textContent = JSON.stringify(data, null, 2);
         }
 
-        function envQs() {
-            var sel = document.getElementById('envSelect');
-            if (!sel) return '';
-            return 'env=' + encodeURIComponent(sel.value);
-        }
-
         function toggleRaw() {
             document.getElementById('rawData').classList.toggle('active');
         }

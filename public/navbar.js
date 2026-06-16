@@ -53,9 +53,14 @@
         }
     ];
 
-    // 构建导航 HTML
+    // ── per-menu-group env key ──
+    var currentGroup = current.group || 'default';
+    var envKey = 'doctorEnv_' + currentGroup;
+
+    // ── 构建导航 HTML ──
     var html = '<nav class="nav-bar">';
     html += '<select class="env-select" id="envSelect" onchange="switchEnv(this.value)" title="切换环境"></select>';
+    html += '<input type="text" id="customDomainInput" class="custom-domain-input" placeholder="自定义域名 (默认 http://localhost:63974/)" style="display:none;margin-right:8px;background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;outline:none;width:220px;" oninput="onCustomDomainChange()">';
     for (var i = 0; i < groups.length; i++) {
         var g = groups[i];
         var groupActive = current.group === g.name;
@@ -75,29 +80,62 @@
 
     document.getElementById('nav-placeholder').outerHTML = html;
 
-    // ── 环境切换（所有页面共享） ──
-    window._currentEnv = localStorage.getItem('doctorEnv') || 'prod';
+    var styleEl = document.createElement('style');
+    styleEl.textContent = '.custom-domain-input::placeholder{color:rgba(255,255,255,0.5);} .custom-domain-input:focus{border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.2);}';
+    document.head.appendChild(styleEl);
+
+    // ── 环境切换（per-menu-group 独立） ──
+    var stored = localStorage.getItem(envKey);
+    if (!stored) {
+        stored = 'prod';
+        localStorage.setItem(envKey, stored);
+    }
+    window._currentEnv = stored;
 
     window.switchEnv = function(env) {
         window._currentEnv = env;
-        localStorage.setItem('doctorEnv', env);
+        localStorage.setItem(envKey, env);
+        toggleCustomDomainInput(env === 'custom');
     };
 
     window.envQs = function() {
-        return 'env=' + encodeURIComponent(window._currentEnv);
+        var qs = 'env=' + encodeURIComponent(window._currentEnv);
+        if (window._currentEnv === 'custom') {
+            var input = document.getElementById('customDomainInput');
+            if (input && input.value.trim()) {
+                qs += '&customDomain=' + encodeURIComponent(input.value.trim());
+            }
+        }
+        return qs;
     };
 
-    // 初始化环境选择下拉框
+    function toggleCustomDomainInput(show) {
+        var input = document.getElementById('customDomainInput');
+        if (input) input.style.display = show ? 'inline-block' : 'none';
+    }
+    window.toggleCustomDomainInput = toggleCustomDomainInput;
+
+    window.onCustomDomainChange = function() {
+        var input = document.getElementById('customDomainInput');
+        if (input) {
+            localStorage.setItem(envKey + '_customDomain', input.value.trim());
+        }
+    };
+
+    // ── 初始化环境选择下拉框 ──
     (function() {
         var sel = document.getElementById('envSelect');
         if (!sel) return;
         var envs = [
-            { key: 'prod', label: '线上' },
-            { key: 'qa',   label: 'QA' },
-            { key: 'uat',  label: 'UAT' },
-            { key: 't',    label: 'T环境' },
-            { key: 't2',   label: 'T2环境' },
-            { key: 'lane', label: 'Lane环境' }
+            { key: 'prod',          label: '线上' },
+            { key: 'qa',            label: 'QA' },
+            { key: 'uat',           label: 'UAT' },
+            { key: 't',             label: 'T环境' },
+            { key: 't2',            label: 'T2环境' },
+            { key: 'lane',          label: 'Lane环境' },
+            { key: 'local_gateway', label: 'Local-Gateway' },
+            { key: 'local_engine',  label: 'Local-Engine' },
+            { key: 'custom',        label: '自定义' }
         ];
         var opts = '';
         for (var i = 0; i < envs.length; i++) {
@@ -106,5 +144,13 @@
         }
         sel.innerHTML = opts;
         sel.value = window._currentEnv;
+
+        if (window._currentEnv === 'custom') {
+            var input = document.getElementById('customDomainInput');
+            if (input) {
+                input.value = localStorage.getItem(envKey + '_customDomain') || '';
+                input.style.display = 'inline-block';
+            }
+        }
     })();
 })();

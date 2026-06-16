@@ -1,4 +1,4 @@
-const { FARE_RULE_URLS, API_TIMEOUT } = require('../config');
+const { getFareRuleUrl, API_TIMEOUT } = require('../config');
 
 module.exports = function(app, httpClient) {
     // 运价规则详情接口
@@ -6,7 +6,7 @@ module.exports = function(app, httpClient) {
         try {
             const { ruleId } = req.body;
             const env = req.query.env || 'prod';
-            const baseUrl = FARE_RULE_URLS[env] || FARE_RULE_URLS.prod;
+            const baseUrl = getFareRuleUrl(env);
 
             if (!ruleId || typeof ruleId !== 'string' || !ruleId.trim()) {
                 return res.status(400).json({ success: false, error: '缺少 ruleId 参数' });
@@ -37,7 +37,7 @@ module.exports = function(app, httpClient) {
         try {
             const { ruleId } = req.body;
             const env = req.query.env || 'prod';
-            const baseUrl = FARE_RULE_URLS[env] || FARE_RULE_URLS.prod;
+            const baseUrl = getFareRuleUrl(env);
 
             if (!ruleId || typeof ruleId !== 'string' || !ruleId.trim()) {
                 return res.status(400).json({ success: false, error: '缺少 ruleId 参数' });
