@@ -128,7 +128,7 @@ function formatSkyeyeError(prefix, err) {
 
     app.post('/api/skyeye/proxy-log', async (req, res) => {
         try {
-            const { traceId, beginTime: customBegin, endTime: customEnd } = req.body;
+            const { traceId, appId, beginTime: customBegin, endTime: customEnd } = req.body;
             if (!traceId) {
                 return res.status(400).json({ success: false, error: 'traceId is required' });
             }
@@ -138,14 +138,29 @@ function formatSkyeyeError(prefix, err) {
             const beginTime = customBegin || formatTime(twoHoursAgo);
             const endTime = customEnd || formatTime(now);
 
+            let appIds, tokens;
+            if (appId) {
+                // 单个 appId 查询模式 —— 防止服务方限流
+                const idx = PROXY_LOG_APP_IDS.indexOf(appId);
+                if (idx === -1) {
+                    return res.status(400).json({ success: false, error: 'unknown appId: ' + appId });
+                }
+                appIds = [appId];
+                tokens = [PROXY_LOG_TOKENS[idx]];
+            } else {
+                // 兼容旧行为：所有 appId 一起查
+                appIds = PROXY_LOG_APP_IDS;
+                tokens = PROXY_LOG_TOKENS;
+            }
+
             const skyeyeBody = {
-                appIds: PROXY_LOG_APP_IDS,
+                appIds: appIds,
                 modules: ['Application','Infrastructure'],
                 categories: ['ServiceProxy','PipeSearch.Resource.ConnectMinPrice.ConnectMinPriceAdapter'],
                 contextId: traceId,
                 beginTime: beginTime,
                 endTime: endTime,
-                tokens: PROXY_LOG_TOKENS,
+                tokens: tokens,
                 pageSize: 500
             };
 
@@ -153,7 +168,7 @@ function formatSkyeyeError(prefix, err) {
                 'Content-Type': 'application/json'
             };
 
-            console.log(`[ProxyLog] traceId=${traceId}, appIds=${PROXY_LOG_APP_IDS.join(',')}, timeRange=${beginTime} ~ ${endTime}`);
+            console.log(`[ProxyLog] traceId=${traceId}, appIds=${appIds.join(',')}, timeRange=${beginTime} ~ ${endTime}`);
 
             const result = await httpClient.post(SKYEYE_LOG_URL, skyeyeBody, {
                 timeout: API_TIMEOUT,
