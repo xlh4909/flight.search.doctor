@@ -88,6 +88,15 @@ const GATEWAY_URLS = {
     local_engine: 'http://localhost:57350'
 };
 
+const INTERLINE_SEARCH_URLS = {
+    prod: 'http://search.fly.17usoft.com',
+    qa: 'http://search.qa.fly.17usoft.com',
+    uat: 'http://search.uat.fly.17usoft.com',
+    t: 'http://search.t.fly.17usoft.com',
+    t2: 'http://search2.t.fly.17usoft.com',
+    lane: 'http://search.lane.fly.17usoft.com'
+};
+
 const LOCAL_ENVS = ['custom', 'local_gateway', 'local_engine'];
 const LOCAL_GATEWAY_DEFAULT = 'http://localhost:63974/';
 const LOCAL_ENGINE_DEFAULT = 'http://localhost:57350';
@@ -138,6 +147,15 @@ function getFareRuleUrl(env) {
     return FARE_RULE_URLS[env] || FARE_RULE_URLS[DEFAULT_ENV];
 }
 
+function getInterlineSearchUrl(env, customDomain) {
+    if (env === 'custom') {
+        return normalizeCustomDomain(customDomain || LOCAL_GATEWAY_DEFAULT);
+    }
+    if (env === 'local_gateway') return LOCAL_GATEWAY_DEFAULT.replace(/\/+$/, '');
+    if (env === 'local_engine') return LOCAL_ENGINE_DEFAULT.replace(/\/+$/, '');
+    return INTERLINE_SEARCH_URLS[env] || INTERLINE_SEARCH_URLS[DEFAULT_ENV];
+}
+
 function getEnvConfigWithFallback(env) {
     if (LOCAL_ENVS.includes(env)) return ENV_CONFIGS.qa;
     return getEnvConfig(env);
@@ -150,8 +168,9 @@ module.exports = {
     CITY_LABRADOR_URL,
     GATEWAY_SITES, GATEWAY_PLATS, GATEWAY_URLS,
     SNAPSHOT_SITES, SNAPSHOT_URLS, FARE_RULE_URLS,
+    INTERLINE_SEARCH_URLS,
     LOCAL_ENVS, LOCAL_GATEWAY_DEFAULT, LOCAL_ENGINE_DEFAULT,
     getEnvConfig, getEnvFromRequest, getHuixingUrl,
-    getGatewayUrl, getSnapshotUrl, getFareRuleUrl, getEnvConfigWithFallback,
+    getGatewayUrl, getSnapshotUrl, getFareRuleUrl, getInterlineSearchUrl, getEnvConfigWithFallback,
     normalizeCustomDomain
 };

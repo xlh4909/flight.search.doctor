@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多程最低价查询</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #3949ab, #1a237e); color: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 22px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .env-select { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 12px; outline: none; }
+        .env-select:hover { background: rgba(255,255,255,0.25); }
+        .env-select option { background: #fff; color: #333; }
+        .nav-bar { display: flex; gap: 2px; align-items: stretch; }
+        .nav-group { position: relative; }
+        .nav-group-btn { color: rgba(255,255,255,0.75); background: none; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .nav-group-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-group.has-active .nav-group-btn { color: #ffeb3b; }
+        .nav-dropdown { display: none; position: absolute; top: 100%; right: 0; background: #1a237e; border-radius: 6px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; padding: 4px 0; margin-top: 2px; }
+        .nav-group:hover .nav-dropdown { display: block; }
+        .nav-dropdown a { display: block; color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+        .nav-dropdown a:hover { background: rgba(255,255,255,0.15); color: white; }
+        .nav-dropdown a.active { color: #ffeb3b; background: rgba(255,255,255,0.1); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .placeholder-card { background: white; border-radius: 12px; padding: 80px 40px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-top: 40px; }
+        .placeholder-card .icon { font-size: 48px; margin-bottom: 20px; display: block; }
+        .placeholder-card p { font-size: 18px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>多程最低价查询</h1>
+            <p>多程最低价测试页面</p>
+        </div>
+        <div id="nav-placeholder"></div>
+    </div>
+
+    <div class="container">
+        <div class="placeholder-card">
+            <span class="icon">🚧</span>
+            <p>功能开发中，敬请期待...</p>
+        </div>
+    </div>
+
+    <script src="/navbar.js"></script>
+</body>
+</html>

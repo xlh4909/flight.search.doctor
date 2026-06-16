@@ -11,7 +11,10 @@
         '/huixing.html':        { group: '产品站',   link: '/huixing.html' },
         '/b15.html':            { group: '产品站',   link: '/b15.html' },
         '/proxy-log.html':      { group: '日志追踪', link: '/proxy-log.html' },
-        '/real-interline.html': { group: '联程最小价', link: '/real-interline.html' }
+        '/real-interline.html': { group: '联程最小价', link: '/real-interline.html' },
+        '/interline-lowest.html':  { group: '联程最低价', link: '/interline-lowest.html' },
+        '/multi-trip-lowest.html': { group: '联程最低价', link: '/multi-trip-lowest.html' },
+        '/open-jaw-lowest.html':   { group: '联程最低价', link: '/open-jaw-lowest.html' }
     };
     var current = activeConfig[path] || {};
 
@@ -42,7 +45,9 @@
         {
             name: '联程最低价',
             links: [
-                { href: 'javascript:void(0)', text: '暂未开放', disabled: true }
+                { href: '/interline-lowest.html', text: '联程最低价' },
+                { href: '/multi-trip-lowest.html', text: '多程最低价' },
+                { href: '/open-jaw-lowest.html', text: '缺口程最低价' }
             ]
         },
         {
