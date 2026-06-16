@@ -428,6 +428,7 @@
                             container.innerHTML = '<div class="empty-result">无数据</div>';
                         } else {
                             renderSubCategoryFilter();
+                            renderSiteFilter();
                         }
                         return;
                     }
@@ -458,15 +459,20 @@
                 queryNext(0);
             } else {
                 loadHistory();
+                document.getElementById('results').innerHTML = '<div id="trace-loading" style="text-align:center;padding:20px;color:#5e35b1;font-size:14px;">正在查询...</div>';
+
+                // 单次请求 —— 通过 contextId 即可查到所有站点日志，无需按 appId 多次请求
                 fetch('/api/skyeye/proxy-log', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ traceId: inputVal, beginTime: getBeginTime(), endTime: getEndTime() })
+                    body: JSON.stringify({ traceId: inputVal, appId: '3303660', beginTime: getBeginTime(), endTime: getEndTime() })
                 })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     btn.disabled = false;
                     spinner.classList.remove('active');
+                    var loadingEl = document.getElementById('trace-loading');
+                    if (loadingEl) loadingEl.remove();
                     renderResults(data);
                 })
                 .catch(function(err) {
@@ -477,39 +483,39 @@
             }
         }
 
+        // 参数名称替换工具函数（共享）
+        function replaceKeys(obj, skipFlightDate) {
+            if (!obj || typeof obj !== 'object') return;
+            if (Array.isArray(obj)) {
+                obj.forEach(function(item) { replaceKeys(item, skipFlightDate); });
+                return;
+            }
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    var value = obj[key];
+                    if (!skipFlightDate && key === 'flightDate') {
+                        obj['firstFlightDate'] = value;
+                        delete obj[key];
+                    } else if (key === 'interlineType') {
+                        obj['resourceType'] = value;
+                        delete obj[key];
+                    } else if (key === 'maxTransitStayMins') {
+                        obj['maxLayoeverMinutes'] = value;
+                        delete obj[key];
+                    } else if (key === 'route') {
+                        obj['detail'] = value;
+                        delete obj[key];
+                    }
+                    if (value && typeof value === 'object') {
+                        replaceKeys(value, skipFlightDate || key === 'routes');
+                    }
+                }
+            }
+        }
+
         function renderResults(data) {
             var container = document.getElementById('results');
             var html = '';
-
-            // 参数名称替换工具函数（提升到外层避免块级作用域问题）
-            var replaceKeys = function(obj, skipFlightDate) {
-                if (!obj || typeof obj !== 'object') return;
-                if (Array.isArray(obj)) {
-                    obj.forEach(function(item) { replaceKeys(item, skipFlightDate); });
-                    return;
-                }
-                for (var key in obj) {
-                    if (obj.hasOwnProperty(key)) {
-                        var value = obj[key];
-                        if (!skipFlightDate && key === 'flightDate') {
-                            obj['firstFlightDate'] = value;
-                            delete obj[key];
-                        } else if (key === 'interlineType') {
-                            obj['resourceType'] = value;
-                            delete obj[key];
-                        } else if (key === 'maxTransitStayMins') {
-                            obj['maxLayoeverMinutes'] = value;
-                            delete obj[key];
-                        } else if (key === 'route') {
-                            obj['detail'] = value;
-                            delete obj[key];
-                        }
-                        if (value && typeof value === 'object') {
-                            replaceKeys(value, skipFlightDate || key === 'routes');
-                        }
-                    }
-                }
-            };
 
             if (!data.success) {
                 html += '<div class="empty-result">' + (data.error || '查询失败') + '</div>';
@@ -603,7 +609,7 @@
                 }
 
                 var filterTag = subCategory || categoryShort || '';
-                html += '<div class="log-entry" data-subcat="' + escHtml(filterTag) + '" id="log-entry-' + idx + '">';
+                html += '<div class="log-entry" data-subcat="' + escHtml(filterTag) + '" data-site="' + escHtml(appUk) + '" id="log-entry-' + idx + '">';
                 html += '<div class="log-entry-header" onclick="toggleEntry(' + idx + ')">';
                 if (appUk) html += '<span class="log-badge site">' + escHtml(appUk) + '</span>';
                 if (categoryShort) html += '<span class="log-badge subcat">' + escHtml(categoryShort) + '</span>';
@@ -632,6 +638,7 @@
 
             container.innerHTML = html;
             renderSubCategoryFilter();
+            renderSiteFilter();
         }
 
         function renderFuzzySiteResult(siteResult, loadingEl) {
@@ -671,7 +678,7 @@
                 }
 
                 var filterTag = subCategory || categoryShort || '';
-                html += '<div class="log-entry collapsed" data-subcat="' + escHtml(filterTag) + '" id="log-entry-' + globalIdx + '">';
+                html += '<div class="log-entry collapsed" data-subcat="' + escHtml(filterTag) + '" data-site="' + escHtml(appUk) + '" id="log-entry-' + globalIdx + '">';
                 html += '<div class="log-entry-header" onclick="toggleEntry(\'' + globalIdx + '\')">';
                 if (appUk) html += '<span class="log-badge site">' + escHtml(appUk) + '</span>';
                 if (categoryShort) html += '<span class="log-badge subcat">' + escHtml(categoryShort) + '</span>';
@@ -698,6 +705,114 @@
             html += '</div>';
 
             // 插入到 loading 元素之前
+            loadingEl.insertAdjacentHTML('beforebegin', html);
+        }
+
+        function renderTraceIdSiteResult(data, appId, loadingEl) {
+            var container = document.getElementById('results');
+            var list = (data.result && data.result.list) || [];
+            if (list.length === 0) return;
+
+            list.sort(function(a, b) { return (a.logTime || '').localeCompare(b.logTime || ''); });
+
+            var html = '<div style="margin-bottom:20px;border-left:3px solid #5e35b1;padding-left:12px;">';
+            html += '<div class="count-bar" style="margin-bottom:8px;">站点 <b>' + escHtml(appId) + '</b> — 共 <b>' + list.length + '</b> 条日志' + (data.result && data.result.totalCount ? '（totalCount=' + data.result.totalCount + '）' : '') + '</div>';
+
+            list.forEach(function(entry, idx) {
+                var uniqueIdx = 'trace-' + appId + '-' + idx;
+                var msg = entry.msg || '';
+                msg = msg.replace(/^\+08:00/, '');
+                var logTime = entry.logTime || '';
+                var ip = entry.ip || '';
+                var priority = entry.priority;
+                var priorityMap = { 0: 'FATAL', 1: 'ERROR', 2: 'WARN', 3: 'INFO' };
+                var priorityClass = priority <= 1 ? 'priority-error' : (priority === 2 ? 'priority-warn' : 'priority-info');
+                var priorityLabel = priorityMap[priority] || String(priority);
+
+                var subCategory = '';
+                var appUk = '';
+                if (entry.appUk) {
+                    var parts = entry.appUk.split('.');
+                    appUk = parts[parts.length - 1] || entry.appUk;
+                }
+                if (entry.subCategory) subCategory = entry.subCategory;
+
+                var categoryShort = '';
+                if (entry.category) {
+                    var catParts = entry.category.split('.');
+                    categoryShort = catParts[catParts.length - 1] || entry.category;
+                }
+
+                // 解析 PipeSearch.Resource.ConnectMinPrice.ConnectMinPriceAdapter 分类日志
+                var parsedMsg = msg;
+                var parsedData = null;
+                if (entry.category === 'PipeSearch.Resource.ConnectMinPrice.ConnectMinPriceAdapter' && msg) {
+                    var resultsIdx = msg.indexOf(', { "results"');
+                    if (resultsIdx !== -1) {
+                        var prefix = msg.substring(0, resultsIdx);
+                        var jsonPart = msg.substring(resultsIdx + 2);
+                        try {
+                            parsedData = JSON.parse(jsonPart);
+                            parsedMsg = prefix;
+                            if (parsedData && typeof parsedData === 'object') {
+                                replaceKeys(parsedData, false);
+                            }
+                        } catch (e) {}
+                    }
+                }
+
+                if (parsedMsg && parsedMsg !== msg) {
+                    var firstBrace = parsedMsg.indexOf('{');
+                    if (firstBrace !== -1) {
+                        try {
+                            var jsonPart = JSON.parse(parsedMsg.substring(firstBrace));
+                            replaceKeys(jsonPart, false);
+                            parsedMsg = parsedMsg.substring(0, firstBrace) + JSON.stringify(jsonPart);
+                        } catch (e) {
+                            parsedMsg = parsedMsg
+                                .replace(/"flightDate"/g, '"firstFlightDate"')
+                                .replace(/"interlineType"/g, '"resourceType"')
+                                .replace(/"maxTransitStayMins"/g, '"maxLayoeverMinutes"')
+                                .replace(/"route"/g, '"detail"');
+                        }
+                    } else {
+                        parsedMsg = parsedMsg
+                            .replace(/"flightDate"/g, '"firstFlightDate"')
+                            .replace(/"interlineType"/g, '"resourceType"')
+                            .replace(/"maxTransitStayMins"/g, '"maxLayoeverMinutes"')
+                            .replace(/"route"/g, '"detail"');
+                    }
+                }
+
+                var filterTag = subCategory || categoryShort || '';
+                html += '<div class="log-entry" data-subcat="' + escHtml(filterTag) + '" data-site="' + escHtml(appUk) + '" id="log-entry-' + uniqueIdx + '">';
+                html += '<div class="log-entry-header" onclick="toggleEntry(\'' + uniqueIdx + '\')">';
+                if (appUk) html += '<span class="log-badge site">' + escHtml(appUk) + '</span>';
+                if (categoryShort) html += '<span class="log-badge subcat">' + escHtml(categoryShort) + '</span>';
+                if (subCategory) html += '<span class="log-badge subcat">' + escHtml(subCategory) + '</span>';
+                html += '<span class="log-badge ' + priorityClass + '">' + priorityLabel + '</span>';
+                if (logTime) html += '<span class="log-badge time">' + escHtml(logTime) + '</span>';
+                if (ip) html += '<span class="log-badge ip">' + escHtml(ip) + '</span>';
+                html += '<span class="log-msg-preview">' + escHtml(parsedMsg.substring(0, 120)) + '</span>';
+                html += '<span class="log-arrow">▼</span>';
+                html += '</div>';
+
+                html += '<div class="log-entry-body">';
+                html += '<div class="log-msg-full" id="log-msg-' + uniqueIdx + '">' + escHtml(parsedMsg) + '</div>';
+                if (parsedData) {
+                    html += '<div style="margin-top:8px;background:#e8f5e9;border:1px solid #c8e6c9;border-radius:6px;padding:12px;">';
+                    html += '<div style="font-size:12px;font-weight:600;color:#2e7d32;margin-bottom:8px;">📊 解析结果（results 数据）</div>';
+                    html += '<pre style="background:#fff;border:1px solid #eee;border-radius:4px;padding:8px;font-family:monospace;font-size:11px;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;">' + escHtml(JSON.stringify(parsedData, null, 2)) + '</pre>';
+                    html += '</div>';
+                }
+                html += '<button class="log-raw-toggle" onclick="toggleRaw(\'' + uniqueIdx + '\')">查看原始数据</button>';
+                html += '<button class="copy-btn" onclick="copyMsg(\'' + uniqueIdx + '\')">复制</button>';
+                html += '<div class="log-raw-data" id="log-raw-' + uniqueIdx + '">' + escHtml(JSON.stringify(entry, null, 2)) + '</div>';
+                html += '</div>';
+                html += '</div>';
+            });
+
+            html += '</div>';
             loadingEl.insertAdjacentHTML('beforebegin', html);
         }
 
@@ -875,26 +990,131 @@
 
         function applyFilter() {
             var container = document.getElementById('results');
-            var allCb = document.getElementById('filterAll');
-            var cbs = document.querySelectorAll('.filter-tag-cb');
 
-            // 收集选中的标签
-            var selected = {};
-            cbs.forEach(function(cb) {
-                if (cb.checked) selected[cb.value] = true;
+            // ── 子分类筛选项 ──
+            var subcatAllCb = document.getElementById('filterAll');
+            var subcatCbs = document.querySelectorAll('.filter-tag-cb');
+            var subcatSelected = {};
+            subcatCbs.forEach(function(cb) {
+                if (cb.checked) subcatSelected[cb.value] = true;
             });
-            var hasSelection = Object.keys(selected).length > 0;
-            var isAllSelected = allCb && allCb.checked;
+            var subcatHasSelection = Object.keys(subcatSelected).length > 0;
+            var subcatIsAll = subcatAllCb && subcatAllCb.checked;
+
+            // ── 站点筛选项 ──
+            var siteAllCb = document.getElementById('siteFilterAll');
+            var siteCbs = document.querySelectorAll('.site-filter-cb');
+            var siteSelected = {};
+            if (siteCbs.length > 0) {
+                siteCbs.forEach(function(cb) {
+                    if (cb.checked) siteSelected[cb.value] = true;
+                });
+            }
+            var siteHasSelection = Object.keys(siteSelected).length > 0;
+            var siteIsAll = siteAllCb && siteAllCb.checked;
 
             var entries = container.querySelectorAll('[data-subcat]');
             entries.forEach(function(el) {
                 var entryTag = el.getAttribute('data-subcat');
-                if (isAllSelected || !hasSelection || selected[entryTag]) {
+                var entrySite = el.getAttribute('data-site') || '';
+
+                var subcatMatch = subcatIsAll || !subcatHasSelection || subcatSelected[entryTag];
+                var siteMatch = siteIsAll || !siteHasSelection || siteSelected[entrySite];
+
+                if (subcatMatch && siteMatch) {
                     el.classList.remove('filtered-hidden');
                 } else {
                     el.classList.add('filtered-hidden');
                 }
             });
+        }
+
+        // ── 站点筛选 (多选下拉) ──
+        function renderSiteFilter() {
+            var container = document.getElementById('results');
+            var existing = container.querySelector('.site-filter-dropdown');
+            if (existing) existing.remove();
+
+            // 收集所有 entry 的 data-site 标签及数量
+            var entries = container.querySelectorAll('[data-site]');
+            var siteMap = {};
+            entries.forEach(function(el) {
+                var site = el.getAttribute('data-site');
+                if (site) {
+                    siteMap[site] = (siteMap[site] || 0) + 1;
+                }
+            });
+
+            var sites = Object.keys(siteMap).sort();
+            if (sites.length <= 1) return; // 仅一种站点，无需筛选
+
+            var html = '<div class="filter-dropdown site-filter-dropdown">';
+            html += '<button class="filter-dropdown-btn" id="siteFilterDropdownBtn" onclick="toggleSiteFilterDropdown(event)">站点</button>';
+            html += '<div class="filter-dropdown-panel" id="siteFilterDropdownPanel">';
+            html += '<div class="filter-dropdown-item all-item" onclick="toggleSiteFilterAll(event)">';
+            html += '<input type="checkbox" id="siteFilterAll" checked onclick="event.stopPropagation(); onSiteFilterCheckboxChange()">';
+            html += '<label for="siteFilterAll">全选</label>';
+            html += '</div>';
+            html += '<div class="filter-dropdown-divider"></div>';
+            sites.forEach(function(site) {
+                html += '<div class="filter-dropdown-item" onclick="toggleSiteFilterItem(event, this)">';
+                html += '<input type="checkbox" class="site-filter-cb" value="' + escHtml(site) + '" onclick="event.stopPropagation(); onSiteFilterCheckboxChange()">';
+                html += '<label>' + escHtml(site) + '<span class="filter-dropdown-count">' + siteMap[site] + '</span></label>';
+                html += '</div>';
+            });
+            html += '</div>';
+            html += '</div>';
+
+            container.insertAdjacentHTML('afterbegin', html);
+            applyFilter();
+        }
+
+        function toggleSiteFilterDropdown(e) {
+            e.stopPropagation();
+            var panel = document.getElementById('siteFilterDropdownPanel');
+            panel.classList.toggle('visible');
+        }
+
+        function toggleSiteFilterAll(e) {
+            e.stopPropagation();
+            var allCb = document.getElementById('siteFilterAll');
+            allCb.checked = !allCb.checked;
+            var cbs = document.querySelectorAll('.site-filter-cb');
+            cbs.forEach(function(cb) { cb.checked = allCb.checked; });
+            onSiteFilterCheckboxChange();
+        }
+
+        function toggleSiteFilterItem(e, row) {
+            e.stopPropagation();
+            var cb = row.querySelector('input[type="checkbox"]');
+            cb.checked = !cb.checked;
+            onSiteFilterCheckboxChange();
+        }
+
+        function onSiteFilterCheckboxChange() {
+            var allCb = document.getElementById('siteFilterAll');
+            var cbs = document.querySelectorAll('.site-filter-cb');
+            var allChecked = true;
+            cbs.forEach(function(cb) {
+                if (!cb.checked) allChecked = false;
+            });
+            allCb.checked = allChecked;
+
+            // 更新按钮文案
+            var btn = document.getElementById('siteFilterDropdownBtn');
+            var checkedCount = document.querySelectorAll('.site-filter-cb:checked').length;
+            if (allChecked || checkedCount === cbs.length) {
+                btn.textContent = '站点';
+                btn.classList.remove('has-selection');
+            } else if (checkedCount === 0) {
+                btn.textContent = '站点';
+                btn.classList.remove('has-selection');
+            } else {
+                btn.textContent = '站点 ' + checkedCount + '/' + cbs.length;
+                btn.classList.add('has-selection');
+            }
+
+            applyFilter();
         }
 
         // 点击外部关闭下拉
@@ -904,6 +1124,13 @@
                 var dropdown = panel.closest('.filter-dropdown');
                 if (dropdown && !dropdown.contains(e.target)) {
                     panel.classList.remove('visible');
+                }
+            }
+            var sitePanel = document.getElementById('siteFilterDropdownPanel');
+            if (sitePanel && sitePanel.classList.contains('visible')) {
+                var siteDropdown = sitePanel.closest('.filter-dropdown');
+                if (siteDropdown && !siteDropdown.contains(e.target)) {
+                    sitePanel.classList.remove('visible');
                 }
             }
         });
