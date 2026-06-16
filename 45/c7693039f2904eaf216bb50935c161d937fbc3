@@ -1,0 +1,110 @@
+routes/interline.js
+  s_6c730d138ce87f::t_3769866e959e43 33-34
+  s_6c730d138ce87f::t_98939bafdf8044 1-32,35-65
+server.js
+  s_6c730d138ce87f::t_011b0b4f844308 22
+test/interline.test.js
+  s_6c730d138ce87f::t_8df7ccb1c6f946 1-287,289-296,298-370
+  s_6c730d138ce87f::t_a1bfa850f47412 288,297
+public/navbar.js
+  s_6c730d138ce87f::t_c6d7fa3dd8c501 14-17
+  s_6c730d138ce87f::t_6a220603ce6dcf 48-50
+config.js
+  s_6c730d138ce87f::t_7eee6be041c5ab 91-99
+  s_6c730d138ce87f::t_d840c783130157 156-158
+  s_6c730d138ce87f::t_8b285119a59b32 150-155
+  s_6c730d138ce87f::t_1255eb8ecaa868 171,174
+public/interline-lowest.html
+  s_6c730d138ce87f::t_a069a21c0172e5 94,96-97,99-105
+  s_6c730d138ce87f::t_f7d2b5b5ffee46 494,496
+  s_6c730d138ce87f::t_f5cc66cdd4f172 75,78-84
+  s_6c730d138ce87f::t_966104bb824ae6 340
+  s_6c730d138ce87f::t_2ae5db81899718 382-385
+  s_6c730d138ce87f::t_333b1b6525cee8 593-597,599-600
+  s_6c730d138ce87f::t_e2309846bdab54 119-130,135-137,139-157
+  s_6c730d138ce87f::t_5e0ef64c6c126d 470,472
+  s_6c730d138ce87f::t_41688362b5d799 663-667,669-670
+  s_6c730d138ce87f::t_5c964a4ba7653b 788
+  s_6c730d138ce87f::t_819c160869c975 440-441
+  s_6c730d138ce87f::t_c9b25617910d31 430
+  s_6c730d138ce87f::t_b37b8ff64ab966 766-767,773-784,787
+  s_6c730d138ce87f::t_ef7d46971172f0 471
+  s_6c730d138ce87f::t_c326108b18442e 368-373,386-394
+  s_6c730d138ce87f::t_1d590c98858c8e 349-358
+  s_6c730d138ce87f::t_ddc6ccd8c32ec6 829-831
+  s_6c730d138ce87f::t_4d51e61f277477 76-77
+  s_6c730d138ce87f::t_c6f555ddf77ebe 341
+  s_6c730d138ce87f::t_ebf4b2843d1522 273-280,283-286
+  s_6c730d138ce87f::t_d6b1376b427413 439,442
+  s_6c730d138ce87f::t_337c5f6d3a70f1 107-111
+  s_6c730d138ce87f::t_41df7da472fba0 131-134,138
+  s_6c730d138ce87f::t_f31f3b4d2d2865 344-347
+  s_6c730d138ce87f::t_8bbe40e07087da 409-414,443-444,449-464,467,475,478
+  s_6c730d138ce87f::t_3da81be1126cf4 693,698
+  s_6c730d138ce87f::t_8abb46f7820016 59-68
+  s_6c730d138ce87f::t_05abe2ca5ce08f 800-801
+  s_6c730d138ce87f::t_12d2fe6a8618e4 310-313,315-316
+  s_6c730d138ce87f::t_2f29c37dd69e87 1-51,55-56,58,69-74,85-93,106,112-118,158-272,281-282,287-292,297-298,300-301,306-309,333-339,343,348,359-367,374-381,395-408,415-429,431,436-438,445-448,465-466,468-469,473-474,476-477,479-483,485-490,492-493,495,497-525,527,550,560,562-565,567-568,759-760,802-804,814,816,828,832-834
+  s_6c730d138ce87f::t_120abe959b7ea4 762,769-770
+  s_6c730d138ce87f::t_1efe407be51586 293,302-305
+  s_6c730d138ce87f::t_278dd458a98181 332
+  s_6c730d138ce87f::t_9c0990c71198de 432-435
+  s_6c730d138ce87f::t_b3af880c226559 805-813,815,817-827
+  s_6c730d138ce87f::t_b9baaef4a5cfde 95,98
+  s_6c730d138ce87f::t_b383358d0301f1 484,491
+  s_6c730d138ce87f::t_665c814a5e0007 342
+  s_6c730d138ce87f::t_fec79b941bef14 314,317-331
+  s_6c730d138ce87f::t_2f196585dc78ea 761,763-765,768,771-772,785-786,789
+  s_6c730d138ce87f::t_5c3f080c946b30 52-54,57
+  s_6c730d138ce87f::t_b8aaca7f9f3b44 294-296,299
+  s_6c730d138ce87f::t_35869e72cb2908 790-799
+  s_6c730d138ce87f::t_76ab7c1dff50cc 526,528-549,551-559,561,566,569-592,598,601-662,668,671-692,694-697,699-758
+public/multi-trip-lowest.html
+  s_f917ce45fb9662::t_f34da5be22c80f 1-50
+test/config-env.test.js
+  s_6c730d138ce87f::t_86ecc3488ed2a7 200-201,204-205,208-221
+  s_6c730d138ce87f::t_5413824099ad07 4,6
+  s_6c730d138ce87f::t_1c8419af3f8994 175-199,202-203,206-207,222-228
+public/js/json-tree-viewer.js
+  s_6c730d138ce87f::t_4171ae5df4ec7d 339-369
+  s_6c730d138ce87f::t_7240707bc04275 370-371
+  s_dae1539517ebd5::t_4708a7364b462e 1-169,172-173,180-199,208-315,318-322,327-338,372
+  s_6c730d138ce87f::t_b8e5fc016526b2 174-179
+  s_6c730d138ce87f::t_c9401480de07e9 316-317,323-326
+  s_6c730d138ce87f::t_9b3aa279e02c97 170-171
+  s_6c730d138ce87f::t_83d2deaad06e08 200-207
+public/open-jaw-lowest.html
+  s_f917ce45fb9662::t_3a6ac2fcee37e9 1-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "45c7693039f2904eaf216bb50935c161d937fbc3",
+  "prompts": {},
+  "sessions": {
+    "s_6c730d138ce87f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_1306f6762ffejXg37RwmmfwSkA",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    },
+    "s_dae1539517ebd5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_130652cb7ffeeQyFItyuNMup64",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    },
+    "s_f917ce45fb9662": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_13065082cffekU0vozZdi8n4o3",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
