@@ -1,0 +1,31 @@
+routes/skyeye.js
+  s_d3051a4d65cbc0::t_878e855fc6a639 131,141-155,157,163
+  s_d3051a4d65cbc0::t_96ebf04e3b0dc9 171
+public/proxy-log.html
+  s_d3051a4d65cbc0::t_a852bf7358b807 711-787,789-818
+  s_d3051a4d65cbc0::t_c141571befe34f 462-464,468,475
+  s_d3051a4d65cbc0::t_4af94f6fbad0d1 681
+  s_d3051a4d65cbc0::t_7f1a0d20c76118 486-515
+  s_d3051a4d65cbc0::t_f5bd1eaf0049bd 612
+  s_d3051a4d65cbc0::t_dec5b0ee8f0590 474
+  s_d3051a4d65cbc0::t_424b2a6f3fea93 788
+  s_d3051a4d65cbc0::t_bc3012841989f3 641
+  s_d3051a4d65cbc0::t_29b986bf05a710 994-999,1001-1014,1019-1024,1032-1119,1129-1133
+  s_d3051a4d65cbc0::t_c58064952fd3d4 431
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "9f28ede970705261d8e011052b4adddffeb8db85",
+  "prompts": {},
+  "sessions": {
+    "s_d3051a4d65cbc0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_1300dfbe6ffeVulwRLSOm2fX8o",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
