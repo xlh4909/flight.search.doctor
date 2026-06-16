@@ -1,0 +1,61 @@
+routes/real-interline.js
+  s_f868638dd20e29::t_38ce2dc1387695 8
+  s_f868638dd20e29::t_5572181f8280a4 1
+routes/gateway.js
+  s_f868638dd20e29::t_499cdab9a65524 1,8-9
+routes/b15-standard.js
+  s_f868638dd20e29::t_ea8dda5947b7fc 1
+  s_f868638dd20e29::t_ed18db58f4caa7 30-31
+  s_f868638dd20e29::t_03777b4f43a84a 61-62
+routes/huixing.js
+  s_f868638dd20e29::t_5cc6842c39a49f 8
+  s_f868638dd20e29::t_e211b7e6505a13 1
+routes/snapshot.js
+  s_f868638dd20e29::t_4f3abc965dd09f 9,41
+  s_f868638dd20e29::t_10963ffdd44c82 1
+public/navbar.js
+  s_f868638dd20e29::t_5d04ac6c2939cd 56-60,87-89,91-93,97-98,102-109,112-125,130-138,147-154
+  s_f868638dd20e29::t_e264fbe79d59ce 63
+  s_f868638dd20e29::t_5540e0f7386d5c 83-86
+  s_1913b62d98595e::t_f716451db7aa9e 90
+routes/env.js
+  s_f868638dd20e29::t_40762114dca61f 1,8-11
+routes/b15.js
+  s_f868638dd20e29::t_8757218733da1a 1
+  s_f868638dd20e29::t_cc886f173a45ce 7
+config.js
+  s_f868638dd20e29::t_d94e3c98650364 86-88,91-93
+  s_f868638dd20e29::t_18329ec3c57095 115-145,153-156
+routes/fare-rule.js
+  s_f868638dd20e29::t_2bc172bdc9f926 9,40
+  s_f868638dd20e29::t_5d596883fa8692 1
+routes/search.js
+  s_f868638dd20e29::t_841cf7d378f486 1
+  s_f868638dd20e29::t_dc5d14fd15a023 9
+test/config-env.test.js
+  s_f868638dd20e29::t_b4ff64ad8eb7b5 1-189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "82bd416095e01f6a306ce6a099f6bdc2d8023c42",
+  "prompts": {},
+  "sessions": {
+    "s_1913b62d98595e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_13090f8adffev24I9EnNPRbptz",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    },
+    "s_f868638dd20e29": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_130f347a4ffe3g6nQMRucYdkgb",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
