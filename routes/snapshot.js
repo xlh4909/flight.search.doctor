@@ -1,4 +1,4 @@
-const { SNAPSHOT_URLS, API_TIMEOUT } = require('../config');
+const { getSnapshotUrl, API_TIMEOUT } = require('../config');
 
 module.exports = function(app, httpClient) {
     // 获取快照生成时间
@@ -6,7 +6,7 @@ module.exports = function(app, httpClient) {
         try {
             const { tag, site } = req.body;
             const env = req.query.env || 'prod';
-            const baseUrl = SNAPSHOT_URLS[env] || SNAPSHOT_URLS.prod;
+            const baseUrl = getSnapshotUrl(env);
             const s = site || 'wechatcore';
 
             if (!tag || typeof tag !== 'string') {
@@ -38,7 +38,7 @@ module.exports = function(app, httpClient) {
         try {
             const { tag, site } = req.body;
             const env = req.query.env || 'prod';
-            const baseUrl = SNAPSHOT_URLS[env] || SNAPSHOT_URLS.prod;
+            const baseUrl = getSnapshotUrl(env);
             const s = site || 'wechatcore';
 
             if (!tag || typeof tag !== 'string') {

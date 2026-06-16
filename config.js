@@ -83,8 +83,14 @@ const GATEWAY_URLS = {
     uat: 'http://search.uat.fly.17usoft.com',
     t: 'http://search.t.fly.17usoft.com',
     t2: 'http://search2.t.fly.17usoft.com',
-    lane: 'http://search.lane.fly.17usoft.com'
+    lane: 'http://search.lane.fly.17usoft.com',
+    local_gateway: 'http://localhost:63974',
+    local_engine: 'http://localhost:57350'
 };
+
+const LOCAL_ENVS = ['custom', 'local_gateway', 'local_engine'];
+const LOCAL_GATEWAY_DEFAULT = 'http://localhost:63974/';
+const LOCAL_ENGINE_DEFAULT = 'http://localhost:57350';
 
 const SNAPSHOT_SITES = ['wechatcore', 'app'];
 
@@ -106,6 +112,37 @@ const FARE_RULE_URLS = {
     lane: 'http://phoenix.lane.fly.17usoft.com'
 };
 
+function normalizeCustomDomain(domain) {
+    if (!domain) return LOCAL_GATEWAY_DEFAULT.replace(/\/+$/, '');
+    var d = domain.trim();
+    if (!/^https?:\/\//i.test(d)) d = 'http://' + d;
+    return d.replace(/\/+$/, '');
+}
+
+function getGatewayUrl(env, customDomain) {
+    if (env === 'custom') {
+        return normalizeCustomDomain(customDomain || LOCAL_GATEWAY_DEFAULT);
+    }
+    if (env === 'local_gateway') return LOCAL_GATEWAY_DEFAULT.replace(/\/+$/, '');
+    if (env === 'local_engine') return LOCAL_ENGINE_DEFAULT.replace(/\/+$/, '');
+    return GATEWAY_URLS[env] || GATEWAY_URLS[DEFAULT_ENV];
+}
+
+function getSnapshotUrl(env) {
+    if (LOCAL_ENVS.includes(env)) return SNAPSHOT_URLS.qa;
+    return SNAPSHOT_URLS[env] || SNAPSHOT_URLS[DEFAULT_ENV];
+}
+
+function getFareRuleUrl(env) {
+    if (LOCAL_ENVS.includes(env)) return FARE_RULE_URLS.qa;
+    return FARE_RULE_URLS[env] || FARE_RULE_URLS[DEFAULT_ENV];
+}
+
+function getEnvConfigWithFallback(env) {
+    if (LOCAL_ENVS.includes(env)) return ENV_CONFIGS.qa;
+    return getEnvConfig(env);
+}
+
 module.exports = {
     ENV_CONFIGS, DEFAULT_ENV, API_TIMEOUT,
     SKYEYE_LOG_URL, SKYEYE_APP_ID, SKYEYE_TOKEN,
@@ -113,5 +150,8 @@ module.exports = {
     CITY_LABRADOR_URL,
     GATEWAY_SITES, GATEWAY_PLATS, GATEWAY_URLS,
     SNAPSHOT_SITES, SNAPSHOT_URLS, FARE_RULE_URLS,
-    getEnvConfig, getEnvFromRequest, getHuixingUrl
+    LOCAL_ENVS, LOCAL_GATEWAY_DEFAULT, LOCAL_ENGINE_DEFAULT,
+    getEnvConfig, getEnvFromRequest, getHuixingUrl,
+    getGatewayUrl, getSnapshotUrl, getFareRuleUrl, getEnvConfigWithFallback,
+    normalizeCustomDomain
 };
