@@ -19,6 +19,7 @@ function createApp(httpClient = axios) {
     require('./routes/gateway')(app, httpClient);
     require('./routes/b15-standard')(app, httpClient);
     require('./routes/real-interline')(app, httpClient);
+    require('./routes/interline')(app, httpClient);
     require('./routes/snapshot')(app, httpClient);
     require('./routes/fare-rule')(app, httpClient);
     return app;
