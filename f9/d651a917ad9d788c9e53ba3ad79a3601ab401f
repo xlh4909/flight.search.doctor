@@ -1,0 +1,22 @@
+public/js/json-tree-viewer.js
+  s_6638acfa251e1e::t_45fdf4c333a587 317
+public/interline-lowest.html
+  s_6638acfa251e1e::t_10986d219457fa 664-670
+  s_6638acfa251e1e::t_73f360bf7f5448 594-600
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "f9d651a917ad9d788c9e53ba3ad79a3601ab401f",
+  "prompts": {},
+  "sessions": {
+    "s_6638acfa251e1e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_12fe7ae0effeI3v4sIxJVLL280",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
