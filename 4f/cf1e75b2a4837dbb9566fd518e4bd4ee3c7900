@@ -1,0 +1,21 @@
+public/b15-standard.html
+  s_87c83121cdd357::t_b000756319423e 163-165
+  s_87c83121cdd357::t_da7daa5c99bd2b 135-138,140-142,145-146
+  s_87c83121cdd357::t_50c7563ed04f31 147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "4fcf1e75b2a4837dbb9566fd518e4bd4ee3c7900",
+  "prompts": {},
+  "sessions": {
+    "s_87c83121cdd357": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_12cca68a8ffeAFYYeP0tHtrC4s",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
