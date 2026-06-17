@@ -460,27 +460,51 @@
                 queryNext(0);
             } else {
                 loadHistory();
-                document.getElementById('results').innerHTML = '<div id="trace-loading" style="text-align:center;padding:20px;color:#5e35b1;font-size:14px;">正在查询...</div>';
+                // 逐站点串行查询，规避远端接口限流；查出一个站点立即渲染，再继续查下一个
+                var appIds = ['3303660', '3296870', '106711', '3295971', '102781'];
+                var totalFound = 0;
+                var container = document.getElementById('results');
+                container.innerHTML = '<div id="trace-loading" style="text-align:center;padding:20px;color:#5e35b1;font-size:14px;">正在查询站点 ' + appIds[0] + '...</div>';
 
-                // 单次请求 —— 通过 contextId 即可查到所有站点日志，无需按 appId 多次请求
-                fetch('/api/skyeye/proxy-log', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ traceId: inputVal, appId: '3303660', beginTime: getBeginTime(), endTime: getEndTime() })
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    btn.disabled = false;
-                    spinner.classList.remove('active');
+                function queryNext(index) {
+                    if (index >= appIds.length) {
+                        btn.disabled = false;
+                        spinner.classList.remove('active');
+                        var loadingEl = document.getElementById('trace-loading');
+                        if (loadingEl) loadingEl.remove();
+                        if (totalFound === 0) {
+                            container.innerHTML = '<div class="empty-result">未查到日志</div>';
+                        } else {
+                            renderSubCategoryFilter();
+                            renderSiteFilter();
+                        }
+                        return;
+                    }
+
+                    var appId = appIds[index];
                     var loadingEl = document.getElementById('trace-loading');
-                    if (loadingEl) loadingEl.remove();
-                    renderResults(data);
-                })
-                .catch(function(err) {
-                    btn.disabled = false;
-                    spinner.classList.remove('active');
-                    alert('查询失败: ' + err.message);
-                });
+                    if (loadingEl) loadingEl.textContent = '正在查询站点 ' + appId + '...';
+
+                    fetch('/api/skyeye/proxy-log', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ traceId: inputVal, appId: appId, beginTime: getBeginTime(), endTime: getEndTime() })
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.success && data.data && data.data.result && data.data.result.list && data.data.result.list.length > 0) {
+                            totalFound += data.data.result.list.length;
+                            renderTraceIdSiteResult(data.data, appId, loadingEl);
+                        }
+                        queryNext(index + 1);
+                    })
+                    .catch(function(err) {
+                        console.error('站点 ' + appId + ' 查询失败:', err);
+                        queryNext(index + 1);
+                    });
+                }
+
+                queryNext(0);
             }
         }
 
