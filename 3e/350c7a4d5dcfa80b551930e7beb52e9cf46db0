@@ -1,0 +1,50 @@
+public/index.html
+  s_d0e2d03570cf94::t_5a5e5d718af1e1 16
+  s_d0e2d03570cf94::t_73ee706db510c4 21-22
+public/snapshot.html
+  s_d0e2d03570cf94::t_e9c45c68b06c0d 16
+  s_d0e2d03570cf94::t_cf7efddccb896a 21-22
+public/huixing.html
+  s_d0e2d03570cf94::t_97578d004eab6c 28-29
+  s_d0e2d03570cf94::t_c9584933d85b8b 23
+public/open-jaw-lowest.html
+  s_d0e2d03570cf94::t_1687122b721861 21-22
+  s_d0e2d03570cf94::t_0e7a153f960540 16
+public/b15-standard.html
+  s_d0e2d03570cf94::t_3518b1fb432221 16
+  s_d0e2d03570cf94::t_85449ba9f94e75 21-22
+public/real-interline.html
+  s_d0e2d03570cf94::t_27f0ec70ea8213 21-22
+  s_d0e2d03570cf94::t_222dadd24e6b6d 16
+public/proxy-log.html
+  s_d0e2d03570cf94::t_cbf860f33aea69 21-22
+  s_d0e2d03570cf94::t_91b9ff2ed3f8a2 16
+public/interline-lowest.html
+  s_d0e2d03570cf94::t_9045c470d136fc 21-22
+  s_d0e2d03570cf94::t_e43bb7f7aa3f74 16
+public/multi-trip-lowest.html
+  s_d0e2d03570cf94::t_78bb4349217197 16
+  s_d0e2d03570cf94::t_8480d4d88e51e2 21-22
+public/gateway.html
+  s_d0e2d03570cf94::t_85023a2e7a9f39 16
+  s_d0e2d03570cf94::t_6d66256c256512 21-22
+public/b15.html
+  s_d0e2d03570cf94::t_f665b51480b364 16
+  s_d0e2d03570cf94::t_ae3c3ef8052e84 21-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "3e350c7a4d5dcfa80b551930e7beb52e9cf46db0",
+  "prompts": {},
+  "sessions": {
+    "s_d0e2d03570cf94": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_12cc43437ffeSq6IXQ1N1vYRFj",
+        "model": "unknown"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
