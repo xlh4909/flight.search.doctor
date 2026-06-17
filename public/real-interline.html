@@ -172,10 +172,19 @@
             return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
 
-        function resolveDict(dict, key) {
-            if (key == null || key === undefined) return '';
-            var skey = String(key);
-            return (dict && dict[skey] !== undefined) ? dict[skey] : '';
+        // 通用字典解析：key 为 null/undefined/空字符串 时回退到字典第一个元素 (index 0)
+        // 字面数字 0 / '0' 仍按 key=0 正常查字典；字典为空时返回 fallback
+        function resolveRef(dict, key, fallback) {
+            var keys = (dict && typeof dict === 'object') ? Object.keys(dict) : [];
+            if (keys.length === 0) return fallback !== undefined ? fallback : {};
+            var skey = (key == null) ? '' : String(key);
+            if (skey === '' && dict[keys[0]] !== undefined) return dict[keys[0]];
+            return dict[skey] !== undefined ? dict[skey] : (fallback !== undefined ? fallback : {});
+        }
+        // 字符串字典版本：保证返回字符串
+        function resolveStr(dict, key) {
+            var v = resolveRef(dict, key, '');
+            return (v == null || (typeof v === 'object')) ? '' : String(v);
         }
 
         function formatTime(ts) {
@@ -305,8 +314,9 @@
                 flightPairs.forEach(function(fp, fpIdx) {
                     var flights = Array.isArray(fp.flights) ? fp.flights : [];
                     var prices = Array.isArray(fp.prices) ? fp.prices : [];
-                    var firstNo = resolveDict(stringDict, fp.firstTripFlightNo) || String(fp.firstTripFlightNo || '');
-                    var secondNo = resolveDict(stringDict, fp.secondTripFlightNo) || String(fp.secondTripFlightNo || '');
+                    // 航班号通过 stringDictionary 解析；缺失(null/空)时回退 index 0
+                    var firstNo = resolveStr(stringDict, fp.firstTripFlightNo);
+                    var secondNo = resolveStr(stringDict, fp.secondTripFlightNo);
                     var lowest = prices.some(function(p) { return !!p.isLowest; });
 
                     productsHtml += '<div class="combination-card' + (lowest ? ' lowest' : '') + '">';
@@ -319,7 +329,7 @@
                         productsHtml += '<table class="flight-table"><tr><th>航班号</th><th>起点</th><th>终点</th><th>起飞</th><th>到达</th></tr>';
                         flights.forEach(function(f) {
                             productsHtml += '<tr>';
-                            productsHtml += '<td>' + escHtml(f.flightNo || resolveDict(stringDict, f.id) || '-') + '</td>';
+                            productsHtml += '<td>' + escHtml(f.flightNo || resolveStr(stringDict, f.id) || '-') + '</td>';
                             productsHtml += '<td>' + escHtml(f.departureCode || '-') + '</td>';
                             productsHtml += '<td>' + escHtml(f.arriveCode || '-') + '</td>';
                             productsHtml += '<td>' + escHtml(formatTime(f.departureTime)) + '</td>';
@@ -331,24 +341,31 @@
 
                     if (prices.length > 0) {
                         prices.forEach(function(p, pIdx) {
-                            var firstCabin = cabinPriceDict[String(p.firstTripCabinCode)] || {};
-                            var secondCabin = cabinPriceDict[String(p.secondTripCabinCode)] || {};
-                            var firstBase = baseCabinDict[String(p.firstTripBaseCabinInfo)] || {};
-                            var secondBase = baseCabinDict[String(p.secondTripBaseCabinInfo)] || {};
+                            // 舱位码：stringDictionary；saleCabin/裸价：CabinPriceDictionary；baseCabin 信息(舱等/座位)可在原始数据查看
+                            var firstCabinCode = resolveStr(stringDict, p.firstTripCabinCode);
+                            var secondCabinCode = resolveStr(stringDict, p.secondTripCabinCode);
+                            var firstPrice = resolveRef(cabinPriceDict, p.firstTripCabinPrice, {});
+                            var secondPrice = resolveRef(cabinPriceDict, p.secondTripCabinPrice, {});
+                            // combineId 在价格组合(price)层，通过 stringDictionary 解析
+                            var combineId = resolveStr(stringDict, p.combineId);
                             var priceRawId = 'priceRaw_' + itemIdx + '_' + fpIdx + '_' + pIdx;
 
                             productsHtml += '<div class="price-row' + (p.isLowest ? ' lowest' : '') + '">';
                             productsHtml += '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px">';
-                            productsHtml += '<div><span class="price-cabin">价格组合 ' + (pIdx + 1) + '</span>';
+                            productsHtml += '<div><span class="price-cabin">价格组合 ' + (pIdx + 1) + (combineId ? ' · combineId ' + escHtml(combineId) : '') + '</span>';
                             productsHtml += '<span class="price-group-tag ' + getCabinGradeCss(p.priceGroupType === '2' ? 2 : 1) + '">' + escHtml(getPriceGroupTypeLabel(p.priceGroupType)) + '</span>';
                             if (p.isLowest) productsHtml += '<span class="price-group-tag business">最低价</span>';
                             productsHtml += '</div>';
                             productsHtml += '<div class="price-value">¥' + escHtml(p.totalSystemTicketPrice !== undefined ? p.totalSystemTicketPrice : '-') + '</div>';
                             productsHtml += '</div>';
 
-                            productsHtml += '<div class="detail-item"><span class="dlabel">第一程</span><span class="dvalue">舱位 ' + escHtml(getCabinCodeLabel(firstBase.baseCabinCode, firstCabin.saleCabinCode)) + ' / FD ' + escHtml(p.firstTripFd !== undefined ? p.firstTripFd : '-') + ' / 库存 ' + escHtml(p.firstTripCabinInventory !== undefined ? p.firstTripCabinInventory : '-') + ' / 裸价 ' + escHtml(firstCabin.barePrice !== undefined ? firstCabin.barePrice : '-') + '</span></div>';
-                            productsHtml += '<div class="detail-item"><span class="dlabel">第二程</span><span class="dvalue">舱位 ' + escHtml(getCabinCodeLabel(secondBase.baseCabinCode, secondCabin.saleCabinCode)) + ' / FD ' + escHtml(p.secondTripFd !== undefined ? p.secondTripFd : '-') + ' / 库存 ' + escHtml(p.secondTripCabinInventory !== undefined ? p.secondTripCabinInventory : '-') + ' / 裸价 ' + escHtml(secondCabin.barePrice !== undefined ? secondCabin.barePrice : '-') + '</span></div>';
-                            productsHtml += '<div class="detail-item"><span class="dlabel">政策/规则</span><span class="dvalue">policyId ' + escHtml(p.firstTripPolicyId || '-') + ' / secondPolicyId ' + escHtml(p.secondPolicyId || '-') + ' / ruleCode ' + escHtml(p.ruleCode || '-') + '</span></div>';
+                            productsHtml += '<div class="detail-item"><span class="dlabel">第一程</span><span class="dvalue">舱位 ' + escHtml(getCabinCodeLabel(firstCabinCode, firstPrice.saleCabinCode)) + ' / FD ' + escHtml(p.firstTripFd !== undefined ? p.firstTripFd : '-') + ' / 库存 ' + escHtml(p.firstTripCabinInventory !== undefined ? p.firstTripCabinInventory : '-') + ' / 裸价 ' + escHtml(firstPrice.barePrice !== undefined ? firstPrice.barePrice : '-') + '</span></div>';
+                            productsHtml += '<div class="detail-item"><span class="dlabel">第二程</span><span class="dvalue">舱位 ' + escHtml(getCabinCodeLabel(secondCabinCode, secondPrice.saleCabinCode)) + ' / FD ' + escHtml(p.secondTripFd !== undefined ? p.secondTripFd : '-') + ' / 库存 ' + escHtml(p.secondTripCabinInventory !== undefined ? p.secondTripCabinInventory : '-') + ' / 裸价 ' + escHtml(secondPrice.barePrice !== undefined ? secondPrice.barePrice : '-') + '</span></div>';
+                            var secondPolicyMissing = (p.secondPolicyId == null || p.secondPolicyId === '');
+                            var policyText = secondPolicyMissing
+                                ? 'policyId ' + escHtml(p.firstTripPolicyId || '-') + ' <span style="color:#0d904f">(两程政策一致)</span>'
+                                : 'policyId ' + escHtml(p.firstTripPolicyId || '-') + ' / secondPolicyId ' + escHtml(p.secondPolicyId);
+                            productsHtml += '<div class="detail-item"><span class="dlabel">政策/规则</span><span class="dvalue">' + policyText + ' / ruleCode ' + escHtml(p.ruleCode || '-') + '</span></div>';
                             productsHtml += '<div class="detail-item"><span class="dlabel">留钱/拆分</span><span class="dvalue">firstKeep ' + escHtml(p.firstTripKeepMoney !== undefined ? p.firstTripKeepMoney : '-') + ' / secondKeep ' + escHtml(p.secondTripKeepMoney !== undefined ? p.secondTripKeepMoney : '-') + ' / splitRule ' + escHtml(p.priceSplitRule !== undefined ? p.priceSplitRule : '-') + '</span></div>';
 
                             productsHtml += '<button class="raw-toggle" onclick="document.getElementById(\'' + priceRawId + '\').classList.toggle(\'active\')">查看原始数据</button>';
