@@ -591,13 +591,13 @@
                 var k = keys[i];
                 var fullPath = prefix ? prefix + '.' + k : k;
                 var v = data[k];
-                var keyMatch = k.toLowerCase().indexOf(lowerKw) !== -1;
-                var valMatch = (v !== null && v !== undefined && typeof v !== 'object' && String(v).toLowerCase().indexOf(lowerKw) !== -1);
-                if (keyMatch || valMatch) {
-                    result.push({ key: k, path: fullPath, value: v, count: countLeafNodes(v) });
-                }
-                if (v !== null && typeof v === 'object') {
-                    collectMatchingKeys(v, keyword, fullPath, result);
+            var keyMatch = k.toLowerCase() === lowerKw;
+            var valMatch = (v !== null && v !== undefined && typeof v !== 'object' && String(v).toLowerCase().indexOf(lowerKw) !== -1);
+            if (keyMatch || valMatch) {
+                result.push({ key: k, path: fullPath, value: v, count: countLeafNodes(v) });
+            }
+            if (v !== null && typeof v === 'object') {
+                collectMatchingKeys(v, keyword, fullPath, result);
                 }
             }
             return result;
@@ -661,13 +661,13 @@
                 var k = keys[i];
                 var fullPath = prefix ? prefix + '.' + k : k;
                 var v = data[k];
-                var keyMatch = k.toLowerCase().indexOf(lowerKw) !== -1;
-                var valMatch = (v !== null && v !== undefined && typeof v !== 'object' && String(v).toLowerCase().indexOf(lowerKw) !== -1);
-                if (keyMatch || valMatch) {
-                    result.push({ path: fullPath, value: v });
-                }
-                if (v !== null && typeof v === 'object') {
-                    collectFlatEntries(v, keyword, fullPath, result);
+            var keyMatch = k.toLowerCase() === lowerKw;
+            var valMatch = (v !== null && v !== undefined && typeof v !== 'object' && String(v).toLowerCase().indexOf(lowerKw) !== -1);
+            if (keyMatch || valMatch) {
+                result.push({ path: fullPath, value: v });
+            }
+            if (v !== null && typeof v === 'object') {
+                collectFlatEntries(v, keyword, fullPath, result);
                 }
             }
             return result;
