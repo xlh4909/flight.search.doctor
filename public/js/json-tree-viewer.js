@@ -314,7 +314,7 @@
       var node = this.nodes[i];
       var nodeKey = String(node.key).toLowerCase();
       var nodeVal = node.valText || '';
-      var shouldHighlight = lowerKeyword.length > 0 && (nodeKey.indexOf(lowerKeyword) !== -1 || nodeVal.indexOf(lowerKeyword) !== -1);
+      var shouldHighlight = lowerKeyword.length > 0 && (nodeKey === lowerKeyword || nodeVal.indexOf(lowerKeyword) !== -1);
       if (shouldHighlight) {
         node.el.classList.add(CLASS_HIGHLIGHT);
       } else {
