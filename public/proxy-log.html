@@ -509,33 +509,50 @@
         }
 
         // 参数名称替换工具函数（共享）
-        function replaceKeys(obj, skipFlightDate) {
+        // connectRoutes 节点内部使用反向命名：firstFlightDate -> flightDate、connectAvs -> avs
+        // 同时 connectRoutes 属性本身改名为 acRoutes
+        function replaceKeys(obj, skipFlightDate, insideConnectRoutes) {
             if (!obj || typeof obj !== 'object') return;
             if (Array.isArray(obj)) {
-                obj.forEach(function(item) { replaceKeys(item, skipFlightDate); });
+                obj.forEach(function(item) { replaceKeys(item, skipFlightDate, insideConnectRoutes); });
                 return;
             }
-            for (var key in obj) {
-                if (obj.hasOwnProperty(key)) {
-                    var value = obj[key];
-                    if (!skipFlightDate && key === 'flightDate') {
-                        obj['firstFlightDate'] = value;
-                        delete obj[key];
-                    } else if (key === 'interlineType') {
-                        obj['resourceType'] = value;
-                        delete obj[key];
-                    } else if (key === 'maxTransitStayMins') {
-                        obj['maxLayoeverMinutes'] = value;
-                        delete obj[key];
-                    } else if (key === 'route') {
-                        obj['detail'] = value;
-                        delete obj[key];
-                    }
-                    if (value && typeof value === 'object') {
-                        replaceKeys(value, skipFlightDate || key === 'routes');
-                    }
+            // 先快照 key 列表，避免迭代过程中改名（connectRoutes -> acRoutes）导致新键被重复处理
+            var keys = Object.keys(obj);
+            keys.forEach(function(key) {
+                if (!obj.hasOwnProperty(key)) return;
+                var value = obj[key];
+                if (insideConnectRoutes && key === 'firstFlightDate') {
+                    // connectRoutes 内部：firstFlightDate -> flightDate
+                    obj['flightDate'] = value;
+                    delete obj[key];
+                } else if (insideConnectRoutes && key === 'connectAvs') {
+                    // connectRoutes 内部：connectAvs -> avs
+                    obj['avs'] = value;
+                    delete obj[key];
+                } else if (!insideConnectRoutes && !skipFlightDate && key === 'flightDate') {
+                    // 顶层（非 connectRoutes）：flightDate -> firstFlightDate
+                    obj['firstFlightDate'] = value;
+                    delete obj[key];
+                } else if (key === 'connectRoutes') {
+                    // 属性本身改名：connectRoutes -> acRoutes
+                    obj['acRoutes'] = value;
+                    delete obj[key];
+                } else if (key === 'interlineType') {
+                    obj['resourceType'] = value;
+                    delete obj[key];
+                } else if (key === 'maxTransitStayMins') {
+                    obj['maxLayoeverMinutes'] = value;
+                    delete obj[key];
+                } else if (key === 'route') {
+                    obj['detail'] = value;
+                    delete obj[key];
                 }
-            }
+                if (value && typeof value === 'object') {
+                    // key === 'connectRoutes' 标记进入 acRoutes/connectRoutes 子树（内部反向命名）
+                    replaceKeys(value, skipFlightDate || key === 'routes', key === 'connectRoutes');
+                }
+            });
         }
 
         function renderResults(data) {
