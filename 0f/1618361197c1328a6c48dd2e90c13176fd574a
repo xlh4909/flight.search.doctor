@@ -1,0 +1,21 @@
+public/real-interline.html
+  s_187371d9c39956::t_7ce357ce993ee4 10,21,29,31,34-35,39,41,44,50,55,64-65,70,74,77,80,82,87,91,99,293,366
+public/proxy-log.html
+  s_187371d9c39956::t_7ce357ce993ee4 512-514,517,520-549,551-555
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "0f1618361197c1328a6c48dd2e90c13176fd574a",
+  "prompts": {},
+  "sessions": {
+    "s_187371d9c39956": {
+      "agent_id": {
+        "tool": "zcode",
+        "id": "zcode-manual-20260618-142059",
+        "model": "GLM-5.2"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
