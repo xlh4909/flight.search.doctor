@@ -58,6 +58,13 @@
         .query-header.collapsed .header-arrow { transform: rotate(-90deg); }
         .query-body.collapsed { display: none; }
 
+        /* ── Replay (Snapshot Model) spacing — 展开后与下方区块留出清晰间隙 ── */
+        #replayArea { margin-bottom: 16px; }
+        #replayBody:not(.collapsed) { padding-bottom: 16px; }
+        #replayBody:not(.collapsed) > .tree-view { margin-bottom: 0; }
+        /* 折叠态下不需要外部下边距（header 自带 margin-bottom:12px） */
+        #replayArea:has(#replayBody.collapsed) { margin-bottom: 0; }
+
         /* ── Gen time card — clean, no raw data ── */
         .gen-time-card { background: linear-gradient(135deg, #e0f2f1, #b2dfdb); border: 1px solid #80cbc4; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; }
         .gen-time-card .gt-icon { font-size: 28px; flex-shrink: 0; }
@@ -221,6 +228,7 @@
             </div>
             <div class="query-body" id="queryBody">
                 <div id="genTimeArea"></div>
+                <div id="replayArea"></div>
                 <div id="errorArea"></div>
                 <div id="treeArea"></div>
                 <div class="raw-toggle-bar" id="rawBar" style="display:none;">
@@ -259,6 +267,7 @@
     <script>
         var _rawDetail = null;
         var _genTimeData = null;
+        var _rawReplay = null;
         var _currentTag = '';
         var _currentSite = 'wechatcore';
         var _treeExpanded = false; // track global toggle state
@@ -418,11 +427,13 @@
             document.getElementById('genTimeArea').innerHTML = '';
             document.getElementById('errorArea').innerHTML = '';
             document.getElementById('treeArea').innerHTML = '';
+            document.getElementById('replayArea').innerHTML = '';
             document.getElementById('rawBar').style.display = 'none';
             document.getElementById('rawData').classList.remove('active');
             document.getElementById('rawData').textContent = '';
             _rawDetail = null;
             _genTimeData = null;
+            _rawReplay = null;
 
             // Step 1: fetch generation time
             loadingText.textContent = '正在获取快照生成时间...';
@@ -444,12 +455,31 @@
             })
             .then(function(r) { return r.json(); })
             .then(function(detailData) {
-                btn.disabled = false;
-                loading.classList.remove('active');
                 _rawDetail = detailData;
                 renderTree(detailData);
                 document.getElementById('rawData').textContent = JSON.stringify(detailData, null, 2);
                 document.getElementById('rawBar').style.display = 'flex';
+
+                // Step 3: 解析 Tag 内容（replay）—— 失败不阻塞详情展示
+                loadingText.textContent = '正在解析 Tag 内容...';
+                loading.classList.add('active');
+                return fetch('/api/snapshot/replay?' + envQs(), {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tag: tag, site: _currentSite })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(replayData) {
+                    btn.disabled = false;
+                    loading.classList.remove('active');
+                    _rawReplay = replayData;
+                    renderReplay(replayData);
+                })
+                .catch(function(replayErr) {
+                    btn.disabled = false;
+                    loading.classList.remove('active');
+                    _rawReplay = null;
+                    renderReplay({ success: false, error: replayErr.message || 'Tag 解析请求失败' });
+                });
             })
             .catch(function(err) {
                 btn.disabled = false;
@@ -1033,6 +1063,102 @@
         }
 
         // ═══════════════════════════════════════
+        //  TAG 解析内容 (replay) — SnapshotParametereModel + CabinData
+        // ═══════════════════════════════════════
+
+        function renderReplay(data) {
+            var area = document.getElementById('replayArea');
+            if (!area) return;
+
+            // 失败：仅显示 warn-box，不影响已有详情
+            if (!data || !data.success) {
+                area.innerHTML = '<div class="warn-box">Snapshot Model 获取失败: ' + escHtml((data && data.error) || '未知错误') + '</div>';
+                return;
+            }
+
+            var response = data.data || {};
+            // 兼容上游可能在 data 下再包一层的情况
+            var params = response.SnapshotParametereModel || response.snapshotParametereModel || null;
+
+            // 可折叠区块标题（与「查询结果」标题栏同款）—— 默认折叠
+            var html = '<div class="query-header collapsed" id="replayHeader" onclick="toggleReplayResults()" style="margin-top:20px;">';
+            html += '<span class="header-title">Snapshot Model</span>';
+            html += '<span class="header-arrow">▼</span>';
+            html += '</div>';
+            html += '<div class="query-body collapsed" id="replayBody">';
+
+            if (!params) {
+                html += '<div class="empty-result">无解析数据</div>';
+                html += '</div>';
+                area.innerHTML = html;
+                return;
+            }
+
+            // SnapshotParametereModel 子树（CabinData 按需求不渲染）
+            html += '<div style="margin:12px 0 4px;font-size:13px;color:#00695c;font-weight:600;">SnapshotParametereModel（查询参数）</div>';
+            html += '<div class="tree-view" id="replayParamsTree"></div>';
+
+            html += '</div>';
+            area.innerHTML = html;
+
+            // 渲染子树
+            var paramsEl = document.getElementById('replayParamsTree');
+            paramsEl.innerHTML = buildPropNode(params, '', 0);
+            expandReplayTreeAll(paramsEl);
+            bindReplayTreeClick(paramsEl);
+        }
+
+        function expandReplayTreeAll(tree) {
+            if (!tree) return;
+            var allChildren = tree.querySelectorAll('.prop-children');
+            var allToggles = tree.querySelectorAll('.prop-row.is-branch .toggle');
+            var allCloseRows = tree.querySelectorAll('.prop-close-row');
+            for (var i = 0; i < allChildren.length; i++) allChildren[i].classList.add('open');
+            for (var j = 0; j < allToggles.length; j++) allToggles[j].classList.add('open');
+            for (var k = 0; k < allCloseRows.length; k++) allCloseRows[k].style.display = '';
+        }
+
+        function bindReplayTreeClick(treeEl) {
+            if (!treeEl) return;
+            treeEl.addEventListener('click', function(e) {
+                var row = e.target.closest('.prop-row');
+                if (!row) return;
+                var node = row.closest('.prop-node');
+                if (!node) return;
+
+                if (row.classList.contains('is-branch')) {
+                    var children = node.querySelector(':scope > .prop-children');
+                    var toggle = row.querySelector('.toggle');
+                    var closeRow = node.querySelector(':scope > .prop-close-row');
+                    if (!children) return;
+                    if (children.classList.contains('open')) {
+                        children.classList.remove('open');
+                        if (toggle) toggle.classList.remove('open');
+                        if (closeRow) closeRow.style.display = 'none';
+                    } else {
+                        children.classList.add('open');
+                        if (toggle) toggle.classList.add('open');
+                        if (closeRow) closeRow.style.display = '';
+                    }
+                }
+
+                if (row.classList.contains('is-leaf')) {
+                    var key = row.getAttribute('data-key') || '';
+                    var val = row.getAttribute('data-val') || '';
+                    copyToClipboard(key + ': ' + val);
+                }
+            });
+        }
+
+        function toggleReplayResults() {
+            var header = document.getElementById('replayHeader');
+            var body = document.getElementById('replayBody');
+            if (!header || !body) return;
+            header.classList.toggle('collapsed');
+            body.classList.toggle('collapsed');
+        }
+
+        // ═══════════════════════════════════════
         //  HELPERS
         // ═══════════════════════════════════════
 
@@ -1046,10 +1172,11 @@
             document.getElementById('genTimeArea').innerHTML = '';
             document.getElementById('errorArea').innerHTML = '';
             document.getElementById('treeArea').innerHTML = '';
+            document.getElementById('replayArea').innerHTML = '';
             document.getElementById('rawBar').style.display = 'none';
             document.getElementById('rawData').classList.remove('active');
             document.getElementById('rawData').textContent = '';
-            _rawDetail = null; _genTimeData = null; _currentTag = '';
+            _rawDetail = null; _genTimeData = null; _rawReplay = null; _currentTag = '';
         }
 
         // ═══════════════════════════════════════
