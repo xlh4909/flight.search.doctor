@@ -1,0 +1,21 @@
+routes/snapshot.js
+  s_b5c42d4764673f::t_71e80fbca71a46 67-98
+public/snapshot.html
+  s_b5c42d4764673f::t_71e80fbca71a46 61-67,231,270,430,436,462-482,1065-1160,1175,1179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "8b5c27755d0964fc0baf58f0f35824ab0de661e5",
+  "prompts": {},
+  "sessions": {
+    "s_b5c42d4764673f": {
+      "agent_id": {
+        "tool": "zcode",
+        "id": "zcode-manual-20260622-131352",
+        "model": "GLM-5.2"
+      },
+      "human_author": "夏礼华 <xlh4909@ly.com>"
+    }
+  }
+}
